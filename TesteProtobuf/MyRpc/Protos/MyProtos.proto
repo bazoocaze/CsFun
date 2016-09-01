@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+package Teste.Protos;
+
+message MyMessage {
+	int32 id = 1;
+	string nome = 2;
+}
+
+
+message MyRpcRequest {
+	int32  request_id    = 1;
+	string service_id    = 2;
+	string method_id     = 3;
+	bytes  payload_data  = 4;
+}
+
+message SearchRequest {
+	string file_name = 1;
+}
+
+message SearchResponse {
+	bool found = 1;
+	string file_path = 2;
+}

@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 14 for Windows Desktop
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Google.Protobuf", "Google.Protobuf\Google.Protobuf.csproj", "{7D042163-FBF3-42F2-8FAB-EB2D59B8D7C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TesteProtobuf.NET4", "TesteProtobuf.NET4\TesteProtobuf.NET4.csproj", "{07B2621A-055A-4EDB-8128-01C3AC89119A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7D042163-FBF3-42F2-8FAB-EB2D59B8D7C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D042163-FBF3-42F2-8FAB-EB2D59B8D7C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D042163-FBF3-42F2-8FAB-EB2D59B8D7C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D042163-FBF3-42F2-8FAB-EB2D59B8D7C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07B2621A-055A-4EDB-8128-01C3AC89119A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07B2621A-055A-4EDB-8128-01C3AC89119A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07B2621A-055A-4EDB-8128-01C3AC89119A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07B2621A-055A-4EDB-8128-01C3AC89119A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
