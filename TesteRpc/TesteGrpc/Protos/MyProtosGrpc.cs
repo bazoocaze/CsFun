@@ -14,6 +14,10 @@ namespace Teste.Protos {
 
     static readonly Marshaller<global::Teste.Protos.SearchRequest> __Marshaller_SearchRequest = Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Teste.Protos.SearchRequest.Parser.ParseFrom);
     static readonly Marshaller<global::Teste.Protos.SearchResponse> __Marshaller_SearchResponse = Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Teste.Protos.SearchResponse.Parser.ParseFrom);
+    static readonly Marshaller<global::Teste.Protos.DelayDesc> __Marshaller_DelayDesc = Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Teste.Protos.DelayDesc.Parser.ParseFrom);
+    static readonly Marshaller<global::Teste.Protos.Empty> __Marshaller_Empty = Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Teste.Protos.Empty.Parser.ParseFrom);
+    static readonly Marshaller<global::Teste.Protos.ProcessStartInfoPB> __Marshaller_ProcessStartInfoPB = Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Teste.Protos.ProcessStartInfoPB.Parser.ParseFrom);
+    static readonly Marshaller<global::Teste.Protos.ProcessPB> __Marshaller_ProcessPB = Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Teste.Protos.ProcessPB.Parser.ParseFrom);
 
     static readonly Method<global::Teste.Protos.SearchRequest, global::Teste.Protos.SearchResponse> __Method_Search = new Method<global::Teste.Protos.SearchRequest, global::Teste.Protos.SearchResponse>(
         MethodType.Unary,
@@ -21,6 +25,27 @@ namespace Teste.Protos {
         "Search",
         __Marshaller_SearchRequest,
         __Marshaller_SearchResponse);
+
+    static readonly Method<global::Teste.Protos.DelayDesc, global::Teste.Protos.Empty> __Method_Delay1 = new Method<global::Teste.Protos.DelayDesc, global::Teste.Protos.Empty>(
+        MethodType.Unary,
+        __ServiceName,
+        "Delay1",
+        __Marshaller_DelayDesc,
+        __Marshaller_Empty);
+
+    static readonly Method<global::Teste.Protos.DelayDesc, global::Teste.Protos.Empty> __Method_Delay2 = new Method<global::Teste.Protos.DelayDesc, global::Teste.Protos.Empty>(
+        MethodType.Unary,
+        __ServiceName,
+        "Delay2",
+        __Marshaller_DelayDesc,
+        __Marshaller_Empty);
+
+    static readonly Method<global::Teste.Protos.ProcessStartInfoPB, global::Teste.Protos.ProcessPB> __Method_RunCmd = new Method<global::Teste.Protos.ProcessStartInfoPB, global::Teste.Protos.ProcessPB>(
+        MethodType.Unary,
+        __ServiceName,
+        "RunCmd",
+        __Marshaller_ProcessStartInfoPB,
+        __Marshaller_ProcessPB);
 
     /// <summary>Service descriptor</summary>
     public static global::Google.Protobuf.Reflection.ServiceDescriptor Descriptor
@@ -32,6 +57,21 @@ namespace Teste.Protos {
     public abstract class SearchServiceBase
     {
       public virtual global::System.Threading.Tasks.Task<global::Teste.Protos.SearchResponse> Search(global::Teste.Protos.SearchRequest request, ServerCallContext context)
+      {
+        throw new RpcException(new Status(StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::Teste.Protos.Empty> Delay1(global::Teste.Protos.DelayDesc request, ServerCallContext context)
+      {
+        throw new RpcException(new Status(StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::Teste.Protos.Empty> Delay2(global::Teste.Protos.DelayDesc request, ServerCallContext context)
+      {
+        throw new RpcException(new Status(StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::Teste.Protos.ProcessPB> RunCmd(global::Teste.Protos.ProcessStartInfoPB request, ServerCallContext context)
       {
         throw new RpcException(new Status(StatusCode.Unimplemented, ""));
       }
@@ -77,6 +117,54 @@ namespace Teste.Protos {
       {
         return CallInvoker.AsyncUnaryCall(__Method_Search, null, options, request);
       }
+      public virtual global::Teste.Protos.Empty Delay1(global::Teste.Protos.DelayDesc request, Metadata headers = null, DateTime? deadline = null, CancellationToken cancellationToken = default(CancellationToken))
+      {
+        return Delay1(request, new CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::Teste.Protos.Empty Delay1(global::Teste.Protos.DelayDesc request, CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_Delay1, null, options, request);
+      }
+      public virtual AsyncUnaryCall<global::Teste.Protos.Empty> Delay1Async(global::Teste.Protos.DelayDesc request, Metadata headers = null, DateTime? deadline = null, CancellationToken cancellationToken = default(CancellationToken))
+      {
+        return Delay1Async(request, new CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual AsyncUnaryCall<global::Teste.Protos.Empty> Delay1Async(global::Teste.Protos.DelayDesc request, CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_Delay1, null, options, request);
+      }
+      public virtual global::Teste.Protos.Empty Delay2(global::Teste.Protos.DelayDesc request, Metadata headers = null, DateTime? deadline = null, CancellationToken cancellationToken = default(CancellationToken))
+      {
+        return Delay2(request, new CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::Teste.Protos.Empty Delay2(global::Teste.Protos.DelayDesc request, CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_Delay2, null, options, request);
+      }
+      public virtual AsyncUnaryCall<global::Teste.Protos.Empty> Delay2Async(global::Teste.Protos.DelayDesc request, Metadata headers = null, DateTime? deadline = null, CancellationToken cancellationToken = default(CancellationToken))
+      {
+        return Delay2Async(request, new CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual AsyncUnaryCall<global::Teste.Protos.Empty> Delay2Async(global::Teste.Protos.DelayDesc request, CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_Delay2, null, options, request);
+      }
+      public virtual global::Teste.Protos.ProcessPB RunCmd(global::Teste.Protos.ProcessStartInfoPB request, Metadata headers = null, DateTime? deadline = null, CancellationToken cancellationToken = default(CancellationToken))
+      {
+        return RunCmd(request, new CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::Teste.Protos.ProcessPB RunCmd(global::Teste.Protos.ProcessStartInfoPB request, CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_RunCmd, null, options, request);
+      }
+      public virtual AsyncUnaryCall<global::Teste.Protos.ProcessPB> RunCmdAsync(global::Teste.Protos.ProcessStartInfoPB request, Metadata headers = null, DateTime? deadline = null, CancellationToken cancellationToken = default(CancellationToken))
+      {
+        return RunCmdAsync(request, new CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual AsyncUnaryCall<global::Teste.Protos.ProcessPB> RunCmdAsync(global::Teste.Protos.ProcessStartInfoPB request, CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_RunCmd, null, options, request);
+      }
       protected override SearchServiceClient NewInstance(ClientBaseConfiguration configuration)
       {
         return new SearchServiceClient(configuration);
@@ -87,7 +175,10 @@ namespace Teste.Protos {
     public static ServerServiceDefinition BindService(SearchServiceBase serviceImpl)
     {
       return ServerServiceDefinition.CreateBuilder()
-          .AddMethod(__Method_Search, serviceImpl.Search).Build();
+          .AddMethod(__Method_Search, serviceImpl.Search)
+          .AddMethod(__Method_Delay1, serviceImpl.Delay1)
+          .AddMethod(__Method_Delay2, serviceImpl.Delay2)
+          .AddMethod(__Method_RunCmd, serviceImpl.RunCmd).Build();
     }
 
   }

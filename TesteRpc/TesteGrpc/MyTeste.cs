@@ -1,33 +1,22 @@
-﻿using System;
+﻿using Grpc.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using Teste.Protos;
 
 namespace TesteGrpc
 {
-    public class MyTeste : ISerializable
+    public class MyTeste
     {
-        public int Id;
-        public string Nome;
-
-        public MyTeste()
+        public void Teste()
         {
-
+            Server server = new Server();
+            server.Ports.Add("localhost", 12345, ServerCredentials.Insecure);
+            server.Services.Add(SearchService.BindService(new MyService()));
+            server.Start();
         }
-
-        public MyTeste(SerializationInfo info, StreamingContext context)
-        {
-            this.Id = info.GetInt32("Id");
-            this.Nome = info.GetString("Nome");
-        }
-
-        public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("Id", this.Id);
-            info.AddValue("Nome", this.Nome);
-        }
-
     }
 }

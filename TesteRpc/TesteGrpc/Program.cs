@@ -9,6 +9,8 @@ using static Teste.Protos.SearchService;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Diagnostics;
+using System.Threading;
 
 namespace TesteGrpc
 {
@@ -29,11 +31,11 @@ namespace TesteGrpc
             Application.Run(new FormTeste());
         }
 
-        public static void TesteChannel()
+        public static async void TesteChannel()
         {
             Server server = new Server();
 
-            var serverPort = new ServerPort("0.0.0.0", P_PORTA_RPC, ServerCredentials.Insecure);
+            var serverPort = new ServerPort("127.0.0.1", P_PORTA_RPC, ServerCredentials.Insecure);
             server.Ports.Add(serverPort);
 
             var searchService = SearchService.BindService(new MyService());
@@ -51,6 +53,29 @@ namespace TesteGrpc
             req.IgnoreErrors = true;
             var result = client.Search(req);
 
+            Debug.WriteLine("[p1]");
+
+            var t1 = client.Delay1Async(new DelayDesc() { MilliSeconds = 2000 });
+
+            Debug.WriteLine("[p2]");
+
+            Debug.WriteLine("[p3]");
+
+            var t2 = client.Delay2Async(new DelayDesc() { MilliSeconds = 1000 });
+
+            Debug.WriteLine("[p4]");
+
+            Empty v1 = await t1;
+
+            Debug.WriteLine("[p5]");
+
+            Empty v2 = await t2;
+
+            Debug.WriteLine("[p6]");
+
+            ProcessStartInfoPB psi = new ProcessStartInfoPB();
+            psi.FileName = "c:/temp/teste.bat";
+            var p = client.RunCmd(psi);
         }
 
         public static void TesteSerializeException()
@@ -76,6 +101,28 @@ namespace TesteGrpc
         public MyService()
         {
 
+        }
+
+        public override Task<Empty> Delay1(DelayDesc request, ServerCallContext context)
+        {
+            return Task.Run<Empty>(delegate ()
+            {
+                Debug.WriteLine("server:Delay1 begin");
+                Thread.Sleep(request.MilliSeconds);
+                Debug.WriteLine("server:Delay1 end");
+                return new Empty();
+            });
+        }
+
+        public override Task<Empty> Delay2(DelayDesc request, ServerCallContext context)
+        {
+            return Task.Run<Empty>(delegate ()
+            {
+                Debug.WriteLine("server:Delay2 begin");
+                Thread.Sleep(request.MilliSeconds);
+                Debug.WriteLine("server:Delay2 end");
+                return new Empty();
+            });
         }
 
         public override Task<SearchResponse> Search(SearchRequest request, ServerCallContext context)
@@ -122,6 +169,28 @@ namespace TesteGrpc
             catch (UnauthorizedAccessException) when (req.IgnoreErrors) { }
 
             return null;
+        }
+
+        public override Task<ProcessPB> RunCmd(ProcessStartInfoPB request, ServerCallContext context)
+        {
+            return Task.Run<ProcessPB>(delegate ()
+            {
+                ProcessStartInfo psi = new ProcessStartInfo();
+                psi.FileName = request.FileName;
+                psi.Arguments = (String.Join(" ", request.Arguments.ToArray())).Trim();
+                ProcessPB ret = new ProcessPB();
+                ret.Started = false;
+                try
+                {
+                    using (Process p = Process.Start(psi))
+                    {
+                        ret.Pid = p.Id;
+                        ret.Started = true;
+                    }
+                }
+                catch (FileNotFoundException) { }
+                return ret;
+            });
         }
     }
 }

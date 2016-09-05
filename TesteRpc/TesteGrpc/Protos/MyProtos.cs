@@ -26,15 +26,27 @@ namespace Teste.Protos {
             "CgJpZBgBIAEoBRIMCgRub21lGAIgASgJIl8KDVNlYXJjaFJlcXVlc3QSEQoJ",
             "ZmlsZV9tYXNrGAEgASgJEhEKCXN0YXJ0X2RpchgCIAEoCRIRCglyZWN1cnNp",
             "dmUYAyABKAgSFQoNaWdub3JlX2Vycm9ycxgEIAEoCCIyCg5TZWFyY2hSZXNw",
-            "b25zZRIRCglmaWxlX25hbWUYASABKAkSDQoFZm91bmQYAiABKAgyVAoNU2Vh",
-            "cmNoU2VydmljZRJDCgZTZWFyY2gSGy5UZXN0ZS5Qcm90b3MuU2VhcmNoUmVx",
-            "dWVzdBocLlRlc3RlLlByb3Rvcy5TZWFyY2hSZXNwb25zZWIGcHJvdG8z"));
+            "b25zZRIRCglmaWxlX25hbWUYASABKAkSDQoFZm91bmQYAiABKAgiIgoJRGVs",
+            "YXlEZXNjEhUKDW1pbGxpX3NlY29uZHMYASABKAUiOgoSUHJvY2Vzc1N0YXJ0",
+            "SW5mb1BCEhEKCWZpbGVfbmFtZRgBIAEoCRIRCglhcmd1bWVudHMYAiADKAki",
+            "KQoJUHJvY2Vzc1BCEg8KB3N0YXJ0ZWQYASABKAgSCwoDcGlkGAIgASgFIgcK",
+            "BUVtcHR5MokCCg1TZWFyY2hTZXJ2aWNlEkMKBlNlYXJjaBIbLlRlc3RlLlBy",
+            "b3Rvcy5TZWFyY2hSZXF1ZXN0GhwuVGVzdGUuUHJvdG9zLlNlYXJjaFJlc3Bv",
+            "bnNlEjYKBkRlbGF5MRIXLlRlc3RlLlByb3Rvcy5EZWxheURlc2MaEy5UZXN0",
+            "ZS5Qcm90b3MuRW1wdHkSNgoGRGVsYXkyEhcuVGVzdGUuUHJvdG9zLkRlbGF5",
+            "RGVzYxoTLlRlc3RlLlByb3Rvcy5FbXB0eRJDCgZSdW5DbWQSIC5UZXN0ZS5Q",
+            "cm90b3MuUHJvY2Vzc1N0YXJ0SW5mb1BCGhcuVGVzdGUuUHJvdG9zLlByb2Nl",
+            "c3NQQmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Teste.Protos.MyMessage), global::Teste.Protos.MyMessage.Parser, new[]{ "Id", "Nome" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Teste.Protos.SearchRequest), global::Teste.Protos.SearchRequest.Parser, new[]{ "FileMask", "StartDir", "Recursive", "IgnoreErrors" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Teste.Protos.SearchResponse), global::Teste.Protos.SearchResponse.Parser, new[]{ "FileName", "Found" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Teste.Protos.SearchResponse), global::Teste.Protos.SearchResponse.Parser, new[]{ "FileName", "Found" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Teste.Protos.DelayDesc), global::Teste.Protos.DelayDesc.Parser, new[]{ "MilliSeconds" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Teste.Protos.ProcessStartInfoPB), global::Teste.Protos.ProcessStartInfoPB.Parser, new[]{ "FileName", "Arguments" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Teste.Protos.ProcessPB), global::Teste.Protos.ProcessPB.Parser, new[]{ "Started", "Pid" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Teste.Protos.Empty), global::Teste.Protos.Empty.Parser, null, null, null, null)
           }));
     }
     #endregion
@@ -526,6 +538,494 @@ namespace Teste.Protos {
             Found = input.ReadBool();
             break;
           }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class DelayDesc : pb::IMessage<DelayDesc> {
+    private static readonly pb::MessageParser<DelayDesc> _parser = new pb::MessageParser<DelayDesc>(() => new DelayDesc());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<DelayDesc> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Teste.Protos.MyProtosReflection.Descriptor.MessageTypes[3]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public DelayDesc() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public DelayDesc(DelayDesc other) : this() {
+      milliSeconds_ = other.milliSeconds_;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public DelayDesc Clone() {
+      return new DelayDesc(this);
+    }
+
+    /// <summary>Field number for the "milli_seconds" field.</summary>
+    public const int MilliSecondsFieldNumber = 1;
+    private int milliSeconds_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int MilliSeconds {
+      get { return milliSeconds_; }
+      set {
+        milliSeconds_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as DelayDesc);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(DelayDesc other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (MilliSeconds != other.MilliSeconds) return false;
+      return true;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (MilliSeconds != 0) hash ^= MilliSeconds.GetHashCode();
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (MilliSeconds != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(MilliSeconds);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (MilliSeconds != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(MilliSeconds);
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(DelayDesc other) {
+      if (other == null) {
+        return;
+      }
+      if (other.MilliSeconds != 0) {
+        MilliSeconds = other.MilliSeconds;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 8: {
+            MilliSeconds = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class ProcessStartInfoPB : pb::IMessage<ProcessStartInfoPB> {
+    private static readonly pb::MessageParser<ProcessStartInfoPB> _parser = new pb::MessageParser<ProcessStartInfoPB>(() => new ProcessStartInfoPB());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<ProcessStartInfoPB> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Teste.Protos.MyProtosReflection.Descriptor.MessageTypes[4]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ProcessStartInfoPB() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ProcessStartInfoPB(ProcessStartInfoPB other) : this() {
+      fileName_ = other.fileName_;
+      arguments_ = other.arguments_.Clone();
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ProcessStartInfoPB Clone() {
+      return new ProcessStartInfoPB(this);
+    }
+
+    /// <summary>Field number for the "file_name" field.</summary>
+    public const int FileNameFieldNumber = 1;
+    private string fileName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FileName {
+      get { return fileName_; }
+      set {
+        fileName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "arguments" field.</summary>
+    public const int ArgumentsFieldNumber = 2;
+    private static readonly pb::FieldCodec<string> _repeated_arguments_codec
+        = pb::FieldCodec.ForString(18);
+    private readonly pbc::RepeatedField<string> arguments_ = new pbc::RepeatedField<string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<string> Arguments {
+      get { return arguments_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as ProcessStartInfoPB);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(ProcessStartInfoPB other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (FileName != other.FileName) return false;
+      if(!arguments_.Equals(other.arguments_)) return false;
+      return true;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (FileName.Length != 0) hash ^= FileName.GetHashCode();
+      hash ^= arguments_.GetHashCode();
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (FileName.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(FileName);
+      }
+      arguments_.WriteTo(output, _repeated_arguments_codec);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (FileName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FileName);
+      }
+      size += arguments_.CalculateSize(_repeated_arguments_codec);
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ProcessStartInfoPB other) {
+      if (other == null) {
+        return;
+      }
+      if (other.FileName.Length != 0) {
+        FileName = other.FileName;
+      }
+      arguments_.Add(other.arguments_);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 10: {
+            FileName = input.ReadString();
+            break;
+          }
+          case 18: {
+            arguments_.AddEntriesFrom(input, _repeated_arguments_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class ProcessPB : pb::IMessage<ProcessPB> {
+    private static readonly pb::MessageParser<ProcessPB> _parser = new pb::MessageParser<ProcessPB>(() => new ProcessPB());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<ProcessPB> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Teste.Protos.MyProtosReflection.Descriptor.MessageTypes[5]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ProcessPB() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ProcessPB(ProcessPB other) : this() {
+      started_ = other.started_;
+      pid_ = other.pid_;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ProcessPB Clone() {
+      return new ProcessPB(this);
+    }
+
+    /// <summary>Field number for the "started" field.</summary>
+    public const int StartedFieldNumber = 1;
+    private bool started_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Started {
+      get { return started_; }
+      set {
+        started_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "pid" field.</summary>
+    public const int PidFieldNumber = 2;
+    private int pid_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Pid {
+      get { return pid_; }
+      set {
+        pid_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as ProcessPB);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(ProcessPB other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Started != other.Started) return false;
+      if (Pid != other.Pid) return false;
+      return true;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Started != false) hash ^= Started.GetHashCode();
+      if (Pid != 0) hash ^= Pid.GetHashCode();
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Started != false) {
+        output.WriteRawTag(8);
+        output.WriteBool(Started);
+      }
+      if (Pid != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Pid);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Started != false) {
+        size += 1 + 1;
+      }
+      if (Pid != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Pid);
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ProcessPB other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Started != false) {
+        Started = other.Started;
+      }
+      if (other.Pid != 0) {
+        Pid = other.Pid;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 8: {
+            Started = input.ReadBool();
+            break;
+          }
+          case 16: {
+            Pid = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class Empty : pb::IMessage<Empty> {
+    private static readonly pb::MessageParser<Empty> _parser = new pb::MessageParser<Empty>(() => new Empty());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<Empty> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Teste.Protos.MyProtosReflection.Descriptor.MessageTypes[6]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Empty() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Empty(Empty other) : this() {
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Empty Clone() {
+      return new Empty(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as Empty);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(Empty other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      return true;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(Empty other) {
+      if (other == null) {
+        return;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
         }
       }
     }
