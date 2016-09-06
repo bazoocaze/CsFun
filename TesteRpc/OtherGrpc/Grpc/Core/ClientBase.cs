@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Grpc.Core.Internal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,9 @@ namespace Grpc.Core
 {
     public class ClientBase
     {
+        readonly CallInvoker callInvoker;
+        readonly Channel channel;
+
         public ClientBase()
         {
         }
@@ -16,7 +20,7 @@ namespace Grpc.Core
         /// Initializes a new instance of <c>ClientBase</c> class.
         /// </summary>
         /// <param name="channel">The channel to use for remote call invocation.</param>
-        public ClientBase(Channel channel)
+        public ClientBase(Channel channel) : this(new ChannelCallInvoker(channel))
         {
         }
 
@@ -26,6 +30,7 @@ namespace Grpc.Core
         /// <param name="callInvoker">The <c>CallInvoker</c> for remote call invocation.</param>
         public ClientBase(CallInvoker callInvoker)
         {
+            this.callInvoker = callInvoker;
         }
 
         /// <summary>
@@ -34,6 +39,15 @@ namespace Grpc.Core
         /// <param name="configuration">The configuration.</param>
         protected ClientBase(ClientBaseConfiguration configuration)
         {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Gets the call invoker.
+        /// </summary>
+        protected CallInvoker CallInvoker
+        {
+            get { return this.callInvoker; }
         }
 
         protected internal class ClientBaseConfiguration
@@ -44,7 +58,6 @@ namespace Grpc.Core
 
     public abstract class ClientBase<T> : ClientBase
     {
-        readonly CallInvoker callInvoker;
 
         public ClientBase()
         {
@@ -72,14 +85,6 @@ namespace Grpc.Core
         /// <param name="configuration">The configuration.</param>
         protected ClientBase(ClientBaseConfiguration configuration) : base(configuration)
         {
-        }
-
-        /// <summary>
-        /// Gets the call invoker.
-        /// </summary>
-        protected CallInvoker CallInvoker
-        {
-            get { return this.callInvoker; }
         }
 
         /// <summary>

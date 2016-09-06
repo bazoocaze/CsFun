@@ -8,6 +8,9 @@ namespace Grpc.Core
 {
     public class Marshaller<T>
     {
+        private readonly Func<byte[], T> deserializer;
+        private readonly Func<T, byte[]> serializer;
+
         /// <summary>
         /// Initializes a new marshaller.
         /// </summary>
@@ -15,10 +18,21 @@ namespace Grpc.Core
         /// <param name="deserializer">Function that will be used to deserialize messages.</param>
         public Marshaller(Func<T, byte[]> serializer, Func<byte[], T> deserializer)
         {
-            // this.serializer = GrpcPreconditions.CheckNotNull(serializer, "serializer");
-            // this.deserializer = GrpcPreconditions.CheckNotNull(deserializer, "deserializer");
+            this.serializer = serializer;
+            this.deserializer = deserializer;
         }
 
+        /// <summary>
+        /// Gets the serializer function.
+        /// </summary>
+        public Func<T, byte[]> Serializer
+        { get { return this.serializer; } }
+
+        /// <summary>
+        /// Gets the deserializer function.
+        /// </summary>
+        public Func<byte[], T> Deserializer
+        { get { return this.deserializer; } }
     }
 
     /// <summary>

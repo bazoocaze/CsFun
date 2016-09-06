@@ -26,15 +26,19 @@ namespace Teste.Protos {
             "CgJpZBgBIAEoBRIMCgRub21lGAIgASgJIl8KDVNlYXJjaFJlcXVlc3QSEQoJ",
             "ZmlsZV9tYXNrGAEgASgJEhEKCXN0YXJ0X2RpchgCIAEoCRIRCglyZWN1cnNp",
             "dmUYAyABKAgSFQoNaWdub3JlX2Vycm9ycxgEIAEoCCIyCg5TZWFyY2hSZXNw",
-            "b25zZRIRCglmaWxlX25hbWUYASABKAkSDQoFZm91bmQYAiABKAgyVAoNU2Vh",
-            "cmNoU2VydmljZRJDCgZTZWFyY2gSGy5UZXN0ZS5Qcm90b3MuU2VhcmNoUmVx",
-            "dWVzdBocLlRlc3RlLlByb3Rvcy5TZWFyY2hSZXNwb25zZWIGcHJvdG8z"));
+            "b25zZRIRCglmaWxlX25hbWUYASABKAkSDQoFZm91bmQYAiABKAgiXQoLUnBj",
+            "RW52ZWxvcGUSFAoMc2VydmljZV9uYW1lGAEgASgJEhMKC21ldGhvZF9uYW1l",
+            "GAIgASgJEhIKCnJlcXVlc3RfaWQYAyABKAUSDwoHcGF5bG9hZBgEIAEoDDJU",
+            "Cg1TZWFyY2hTZXJ2aWNlEkMKBlNlYXJjaBIbLlRlc3RlLlByb3Rvcy5TZWFy",
+            "Y2hSZXF1ZXN0GhwuVGVzdGUuUHJvdG9zLlNlYXJjaFJlc3BvbnNlYgZwcm90",
+            "bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Teste.Protos.MyMessage), global::Teste.Protos.MyMessage.Parser, new[]{ "Id", "Nome" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Teste.Protos.SearchRequest), global::Teste.Protos.SearchRequest.Parser, new[]{ "FileMask", "StartDir", "Recursive", "IgnoreErrors" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Teste.Protos.SearchResponse), global::Teste.Protos.SearchResponse.Parser, new[]{ "FileName", "Found" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Teste.Protos.SearchResponse), global::Teste.Protos.SearchResponse.Parser, new[]{ "FileName", "Found" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Teste.Protos.RpcEnvelope), global::Teste.Protos.RpcEnvelope.Parser, new[]{ "ServiceName", "MethodName", "RequestId", "Payload" }, null, null, null)
           }));
     }
     #endregion
@@ -524,6 +528,207 @@ namespace Teste.Protos {
           }
           case 16: {
             Found = input.ReadBool();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class RpcEnvelope : pb::IMessage<RpcEnvelope> {
+    private static readonly pb::MessageParser<RpcEnvelope> _parser = new pb::MessageParser<RpcEnvelope>(() => new RpcEnvelope());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<RpcEnvelope> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Teste.Protos.MyProtosReflection.Descriptor.MessageTypes[3]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public RpcEnvelope() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public RpcEnvelope(RpcEnvelope other) : this() {
+      serviceName_ = other.serviceName_;
+      methodName_ = other.methodName_;
+      requestId_ = other.requestId_;
+      payload_ = other.payload_;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public RpcEnvelope Clone() {
+      return new RpcEnvelope(this);
+    }
+
+    /// <summary>Field number for the "service_name" field.</summary>
+    public const int ServiceNameFieldNumber = 1;
+    private string serviceName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string ServiceName {
+      get { return serviceName_; }
+      set {
+        serviceName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "method_name" field.</summary>
+    public const int MethodNameFieldNumber = 2;
+    private string methodName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string MethodName {
+      get { return methodName_; }
+      set {
+        methodName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "request_id" field.</summary>
+    public const int RequestIdFieldNumber = 3;
+    private int requestId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int RequestId {
+      get { return requestId_; }
+      set {
+        requestId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "payload" field.</summary>
+    public const int PayloadFieldNumber = 4;
+    private pb::ByteString payload_ = pb::ByteString.Empty;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pb::ByteString Payload {
+      get { return payload_; }
+      set {
+        payload_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as RpcEnvelope);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(RpcEnvelope other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (ServiceName != other.ServiceName) return false;
+      if (MethodName != other.MethodName) return false;
+      if (RequestId != other.RequestId) return false;
+      if (Payload != other.Payload) return false;
+      return true;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (ServiceName.Length != 0) hash ^= ServiceName.GetHashCode();
+      if (MethodName.Length != 0) hash ^= MethodName.GetHashCode();
+      if (RequestId != 0) hash ^= RequestId.GetHashCode();
+      if (Payload.Length != 0) hash ^= Payload.GetHashCode();
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (ServiceName.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(ServiceName);
+      }
+      if (MethodName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(MethodName);
+      }
+      if (RequestId != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(RequestId);
+      }
+      if (Payload.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteBytes(Payload);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (ServiceName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(ServiceName);
+      }
+      if (MethodName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(MethodName);
+      }
+      if (RequestId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(RequestId);
+      }
+      if (Payload.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeBytesSize(Payload);
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(RpcEnvelope other) {
+      if (other == null) {
+        return;
+      }
+      if (other.ServiceName.Length != 0) {
+        ServiceName = other.ServiceName;
+      }
+      if (other.MethodName.Length != 0) {
+        MethodName = other.MethodName;
+      }
+      if (other.RequestId != 0) {
+        RequestId = other.RequestId;
+      }
+      if (other.Payload.Length != 0) {
+        Payload = other.Payload;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 10: {
+            ServiceName = input.ReadString();
+            break;
+          }
+          case 18: {
+            MethodName = input.ReadString();
+            break;
+          }
+          case 24: {
+            RequestId = input.ReadInt32();
+            break;
+          }
+          case 34: {
+            Payload = input.ReadBytes();
             break;
           }
         }

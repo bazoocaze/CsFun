@@ -56,26 +56,31 @@
       <DependentUpon>FormTeste.cs</DependentUpon>
     </Compile>
     <Compile Include="Grpc\Core\AsyncUnaryCall.cs" />
-    <Compile Include="Grpc\Core\BlockingUnaryCall.cs" />
-    <Compile Include="Grpc\Core\CallCredentials.cs" />
     <Compile Include="Grpc\Core\CallInvoker.cs" />
     <Compile Include="Grpc\Core\CallOptions.cs" />
     <Compile Include="Grpc\Core\Channel.cs" />
     <Compile Include="Grpc\Core\ClientBase.cs" />
-    <Compile Include="Grpc\Core\ContextPropagationToken.cs" />
+    <Compile Include="Grpc\Core\Internal\AsyncCall.cs" />
+    <Compile Include="Grpc\Core\Internal\ChannelCallInvoker.cs" />
+    <Compile Include="Grpc\Core\Internal\ServerCallHandler.cs" />
+    <Compile Include="Grpc\Core\Internal\ServerCalls.cs" />
     <Compile Include="Grpc\Core\Marshaller.cs" />
     <Compile Include="Grpc\Core\Metadata.cs" />
     <Compile Include="Grpc\Core\Method.cs" />
     <Compile Include="Grpc\Core\RpcException.cs" />
     <Compile Include="Grpc\Core\ServerCallContext.cs" />
+    <Compile Include="Grpc\Core\ServerMethods.cs" />
     <Compile Include="Grpc\Core\ServerServiceDefinition.cs" />
     <Compile Include="Grpc\Core\Status.cs" />
     <Compile Include="Grpc\Core\StatusCode.cs" />
-    <Compile Include="Grpc\Core\WriteOptions.cs" />
+    <Compile Include="Grpc\Core\Utils\GrpcPreconditions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Protos\MyProtos.cs" />
     <Compile Include="Protos\MyProtosGrpc.cs" />
+    <Compile Include="SearchServiceImpl.cs" />
+    <Compile Include="Grpc\Core\Server.cs" />
+    <Compile Include="Grpc\Core\ServerPort.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
