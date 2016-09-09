@@ -23,7 +23,7 @@ public static class testeConstants
   public static Dictionary<string, string> MAPCONSTANT = new Dictionary<string, string>();
   static testeConstants()
   {
-    MAPCONSTANT["hello"] = "world";
     MAPCONSTANT["goodnight"] = "moon";
+    MAPCONSTANT["hello"] = "world";
   }
 }

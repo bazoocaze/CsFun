@@ -1,0 +1,17 @@
+<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Item">
+  <TemplateData>
+    <DefaultName>GRPC Example</DefaultName>
+    <Name>Google GRPC Example</Name>
+    <Description>Google GRPC Example, including Makefile</Description>
+    <ProjectType>CSharp</ProjectType>
+    <Icon>__TemplateIcon.ico</Icon>
+  </TemplateData>
+  <TemplateContent>
+    <References />
+	<ProjectItem TargetFileName="MyProtos.proto" ReplaceParameters="true">MyProtos.proto</ProjectItem>
+	<ProjectItem TargetFileName="update.bat" ReplaceParameters="true">update.bat</ProjectItem>
+	<ProjectItem TargetFileName="Makefile" ReplaceParameters="true">Makefile</ProjectItem>
+	<ProjectItem TargetFileName="MyProtos.cs" ReplaceParameters="true">MyProtos.cs</ProjectItem>
+	<ProjectItem TargetFileName="MyProtosGrpc.cs" ReplaceParameters="true">MyProtosGrpc.cs</ProjectItem>
+  </TemplateContent>
+</VSTemplate>

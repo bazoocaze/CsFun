@@ -156,3 +156,21 @@ service Calculator {
  * in folders with names gen-<language>. The generated code isn't too scary
  * to look at. It even has pretty indentation.
  */
+
+
+struct SearchRequest {
+	1: optional string FileMask,
+	2: optional string StartPath,
+	3: optional bool   IgnoreErrors,
+}
+
+struct SearchResult {
+	1: optional bool   Found,
+	2: optional string FileName,
+}
+
+ service SearchService {
+	SearchResult Search(1:SearchRequest request) throws (1: InvalidOperation ex),
+	void Delay1(i32 millis);
+	void Delay2(i32 millis);
+ }
