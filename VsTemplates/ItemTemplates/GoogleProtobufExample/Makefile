@@ -1,6 +1,12 @@
 
-PROTOC := ../../packages/Google.Protobuf.Tools.3.0.0/tools/windows_x86/protoc.exe
-ROOTINC := ../../packages/Google.Protobuf.Tools.3.0.0/tools
+GPBTDIR := $(firstword $(wildcard ../../packages/Google.Protobuf.Tools.*))
+
+ifeq (,$(GPBTDIR))
+  $(error Google Protobuffer Tools not found)
+endif
+
+PROTOC  := $(GPBTDIR)/tools/windows_x86/protoc.exe
+ROOTINC := $(GPBTDIR)/tools
 
 MyProtos.cs: MyProtos.proto
 	$(PROTOC) -I $(ROOTINC) -I . $< --csharp_out .
