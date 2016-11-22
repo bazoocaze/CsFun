@@ -14,26 +14,21 @@
 #include "TcpListener.h"
 #include "TcpClient.h"
 #include "StringBuilder.h"
-#include "Print.h"
 #include "Logger.h"
 #include "Debug.h"
+#include "List.h"
+#include "MemoryStream.h"
+#include "Binary.h"
+#include "Fd.h"
+#include "IO.h"
 
 
-class CMyStdOut : public Print
+class Item
 {
-public:
-   CMyStdOut() {
-
-   }
-
-   virtual size_t Write(uint8_t c) {
-      putchar(c);
-      return 1;
-   }
 };
 
 
-CMyStdOut MyStdOut;
+List<Item> m_items;
 
 
 int OutOffMemoryHandler(const char *modulo, const char *assunto, int tamanho)
@@ -93,12 +88,12 @@ void TesteDnsForHost(const char * hostname)
 	printf("Dns result for %s\n", hostname);
 	if(list.Count == 0)
 	{
-		printf(" Error: %d-%s\n", Dns::LastError, Dns::GetMsgError());
+		printf(" Error: %d-%s\n", Dns::LastErr, Dns::GetLastErrMsg());
 	}
 	for(int n = 0; n < list.Count; n++)
 	{
 		printf(" IP[%d]: ", n);
-		MyStdOut.print((IPAddress)list.Items[n]);
+		StdOut.print((IPAddress)list.Items[n]);
 		printf("\n");
 	}
 }
@@ -129,14 +124,6 @@ IPAddressList GetList()
 void TesteIPAddress()
 {
 	printf("Teste:begin()\n");
-	IPAddress addr = IPAddress("192.1.1.50");
-	IPEndPoint localEP = IPEndPoint("192.1.1.60", 12345);
-	// MyStdOut.println(addr);
-	// MyStdOut.println(localEP);
-	// MyStdOut.println(IPAddress::Any);
-	// MyStdOut.println(IPAddress::Loopback);
-	// MyStdOut.println(IPAddress::IPv6Loopback);
-	// IPAddressList list = GetList();
 	IPAddressList list;
 	list.Add(IPAddress::Any);
 	list.Add(IPAddress::Loopback);
@@ -145,7 +132,7 @@ void TesteIPAddress()
 	for(int n = 0; n < list.Count; n++)
 	{
 		printf("Item[%d]: ", n);
-		MyStdOut.print((IPAddress)list.Items[n]);
+		StdOut.print((IPAddress)list.Items[n]);
 		printf("\n");
 	}
 	printf("Teste:end()\n");
@@ -164,8 +151,8 @@ int count = 10;
 			TcpClient client;
 			if(listener.Accept(client))
 			{
-				client.println("Alfa");
-				client.println("Bravo");
+				// client.println("Alfa");
+				// client.println("Bravo");
 				client.Close();
 			}
 		}
@@ -182,14 +169,24 @@ void TesteCliente()
 	delay(1000);
 	if(client.IsReady())
 	{
+		Stream * s = client.GetStream();
+		StreamWriter sw = StreamWriter(s);
+		StreamReader sr = StreamReader(s);
 		printf("Connected\n");
 		char linha[1000];
-		client.println("GET /index.html HTTP/1.0");
-		client.println("");
+		sw.println("GET /index.html HTTP/1.0");
+		sw.println("");
 		delay(100);
-		int lidos = client.ReadBytesUntil('\n', linha, sizeof(linha));
-		linha[lidos] = 0;
-		printf("Lidos:[%s]\n", linha);
+		while(true)
+		{
+			int lidos = sr.ReadLine(linha, sizeof(linha));
+			printf("[lidos=%d]", lidos);
+			if(lidos < 0)
+			{
+				break;
+			}
+			printf("[linha=%s]\n", linha);
+		}
 	}
 	else
 	{
@@ -204,35 +201,73 @@ void TesteSb()
 	IPEndPoint localEP = IPEndPoint("192.1.1.60", 12345);
 	StringBuilder sb;
 	sb.print(localEP);
-	printf("sb=[%s]\n", sb.GetStr());
+	String s = sb.GetString();
+	printf("sb=[%s]\n", s.c_str);
 }
 
 
 void TesteHexDump()
 {
 char msg[] = "the quick brown for jumps over the lazy dog";
-	Debug::HexDump(MyStdOut, msg, sizeof(msg));
+	Debug::HexDump(StdOut, msg, sizeof(msg));
 }
 
 
-Print* p;
+void TesteBinary()
+{
+MemoryStream stream;
+BinaryWriter writer(&stream);
+BinaryReader reader(&stream);
+	writer.WriteInt32(42);
+	writer.WriteString("olvebra industrial sa", 128);
+	writer.WriteInt32(12345);
+
+int val1;
+String val2;
+int val3;
+	reader.TryReadInt32(&val1);
+	reader.TryReadString(val2, 16);
+	reader.TryReadInt32(&val3);
+	reader.TryReadInt32(&val3);
+
+	Console.printf("\nval1=[%d], val2=[%z], val3=[%d], eof=%d, error=%d\n", val1, &val2, val3, reader.Eof, reader.Error);
+}
+
+
+void TesteFileStream()
+{
+FileStream fs;
+StreamWriter sw;
+
+	if(!FileStream::Create("/etc/teste.txt", fs))
+	{
+		Logger::LogMsg(LEVEL_ERROR, "Falha criando o arquivo: %s", fs.GetLastErrMsg());
+		return;
+	}
+
+	sw = &fs;
+	
+
+	sw.println("Teste");
+	
+	Logger::LogMsg(LEVEL_INFO, "sw.LastErr:%d-%z", sw.GetLastErr(), sw.GetLastErrMsg());
+}
 
 
 int main(int argc, char **argv)
 {
+
 	printf("Inicio\n");	
 	Logger::LogLevel = LEVEL_VERBOSE;
-	
-	p = &MyStdOut;
 
-	TesteIPAddress();
-	TesteDns();
+	// TesteIPAddress();
+	// TesteDns();
 	// TesteListener();
-	// TesteCliente();
-	TesteSb();
+	TesteCliente();
+	// TesteSb();
 	// TesteHexDump();
-
-	Socket sock = 13;
+	// TesteBinary();
+	TesteFileStream();
 	
 	printf("Fim\n");	
 	return 0;

@@ -2,8 +2,9 @@
  * File....: Ptr.h
  * Author..: Jose Ferreira
  * Date....: 2016/11/18 - 13:39
- * Purpose.: Automatic managment of mem and fd pointers.
+ * Purpose.: Automatic managment of dynamic memory and fd pointers.
  */
+
 
 #pragma once
 
@@ -14,46 +15,54 @@ typedef struct MemPtr_s MemPtr_t;
 typedef struct FdPtr_s FdPtr_t;
 
 
-/* Automatic management of mem (malloc) pointers by reference counting.
-   The data is automatic freed via free() call when needed. */ 
+/* Automatic management of dynamic memory (malloc/realloc) pointers using reference counting.
+ * The data is automatic freed via free() call when needed. */ 
 class MemPtr
 {
 private:
+	// Pointer to the internal data pointer and reference counter.
 	MemPtr_t * ref;
 
 protected:
+	// Increments the reference counter for the data pointer.
 	void add();
+	
+	/* Decrements the reference counter for the data pointer.
+	 * Free the data pointer if the counter reaches 0 references. */
 	void release();
 
 public:
-	// // Cached read-only copy of the managed pointer
-	// void * Data;
-	
 	// Default empty constructor
 	MemPtr();
 
-	// Constructor for automatic management of the data pointer
+	// Constructor for automatic management of the dynamic data pointer *data*.
 	MemPtr(void * data); 
 
-	// Copy constructor
+	// Copy constructor. Copy and increments the reference.
 	MemPtr(const MemPtr& other);
 
-	// Copy assignment
+	// Copy assignment. Release, copy and increments the reference.
 	MemPtr& operator=(const MemPtr& other);
 
-	// Default destructor
+	// Default destructor. Release the reference.
 	~MemPtr();
 
-	// Clear/release the managed data, freeing the buffer if the reference count reaches 0
+	/* Clear/release the managed data.
+	 * Free the buffer if the reference count reaches 0 */
 	void Clear();
 
-	// Release the current managed data and begin management for the new data
+	// Release the current managed data and begin management for the new data.
 	void Set(void * data);
 
-	bool Realloc(int newSize);
+	// Resize the managed data pointer.
+	bool Resize(int newSize);
 
+	/* Changes the current data pointer reference to the new reference,
+	 * without altering the reference count. (DANGER)*/	
 	void ChangeTo(void * data);
 
+	/* Return the managed data pointer.
+	 * The pointer is valid until freed or the next resize (Resize). */
 	void * Get() const;
 };
 
@@ -71,29 +80,31 @@ protected:
 	void release();
 
 public:
-	// Cached read-only copy of the managed pointer
+	// Cached read-only copy of the managed file descriptor.
 	int  Fd;
 
-	// Default empty constructor
+	// Default empty constructor.
 	FdPtr();
-	// Constructor for automatic management of the fd descriptor
+	
+	// Constructor for automatic management of the fd descriptor.
 	FdPtr(int fd);
-	// Copy constructor
+	
+	// Copy constructor.
 	FdPtr(const FdPtr& other);
 
-	// Copy assignment
+	// Copy assignment.
 	FdPtr& operator=(const FdPtr& other);
 
-	// Automatic return Fd on conversion to int
+	// Automatic return Fd on conversion to int.
 	operator int() const { return Fd; }
 
-	// Default destructor
+	// Default destructor.
 	~FdPtr();
 
-	// Release the managed fd, closing the fd if the reference count reaches 0
+	// Release the managed fd, closing the fd if the reference count reaches 0.
 	void Close();
 
-	// Release the current fd and begin management for the new fd
+	// Release the current fd and begin management for the new fd.
 	void Set(int fd);
 };
 

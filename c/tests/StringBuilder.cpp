@@ -1,23 +1,34 @@
 
 #include "StringBuilder.h"
-#include "Print.h"
 #include "Logger.h"
 
 
-size_t StringBuilder::Write(uint8_t c)
+int StringBuilder::Length()
+{
+	return m_buffer.Length();
+}
+
+
+int StringBuilder::Write(uint8_t c)
 {
 	m_buffer.Write(c);
 	return 1;
 }
 
-size_t StringBuilder::Write(uint8_t * buffer, size_t size)
+int StringBuilder::Write(uint8_t * buffer, int size)
 {
 	m_buffer.Write(buffer, 0, size);
 	return size;
 }
 
+// const char * StringBuilder::GetStr()
+// {
+// 	return m_buffer.GetStr();
+// }
 
-const char * StringBuilder::GetStr()
+String StringBuilder::GetString()
 {
-	return m_buffer.GetStr();
+String ret = m_buffer.GetString();
+	m_buffer.Clear();
+	return ret;
 }

@@ -1,16 +1,18 @@
 /*
- * Arquivo....: Logger.h
- * Autor......: José Ferreira - olvebra
- * Data.......: 10/08/2015 - 15:58
- * Objetivo...: Logging de mensagens.
+ * File......: Logger.h
+ * Author....: Jose Ferreira
+ * Date......: 2015/08/10 - 15:58
+ * Purpose...: Message logging.
  */
 
 
 #pragma once
 
-#include "Print.h"
+
+#include "Text.h"
 
 
+// Severity level of a log message.
 enum LogLevelEnum {
 	LEVEL_VERBOSE   = 0,
 	LEVEL_DEBUG     = 1,
@@ -22,13 +24,26 @@ enum LogLevelEnum {
 };
 
 
+// Gets a textual description for the enum value of the severity level.
+const char * LogLevelStr(LogLevelEnum level);
+
+// Gets a textual description for severity level.
 const char * LogLevelDesc(LogLevelEnum level);
 
 
+// Message logging facilitie
 class Logger
 {
 public:
-	static Print*        Default;
+	// Default logger writer
+	static TextWriter*   Default;
+	
+	/* Minimum message severity for logging.
+	 * Message below this severity level are discarded. */
 	static LogLevelEnum  LogLevel;
-	static void          LogMsg(LogLevelEnum nivel, const char * fmt, ...);
+	
+	/* Logs a message with the severity indicated to the default logger.
+	 * Message below the *Logger::LogLevel* severity are discarded without
+	 * logging. */
+	static void LogMsg(LogLevelEnum nivel, const char * fmt, ...);
 };

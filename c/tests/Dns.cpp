@@ -28,19 +28,24 @@
 #include "IPAddress.h"
 
 
-int Dns::LastError = 0;
+int Dns::LastErr = RET_OK;
 
 
 
-cstr Dns::GetMsgError()
+cstr Dns::GetLastErrMsg()
 {
-	return gai_strerror(Dns::LastError);
+	return gai_strerror(Dns::LastErr);
 }
 
 
 void Dns::LogErr(cstr msg)
 {
-	printf("DnsError: %s - err %d - %s\n", msg, Dns::LastError, GetMsgError());
+	Logger::LogMsg(
+		LEVEL_WARN, 
+		"DnsError: %s - err %d - %s\n",
+		msg,
+		LastErr,
+		GetLastErrMsg());
 }
 
 
@@ -75,7 +80,7 @@ int ret;
 
       ret = getaddrinfo(hostName, NULL, &hints, &dnsResult);
       if (ret != RET_OK) {
-         Dns::LastError = ret;
+         Dns::LastErr = ret;
          return retList;
       }
 
@@ -85,6 +90,8 @@ int ret;
 			IPAddress addr = IPAddress(sockAddr);
 			retList.Add(addr);
       }
+	  
+	  Dns::LastErr = RET_OK;
 
       /* libera os recursos da pesquisa DNS */
       freeaddrinfo(dnsResult);
@@ -93,14 +100,14 @@ int ret;
 		if(addr.GetSockAddr().IsValid())
 		{
 			retList.Add(addr);
+			Dns::LastErr = RET_OK;
 		}
 		else
 		{
-			Dns::LastError = -1;
+			Dns::LastErr = -1;
 		}
 	}
-
-	Dns::LastError = RET_OK;
+	
 	return retList;
 }
 

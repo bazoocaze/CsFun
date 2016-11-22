@@ -176,7 +176,9 @@ bool CodedInputStream::ReadBytes(char * buffer, int offset, int size)
 
 void CodedInputStream::DiscardBytes(int size)
 {
-	return m_buffer->DiscardBytes(size);
+	m_buffer->DiscardBytes(size);
+	// TODO: test the DiscardBytes return value
+	return;
 }
 
 

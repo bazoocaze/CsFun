@@ -32,9 +32,7 @@ ByteBuffer::ByteBuffer(int initialCapacity)
 
 void ByteBuffer::Clear()
 {
-	m_Length = 0;
-	m_ReadPos = 0;
-	m_WritePos = 0;
+	Init();
 }
 
 
@@ -76,7 +74,7 @@ int ByteBuffer::ReadByte()
 {
 int ret;
 vstr ptr = (vstr)m_ptr.Get();
-	if(m_Length == 0) return -1;
+	if(m_Length == 0) return INT_EOF;
 	ret = (unsigned char)ptr[m_ReadPos];
 	m_ReadPos++;
 	m_Length--;
@@ -112,12 +110,12 @@ int newSize = m_Capacity;
 	while(newSize < size)
 		newSize = newSize * 2;
 
-	Logger::LogMsg(LEVEL_VERBOSE,
-		"ByteBuffer/Resize: from %d to %d",
-		m_Capacity,
-		newSize);
+	// Logger::LogMsg(LEVEL_VERBOSE,
+	// 	"ByteBuffer/Resize: from %d to %d",
+	// 	m_Capacity,
+	// 	newSize);
 
-	if(!m_ptr.Realloc(newSize))
+	if(!m_ptr.Resize(newSize))
 	{
 		OutOffMemoryHandler("ByteBuffer", "resize", newSize);
 		return RET_ERROR;
@@ -143,12 +141,13 @@ vstr ptr = (vstr)m_ptr.Get();
 }
 
 
-void ByteBuffer::DiscardBytes(int discardBytes)
+int ByteBuffer::DiscardBytes(int discardBytes)
 {
-	if(discardBytes <= 0)       return;
+	if(discardBytes <= 0)       return 0;
 	if(discardBytes > m_Length) discardBytes = m_Length;
 	m_ReadPos += discardBytes;
 	m_Length -= discardBytes;
+	return m_Length;
 }
 
 
@@ -252,6 +251,22 @@ vstr ptr;
 }
 
 
+String ByteBuffer::GetString()
+{
+vstr ptr;
+	Resize(m_WritePos + 1);
+	ptr = (vstr)m_ptr.Get();
+	ptr[m_WritePos] = 0;	
+	return String(m_ptr, &ptr[m_ReadPos]);
+}
+
+
+MemPtr ByteBuffer::GetMemPtr()
+{
+	return m_ptr;
+}
+
+
 char * ByteBuffer::Ptr() const
 {
 	return (vstr)m_ptr.Get();
@@ -271,14 +286,30 @@ BytePtr::BytePtr()
 }
 
 
-BytePtr::BytePtr(char * ptr, int size)
+BytePtr::BytePtr(uint8_t * ptr, int size)
 {
 	Ptr   = ptr;
 	Size  = size;
 }
 
 
-BytePtr::BytePtr(MemPtr memPtr, char * ptr, int size)
+BytePtr::BytePtr(uint8_t * ptr, int offset, int size)
+{
+	Ptr   = &ptr[offset];
+	Size  = size;
+}
+
+
+BytePtr::BytePtr(MemPtr memPtr, int offset, int size)
+{
+	m_ptr = memPtr;
+	Ptr = (uint8_t*)m_ptr.Get();
+	Ptr   = &Ptr[offset];
+	Size = size;
+}
+
+
+BytePtr::BytePtr(MemPtr memPtr, uint8_t * ptr, int size)
 {
 	m_ptr = memPtr;
 	Ptr   = ptr;

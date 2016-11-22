@@ -1,22 +1,39 @@
+/*
+ * File....: StringBuilder.h
+ * Author..: Jose Ferreira
+ * Date....: 2016-11-22 18:29
+ * Purpose.: String builder helper.
+ * */
 
 
 #pragma once
 
 
-#include "Print.h"
 #include "ByteBuffer.h"
+#include "Text.h"
 
 
-class StringBuilder : public Print
+/* String builder helper writer.
+ * Use the GetString() method to convert the builder to a String.
+ * (the content of the builder is empty after the call). */
+class StringBuilder : public TextWriter
 {
 private:
+	// Internal buffer
 	ByteBuffer m_buffer;
 
 public:
+	// Length of the data in the builder
+	int Length();
 
-	size_t Write(uint8_t c);
-	size_t Write(uint8_t * buffer, size_t size);
+	int Write(uint8_t c);
+	int Write(uint8_t * buffer, int size);
 
-	const char * GetStr();
+	// const char * GetStr();
+	
+	/* Zero-terminate and return the string built.
+	 * This operation drains the buffer to the
+	 * empty state. */
+	String GetString();
 };
 

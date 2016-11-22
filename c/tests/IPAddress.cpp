@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 
 #include "IPAddress.h"
-#include "Print.h"
+#include "Stream.h"
 #include "Util.h"
 #include "Logger.h"
 
@@ -51,9 +51,13 @@ void SockAddr::SetPort(int port)
 {
 	int f = GetFamily();
 	if(f == AF_INET)
+	{
 		m_addr.in4.sin_port = htons(port);
-	else if(f = AF_INET6)
+	}
+	else if(f == AF_INET6)
+	{
 		m_addr.in6.sin6_port = htons(port);
+	}
 }
 
 int SockAddr::GetPort() const
@@ -61,7 +65,7 @@ int SockAddr::GetPort() const
 	int f = GetFamily();
 	if(f == AF_INET)
 		return ntohs(m_addr.in4.sin_port);
-	else if(f = AF_INET6)
+	else if(f == AF_INET6)
 		return ntohs(m_addr.in6.sin6_port);
 	return 0;
 }
@@ -133,7 +137,7 @@ const SockAddr IPAddress::GetSockAddr() const
 	return m_sockaddr;
 }
 
-size_t IPAddress::printTo(Print &p) const
+int IPAddress::printTo(TextWriter &p) const
 {
 int f = m_sockaddr.GetFamily();
 char dst[MAX(INET_ADDRSTRLEN, INET6_ADDRSTRLEN)];
@@ -215,7 +219,7 @@ IPAddress IPEndPoint::GetAddress() const
 	return IPAddress(m_sockaddr);
 }
 
-size_t IPEndPoint::printTo(Print &p) const
+int IPEndPoint::printTo(TextWriter &p) const
 {
 int ret = 0;
 IPAddress ipAddress;
@@ -254,9 +258,8 @@ IPAddressList::IPAddressList()
 void IPAddressList::Add(const IPAddress& address)
 {
 size_t size;
-void *newptr;
 	size = (Count + 1)*sizeof(IPAddress);
-	if(!m_Items.Realloc(size))
+	if(!m_Items.Resize(size))
 	{
 		OutOffMemoryHandler("IPAddressList", "realloc", size);
 		return;
@@ -265,4 +268,3 @@ void *newptr;
 	Items[Count] = address;
 	Count++;
 }
-

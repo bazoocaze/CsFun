@@ -13,6 +13,8 @@
 #include "Logger.h"
 #include "Config.h"
 #include "Util.h"
+#include "Text.h"
+#include "IO.h"
 
 
 const char* LogLevelStr(LogLevelEnum level) {
@@ -39,15 +41,7 @@ const char* LogLevelDesc(LogLevelEnum level) {
 }
 
 
-class StdErrLogger : public Print
-{
-	size_t Write(uint8_t c) { return write(2, &c, 1); }
-	size_t Write(const uint8_t *buffer, size_t size) { return write(2, buffer, size); }
-};
-
-
-StdErrLogger stdErrLogger;
-Print* Logger::Default = &stdErrLogger;
+TextWriter*  Logger::Default  = &StdErr;
 LogLevelEnum Logger::LogLevel = LEVEL_VERBOSE;
 
 
@@ -56,17 +50,16 @@ void Logger::LogMsg(LogLevelEnum level, const char * fmt, ...)
 	va_list ap;
 	va_start(ap, fmt);
 
-	if(Default == NULL)
-	{
-		Default = &stdErrLogger;
-	}
+	if(Default == NULL) return;
 
 	if(level < LEVEL_VERBOSE) level = LEVEL_INFO;
 	if(level > LEVEL_FATAL) level = LEVEL_INFO;
 
 	if(level >= LogLevel) {
-		util_printf(Default, "[%s] ", LogLevelDesc(level));
-		util_printf(Default, fmt, ap);
+		Default->printf("[%s] ", LogLevelDesc(level));
+		Default->printf(fmt, ap);
+		// util_printf(Default, "[%s] ", LogLevelDesc(level));
+		// util_printf(Default, fmt, ap);
 		Default->println();
 	}
 

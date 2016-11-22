@@ -13,8 +13,8 @@
 
 #include "Util.h"
 #include "Config.h"
-#include "Print.h"
 #include "Logger.h"
+#include "Stream.h"
 
 
 #define PRINTF_SUPPORTS_FLOAT      0
@@ -74,7 +74,7 @@ int get_uptime() {
 // ----------------------------------------
 
 
-int util_itoa(Print *dest, unsigned long valor, int basen, int padsize, int zeropad, int lalign, int comSinal)
+int util_itoa(TextWriter *dest, unsigned long valor, int basen, int padsize, int zeropad, int lalign, int comSinal)
 {
 char stack[64 + padsize];
 char * sp = stack;
@@ -123,7 +123,7 @@ int size = 0;
 }
 
 
-int util_printf(Print *print, const char* fmt, ...) {
+int util_printf(TextWriter *print, const char* fmt, ...) {
 va_list ap;
 int ret;
 	va_start(ap, fmt);
@@ -133,7 +133,7 @@ int ret;
 }
 
 
-int util_printfln(Print *print, const char* fmt, ...) {
+int util_printfln(TextWriter *print, const char* fmt, ...) {
 va_list ap;
 int ret;
 	va_start(ap, fmt);
@@ -144,12 +144,12 @@ int ret;
 }
 
 
-int util_printfln(Print *dest, const char* fmt, va_list ap) {
+int util_printfln(TextWriter *dest, const char* fmt, va_list ap) {
 	return util_printf(dest, fmt, ap) + dest->println();
 }
 
 
-int util_printf(Print *dest, const char* fmt, va_list ap) {
+int util_printf(TextWriter *writer, const char* fmt, va_list ap) {
 int size = 0;
 int state = 0;
 int argZero;
@@ -178,7 +178,7 @@ double valorf;
 				argDecs = 2;
 				continue;
 			}
-			size += dest->Write(c);
+			size += writer->Write(c);
 			continue;
 		}
 
@@ -214,34 +214,34 @@ double valorf;
 			case 'c':
 				// HACK: va_arg nao funcionando para (char)
 				charVal = (char)va_arg(ap, int);
-				size += dest->Write((char)charVal);
+				size += writer->Write((char)charVal);
 				break;
 			case 'd':
 				valor = va_arg(ap, int);
-				size += util_itoa(dest, valor, 10, argSize, argZero, argLAlign, 1);
+				size += util_itoa(writer, valor, 10, argSize, argZero, argLAlign, 1);
 				break;
 			case 'o':
 				valor = va_arg(ap, int);
-				size += util_itoa(dest, valor, 8, argSize, argZero, argLAlign, 0);
+				size += util_itoa(writer, valor, 8, argSize, argZero, argLAlign, 0);
 				break;
 			case 'b':
 				valor = va_arg(ap, int);
-				size += util_itoa(dest, valor, 2, argSize, argZero, argLAlign, 0);
+				size += util_itoa(writer, valor, 2, argSize, argZero, argLAlign, 0);
 				break;
 			case 'u':
 				// TODO: printf: tratar unsigned
 				valor = va_arg(ap, int);
-				size += util_itoa(dest, valor, 10, argSize, argZero, argLAlign, 0);
+				size += util_itoa(writer, valor, 10, argSize, argZero, argLAlign, 0);
 				break;
 			case 'p':
 			case 'x':
 				valor = va_arg(ap, int);
-				size += util_itoa(dest, valor, 16, argSize, argZero, argLAlign, 0);
+				size += util_itoa(writer, valor, 16, argSize, argZero, argLAlign, 0);
 				break;
 #if PRINTF_SUPPORTS_FLOAT
 			case 'f':
 				valorf = va_arg(ap, double);
-				size += dest->print(valorf, argDecs);
+				size += writer->print(valorf, argDecs);
 				break;
 #endif
 			case 's':
@@ -250,23 +250,23 @@ double valorf;
 
 				if(!argLAlign)
 					for(int n=0; n < (argSize - valor); n++)
-						size += dest->Write(' ');
+						size += writer->Write(' ');
 
-				size += dest->Write((uint8_t*)str, valor);
+				size += writer->Write((uint8_t*)str, valor);
 
 				if(argLAlign)
 					for(int n=0; n < (argSize - valor); n++)
-						size += dest->Write(' ');
+						size += writer->Write(' ');
 
 				break;
 #if PRINTF_SUPPORTS_PRINTABLE
 			case 'z':
 				pz = va_arg(ap, Printable *);
-				pz->printTo(*dest);
+				size += pz->printTo(*writer);
 				break;
 #endif
 			default:
-				size += dest->Write(c);
+				size += writer->Write(c);
 			}
 			state = PRINTF_STATE_NORMAL;
 		}

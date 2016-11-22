@@ -1,8 +1,8 @@
 /*
- * Arquivo....: Util.h
- * Autor......: José Ferreira - olvebra
- * Data.......: 06/08/2015 - 15:42
- * Objetivo...: Utilitários diversos.
+ * Fil.....: Util.h
+ * Author..: Jose Ferreira
+ * Date....: 2015-08-06 - 15:42
+ * Purpose.: Tools.
  */
 
 
@@ -12,7 +12,6 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <stdarg.h>
-// #include "Print.h"
 
 
 #define rotl16(a) ((uint16_t)(a << 1)|(uint16_t)(a >> 15))
@@ -27,14 +26,26 @@
 #endif /* !MAX */
 
 
-// Constantes
+// Constants
 
-#define RET_ERROR (-1)
+// Return OK or NO ERROR
 #define RET_OK     (0)
+
+// Error return
+#define RET_ERR   (-1)
+
+// Error return
+#define RET_ERROR (-1)
+
+// Represents a closed file descriptor
 #define CLOSED_FD (-1)
 
-#define TRUE  (-1)
-#define FALSE (0)
+#define TRUE      (-1)
+#define FALSE     (0)
+
+#define INT_EOF   (-1)
+#define INT_ERR   (-2)
+
 
 
 
@@ -42,10 +53,8 @@ typedef const char * cstr;
 typedef char *       vstr;
 
 
-class Print;
+class TextWriter;
 
-
-// void WDT();                /* Chamadapara reset periódico do watchdog. */
 
 unsigned long int millis();
 void delay(int ms);
@@ -58,14 +67,13 @@ uint16_t simple_hash(cstr text);
 
 uint16_t simple_data_hash(void * data, int size);
 
-int   util_printf(Print *print, const char* fmt, ...);
-int   util_printf(Print *print, const char* fmt, va_list ap);
-int   util_printfln(Print *print, const char* fmt, ...);
-int   util_printfln(Print *print, const char* fmt, va_list ap);
+int   util_printf(TextWriter   *writer, const char* fmt, ...);
+int   util_printf(TextWriter   *writer, const char* fmt, va_list ap);
+int   util_printfln(TextWriter *writer, const char* fmt, ...);
+int   util_printfln(TextWriter *writer, const char* fmt, va_list ap);
 
 #pragma weak OutOffMemoryHandler
 #pragma weak EndProgramHandler 
 
 extern  int  OutOffMemoryHandler(const char *module, const char *subject, int size);
 extern  void EndProgramHandler(const char *module, const char *subject);
-

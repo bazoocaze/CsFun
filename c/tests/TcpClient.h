@@ -1,8 +1,8 @@
 /*
- * Arquivo....: TcpClient.h
- * Autor......: José Ferreira - olvebra
- * Data.......: 12/08/2015 - 20:48
- * Objetivo...: Conexao de rede cliente.
+ * File....: TcpClient.h
+ * Author..: Jose Ferreira
+ * Date....: 2015-08-12 - 20:48
+ * Purpose.: Network client connection.
  */
 
 
@@ -15,49 +15,71 @@
 #include "IPAddress.h"
 
 
-/* Representa uma conexao cliente de rede TCP IPv4 */
-class TcpClient : public Stream
+/* Represents a TCP network client connection. */
+class TcpClient 
 {
 private:
-	/* finaliza a conexao atual com o estado e erro informados */
+	/* Finalize the current connection setting the new state and errorCode. */
 	void InternalClose(ConnectionStateEnum newState, int errorCode);
-	int  ResolveName(const char *hostName, int port, void *targetAddress, int *targetAddressSize);
 	
-protected:	
-	Socket m_sock;
-	ConnectionStateEnum m_state;       /* estado da conexao */
+	// int  ResolveName(const char *hostName, int port, void *targetAddress, int *targetAddressSize);
+	
+protected:
+	// Data stream
+	FdStream m_stream;
+	
+	// Connection socket fd
+	Socket   m_sock;
+	
+	// Connection state
+	ConnectionStateEnum m_state;
 	
 public:
-	/* Atualiza e retorna o estado atual do socket (enum E_ESTADO_CONEXAO) */
+	/* Process/update and returns the current connection state. */
 	ConnectionStateEnum State();
 
+	// Default constructor for a closed connection.
 	TcpClient();
+	
+	// Constructor for an open connection on the fd.
 	TcpClient(int clientfd);
 	
-	/* Ajusta o FD conexao atual */
+	/* Sets the connection fd. */
 	void SetFd(int fd);
-	/* retorna o fd da conexao atual */
+	
+	/* Returns the connection fd. */
 	int  GetFd() const;
-	/* Finaliza a conexao atual */
+	
+	/* Close the connection. */
 	void Close();
 	
-	/* Conecta no servidor e porta informados */
+	/* Try to connect to the host name and port.
+	 * Resolves the host name via DNS if necessary.
+	 * Returns true/false if connected. */
 	bool Connect(const char * hostName, int port);
+	
+	/* Try to connect to the endpoint.
+	 * Returns true/false if connected. */
 	bool Connect(const IPEndPoint& remoteEP);
 
-	/* Retorna TRUE/FALSE se o socket esta conectando ou conectado */
+	/* Returns true/false if the socket is connected or connecting. */
 	int  IsConnected();
-	/* Retorna TRUE/FALSE se o socket esta conectado na outra ponta */
+	
+	/* Returns true/false if the socket is connected to the remote endpoint. */
 	int  IsReady();
 	
-	/* Numero do ultimo erro. Use GetMsgError() para obter a mensagem de erro. */
-	int    LastError;
-	cstr   GetMsgError();
+	/* Last error code, or RET_OK if no error. */
+	int  GetLastErr();
 	
-	size_t Write(uint8_t c);
-	size_t Write(uint8_t *ptr, size_t size);
-	int    Available();
-	int    Read();
-	int    Peek();
-	void   Flush();
+	/* String message for the last error code. */
+	cstr GetLastErrMsg();
+	
+	int  Write(uint8_t c);
+	int  Write(uint8_t *ptr, int size);
+	int  Available();
+	int  Read();
+	int  Peek();
+	// void Flush();
+
+	Stream* GetStream();
 };

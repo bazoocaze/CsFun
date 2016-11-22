@@ -6,7 +6,8 @@
 #include "Ptr.h"
 #include "Protobuf.h"
 #include "TcpClient.h"
-#include "BinaryWriter.h"
+#include "Stream.h"
+#include "Binary.h"
 
 
 class RpcPacket : public IMessage
@@ -104,11 +105,12 @@ public:
 	RpcPacket SendRequest(RpcPacket& request)
 	{
 		int fd = m_client.GetFd();
-		BinaryWriter bw = BinaryWriter(fd);
+		FdStream stream = FdStream(fd);
+		BinaryWriter bw = BinaryWriter(&stream);
 		CodedOutputStream cos = CodedOutputStream(fd);
 		bw.WriteInt32(request.CalculateSize());
 		request.WriteTo(&cos);
-		RpcPacket = WaitResponse(request.Id);
+		RpcPacket resp = WaitResponse(request.Id);
 	}
 };
 

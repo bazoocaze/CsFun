@@ -29,21 +29,21 @@
 
 
 
-TcpClient::TcpClient() : Stream()
+TcpClient::TcpClient()
 {
 	// m_sockfd = CLOSED_FD;
 	m_state = STATE_NOT_CONNECTED;
-	LastError = RET_OK;
+	// LastError = RET_OK;
 }
 
 
-TcpClient::TcpClient(int clientfd) : Stream()
+TcpClient::TcpClient(int clientfd)
 {
 	m_sock.SetFd(clientfd);
-	// m_sockfd = clientfd;
+	m_stream.SetFd(clientfd);
 	Logger::LogMsg(LEVEL_VERBOSE, "TcpClient:create with fd=%d", GetFd());
 	m_state = STATE_CONNECTED;
-	LastError = RET_OK;
+	// LastError = RET_OK;
 }
 
 
@@ -53,11 +53,12 @@ bool TcpClient::Connect(const char * hostName, int port)
 	if(list.Count > 0)
 	{
 		IPEndPoint remoteEP = IPEndPoint((IPAddress)list.Items[0], port);
-		Connect(remoteEP);
+		return Connect(remoteEP);
 	}
 	else
 	{
 		m_state = STATE_DNS_ERROR;
+		return false;
 	}
 }
 
@@ -66,16 +67,12 @@ bool TcpClient::Connect(const IPEndPoint& remoteEP)
 {
 	SockAddr addr = remoteEP.GetSockAddr();
 	
-	int tempfd, ret;
+	int ret;
 
 	m_sock.Close();
+	m_stream.SetFd(CLOSED_FD);
 
-	// if (m_sockfd != CLOSED_FD) {
-	// 	// TODO: tratar a situação: socket já criado
-	// 	return;
-	// }
-
-	LastError = RET_OK;
+	// LastError = RET_OK;
 	m_state = STATE_CONNECT_ERROR;
 
 	if(!addr.IsValid())
@@ -87,7 +84,7 @@ bool TcpClient::Connect(const IPEndPoint& remoteEP)
 	/* cria o socket */
 	if(!m_sock.Create(addr.GetFamily(), SOCK_STREAM))
 	{
-		LastError = m_sock.LastError;
+		// LastError = m_sock.LastErr;
 		return false;
 	}
 
@@ -103,13 +100,13 @@ bool TcpClient::Connect(const IPEndPoint& remoteEP)
 		else
 			m_state = STATE_CONNECTING;
 		errno = RET_OK;
-		LastError = RET_OK;
-		// m_sockfd = tempfd;
+		m_sock.LastErr = RET_OK;
 		Logger::LogMsg(LEVEL_VERBOSE, "TcpClient:connected with fd=%d", GetFd());
 		return true;
 	} else {
-		LastError = errno;
+		ret = errno;
 		m_sock.Close();
+		m_sock.LastErr = ret;
 		return false;
 	}
 }
@@ -121,14 +118,14 @@ void TcpClient::Close()
 }
 
 
-void TcpClient::InternalClose(ConnectionStateEnum novoEstado, int errorCode)
+void TcpClient::InternalClose(ConnectionStateEnum newState, int errorCode)
 {
 	if(!m_sock.IsClosed())	{
 		Logger::LogMsg(LEVEL_VERBOSE, "TcpClient:closefd(%d)", GetFd());
 		m_sock.Close();
 	}
-	LastError = errorCode;
-	m_state = novoEstado;
+	m_sock.LastErr = errorCode;
+	m_state = newState;
 }
 
 
@@ -145,7 +142,7 @@ ConnectionStateEnum TcpClient::State()
 		
 		if(m_sock.IsWritable())
 		{		
-			int ret = m_sock.GetError();
+			int ret = m_sock.GetSockError();
 			if(ret != RET_OK) {
 				InternalClose(STATE_CONNECT_ERROR, ret);
 			} else {
@@ -189,66 +186,17 @@ int TcpClient::IsReady()
 }
 
 
-const char * TcpClient::GetMsgError()
+int TcpClient::GetLastErr()
 {
-	int e = State();
-	if(e == STATE_DNS_ERROR)
-		return gai_strerror(LastError);
-	return strerror(LastError);
+	return m_sock.LastErr;
 }
 
 
-int TcpClient::ResolveName(const char *nome, int porta, void *enderDest, int *enderSize)
+const char * TcpClient::GetLastErrMsg()
 {
-int ret;
-
-	memset(enderDest, 0, sizeof(sockaddr));
-	*enderSize=0;
-	
-	if(TCP_DNS_USE_getaddrinfo) {
-		/* resolve o nome do servidor usando DNS */
-		
-		struct addrinfo *dnsResult, *rp;
-		struct addrinfo hints;
-		
-		memset(&hints, 0, sizeof(hints));
-		hints.ai_family = AF_INET;
-		hints.ai_socktype = SOCK_STREAM;
-
-		ret = getaddrinfo(nome, NULL, &hints, &dnsResult);
-		if (ret != RET_OK) {
-			this->LastError = ret;
-			return FALSE;
-		}
-		
-		/* Para cada ip/dns encontrado */
-		for (rp = dnsResult; rp != NULL; rp = rp->ai_next) {
-			if (rp->ai_family == AF_INET) {
-				/* resultado IPv4: ajusta o numero da porta */
-				sockaddr_in *in = (sockaddr_in*)rp->ai_addr;
-				in->sin_port = htons(porta);
-				*enderSize = sizeof(sockaddr_in);
-				memcpy(enderDest, in, sizeof(sockaddr_in));
-				break;
-			}
-		}
-		
-		/* libera os recursos da pesquisa DNS */
-		freeaddrinfo(dnsResult);
-		
-		return (enderSize > 0);
-		
-	} else {
-		
-		/* resolve tratando como IP direto */
-		sockaddr_in *in = (sockaddr_in *)(enderDest);
-		*enderSize = sizeof(sockaddr_in);
-		in->sin_family = AF_INET;
-		in->sin_port = htons(porta);
-		in->sin_addr.s_addr = inet_addr(nome);
-		
-		return (in->sin_addr.s_addr != 0xFFFF);
-	}
+int e = State();
+	if(e == STATE_DNS_ERROR) return "DNS error";
+	return m_sock.GetLastErrMsg();
 }
 
 
@@ -258,7 +206,7 @@ int TcpClient::GetFd() const
 }
 
 
-size_t TcpClient::Write(uint8_t c) {
+int TcpClient::Write(uint8_t c) {
 	if(State() == STATE_CONNECTED) {
 		if(m_sock.IsWritable())
 			return write(GetFd(), &c, 1);
@@ -267,7 +215,7 @@ size_t TcpClient::Write(uint8_t c) {
 }
 
 
-size_t TcpClient::Write(uint8_t *ptr, size_t size) {
+int TcpClient::Write(uint8_t *ptr, int size) {
 	if(State() == STATE_CONNECTED) {
 		if(m_sock.IsWritable())
 			return write(GetFd(), ptr, size);
@@ -298,20 +246,20 @@ int lido;
 	return -1;
 }
 
-
+/*
 int TcpClient::Peek() {
 	Logger::LogMsg(LEVEL_ERROR, "TcpClient::Peek() not implemented");
 	return -1;
-}
+} */
 
-
+/*
 void TcpClient::Flush() {
 char buffer[16];
 int lidos = 1;
 	while(State() == STATE_CONNECTED && m_sock.IsReadable() && lidos) {
 		lidos = read(GetFd(), buffer, sizeof(buffer));
 	}
-}
+} */
 
 
 void TcpClient::SetFd(int fd)
@@ -320,6 +268,14 @@ void TcpClient::SetFd(int fd)
 		return;
 	InternalClose(STATE_NOT_CONNECTED, RET_OK);
 	m_sock.SetFd(fd);
+	m_stream.SetFd(fd);
 	m_state = STATE_CONNECTED;
 	m_state = State();
+}
+
+
+Stream* TcpClient::GetStream()
+{
+	m_stream.SetFd(m_sock.GetFd());
+	return &m_stream;
 }

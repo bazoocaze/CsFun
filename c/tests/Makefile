@@ -1,21 +1,23 @@
 
 
-CXXFLAGS := -g
-OBJS := Config.o Logger.o ByteBuffer.o Print.o Stream.o TcpClient.o TcpListener.o Dns.o IPAddress.o Socket.o StringBuilder.o Util.o Debug.o Ptr.o Fd.o Protobuf.o BinaryWriter.o
+CXXFLAGS := -g -pthread -L.
+OBJS := Config.o Logger.o ByteBuffer.o Stream.o TcpClient.o TcpListener.o Dns.o IPAddress.o Socket.o StringBuilder.o Util.o Debug.o Ptr.o Fd.o Protobuf.o Binary.o Text.o Threading.o
+EXECS := main teste gpb outro
 
 
-all: output teste gpb
+all: $(EXECS)
 
+redo: clean all
 
-output: output.cpp $(OBJS)
+main: main.cpp $(OBJS)
 
 teste: teste.cpp $(OBJS)
 
 gpb: gpb.cpp $(OBJS)
 
-
+outro: outro.cpp $(OBJS)
 
 
 clean:
-	rm -f *.o output teste gpb
+	rm -f *.o $(EXECS)
 

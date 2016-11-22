@@ -83,7 +83,7 @@ void * MemPtr::Get() const
 }
 
 
-bool MemPtr::Realloc(int newSize)
+bool MemPtr::Resize(int newSize)
 {
 	void * curPtr = Get();
 	void * newPtr = realloc(curPtr, newSize);
@@ -115,7 +115,7 @@ void MemPtr::release()
 	if(ref->count > 0) return;
 
 	if(ref) {
-		printf("[MemPtr.free(%p)]", ref->data);
+		// printf("[MemPtr.free(%p)]", ref->data);
 		if(ref->data) free(ref->data);
 		ref->data = NULL;
 		free(ref);

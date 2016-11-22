@@ -29,7 +29,6 @@
 
 TcpListener::TcpListener()
 {
-	LastError = RET_OK;
 }
 
 
@@ -59,12 +58,8 @@ bool TcpListener::Start(const IPAddress& addr, int port)
 
 bool TcpListener::Start(const IPEndPoint& localEP)
 {
-int ret;
-
 	SockAddr addr = localEP.GetSockAddr();
 	m_endpoint = localEP;
-	
-	// m_port = addr.GetPort();
 
 	m_sock.Close();
 
@@ -73,12 +68,9 @@ int ret;
 		/* Invalid endpoint */
 		return false;
 	}
-	
-	LastError = RET_OK;
 
 	if(!m_sock.Create(addr.GetFamily(), SOCK_STREAM))
 	{
-		LastError = m_sock.LastError;
 		LogErr("socket()");
 		return false;
 	}
@@ -89,7 +81,6 @@ int ret;
 	/* bind into address_any and port */
 	if(!m_sock.Bind(addr))
 	{
-		LastError = m_sock.LastError;
 		m_sock.Close();
 		LogErr("bind()");
 		return false;
@@ -97,13 +88,10 @@ int ret;
 
 	if(!m_sock.Listen(1))
 	{
-		LastError = m_sock.LastError;
 		m_sock.Close();
 		LogErr("listen()");
 		return false;
 	}
-	
-	LastError = RET_OK;
 
 	Logger::LogMsg(
 			LEVEL_DEBUG,
@@ -124,15 +112,14 @@ bool TcpListener::Available() const {
 bool TcpListener::InternalAccept(TcpClient& cliente)
 {
 int clientfd;
-
 	clientfd = m_sock.Accept();
 	if(clientfd == RET_ERROR) {
-		LastError = m_sock.LastError;
 		Logger::LogMsg(
 				LEVEL_ERROR,
 				"TcpListener: error accepting client on %z: %d-%s",
 				&m_endpoint,
-				LastError, strerror(LastError));
+				m_sock.LastErr,
+				m_sock.GetLastErrMsg());
 		return false;
 	}
 	Logger::LogMsg(
@@ -169,7 +156,6 @@ void TcpListener::Stop()
 			m_sock.GetFd());
 		m_sock.Close();
 	}
-	LastError = RET_OK;
 }
 
 
@@ -179,9 +165,20 @@ bool TcpListener::IsListening() const
 }
 
 
-const char * TcpListener::GetMsgError() const
+// const char * TcpListener::GetLastErrMsg() const
+// {
+// 	return strerror(LastErr);
+// }
+
+int TcpListener::GetLastErr() const
 {
-	return strerror(LastError);
+	return m_sock.LastErr;
+}
+
+
+const char * TcpListener::GetLastErrMsg() const
+{
+	return m_sock.GetLastErrMsg();
 }
 
 
@@ -193,6 +190,7 @@ void TcpListener::LogErr(const char* msg)
 		&m_endpoint,
 		m_sock.GetFd(),
 		msg,
-		LastError,
-		GetMsgError());
+		m_sock.LastErr,
+		m_sock.GetLastErrMsg());
 }
+
