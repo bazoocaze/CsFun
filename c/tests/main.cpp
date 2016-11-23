@@ -165,14 +165,14 @@ int count = 10;
 void TesteCliente()
 {
 	TcpClient client;
-	client.Connect("sntolvebra", 8080);
+	client.Connect("www.olvebra.com.br", 80);
 	delay(1000);
 	if(client.IsReady())
 	{
+		printf("Connected\n");
 		Stream * s = client.GetStream();
 		StreamWriter sw = StreamWriter(s);
 		StreamReader sr = StreamReader(s);
-		printf("Connected\n");
 		char linha[1000];
 		sw.println("GET /index.html HTTP/1.0");
 		sw.println("");

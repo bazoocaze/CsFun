@@ -1,12 +1,20 @@
-#include <stdio.h>
+/*
+ * File....: Binary.cpp
+ * Author..: Jose Ferreira
+ * Date....: 2016-11-22 21:29
+ * Purpose.: Binary data reader/writer
+ * */
+
+
+
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
-#include <unistd.h>
 
 #include "Binary.h"
 #include "Stream.h"
 #include "Util.h"
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -121,6 +129,7 @@ int BinaryWriter::WriteBytes(const uint8_t * ptr, int size)
 //////////////////////////////////////////////////////////////////////
 
 
+
 BinaryReader::BinaryReader()
 {
 	m_stream = &Stream::Null;
@@ -206,6 +215,7 @@ uint8_t buffer[4];
           (buffer[3] << 24); 
 	return true;
 }
+
 
 bool BinaryReader::TryReadString(String& c, int maxSize)
 {

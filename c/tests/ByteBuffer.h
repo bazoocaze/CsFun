@@ -74,7 +74,7 @@ private:
 	void Init();
 	
 	// Resize internal buffer dynamic memory
-	int  Resize(int size);
+	bool Resize(int size);
 
 public:
 
@@ -85,10 +85,10 @@ public:
 	ByteBuffer(int initialCapacity);
 
 	/* Returns the size of the readable data on the buffer. */
-	int  Length() const;
+	int Length() const;
 	
 	/* Returns the total size of the dynamic allocated memory. */
-	int  Capacity() const;
+	int Capacity() const;
 
 	char * Ptr() const;
 
@@ -100,15 +100,15 @@ public:
 	void Clear();
 
 	/* Write data to the buffer. */
-	int  Write(char c);
+	int Write(char c);
 	
 	/* Write data to the buffer. */
-	int  Write(const void * source, int index, int size);
+	int Write(const void * source, int index, int size);
 	
 	/* Lock an area of the buffer for writting.
 	 * Returns the number of bytes locked and the pointer to the area.
 	 * The area is valid until the next change on the buffer. */
-	int     LockWrite(int size, void ** dest);
+	int LockWrite(int size, void ** dest);
 	
 	/* Lock an area of the buffer for writting.
 	 * Returns pointer to the locked area.
@@ -116,28 +116,28 @@ public:
 	BytePtr LockWrite(int size);
 	
 	// Updates the write cursor to reflect a lock write of *confirmBytes* bytes.
-	void    ConfirmWrite(int confirmBytes);
+	void ConfirmWrite(int confirmBytes);
 
 	/* Read a byte from the buffer. Return the byte read, or INT_EOF if the buffer is empty. */
-	int  ReadByte();
+	int ReadByte();
 	
 	/* Read a block of maximum *size* bytes of data from the buffer.
 	 * Returns the number of bytes read. */
-	int  Read(void * dest, int index, int size);
+	int Read(void * dest, int index, int size);
 	
 	/* Lock an area of the buffer for reading.
 	 * Returns the number of bytes locked for reading.
 	 * The area is valid until the next change on the buffer (read or write). */
-	int  LockRead(void ** dest);
+	int LockRead(void ** dest);
 	
 	/* Lock an area of the buffer for reading, with maximum of *size* bytes.
 	 * Returns the number of bytes locked for reading.
 	 * The area is valid until the next change on the buffer (read or write). */	
-	int  LockRead(int size, void ** dest);
+	int LockRead(int size, void ** dest);
 
 	/* Discards bytes from the read buffer.
 	 * Returns the number of bytes discarded. */
-	int  DiscardBytes(int discardBytes);
+	int DiscardBytes(int discardBytes);
 
 	/* Compress/optmize the dynamic alocated memory. */
 	void Compress();

@@ -1,26 +1,13 @@
 /*
- * Arquivo....: TcpClient.cpp
- * Autor......: José Ferreira - olvebra
- * Data.......: 12/08/2015 - 20:48
- * Objetivo...: Conexao de rede cliente.
+ * Arquivo....: Socket.cpp
+ * Autor......: Jose Ferreira
+ * Data.......: 2016-11-22 - 22:26
+ * Objetivo...: Network sockets.
  */
  
  
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <string.h>
-#include <unistd.h>
 #include <errno.h>
-#include <sys/time.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <errno.h>
-#include <arpa/inet.h>
 
-// #include "comum.h"
 #include "TcpClient.h"
 #include "Config.h"
 #include "Logger.h"

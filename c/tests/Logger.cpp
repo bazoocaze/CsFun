@@ -58,8 +58,6 @@ void Logger::LogMsg(LogLevelEnum level, const char * fmt, ...)
 	if(level >= LogLevel) {
 		Default->printf("[%s] ", LogLevelDesc(level));
 		Default->printf(fmt, ap);
-		// util_printf(Default, "[%s] ", LogLevelDesc(level));
-		// util_printf(Default, fmt, ap);
 		Default->println();
 	}
 

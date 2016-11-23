@@ -1,8 +1,8 @@
 /*
- * Fil.....: Util.h
+ * File....: Util.h
  * Author..: Jose Ferreira
  * Date....: 2015-08-06 - 15:42
- * Purpose.: Tools.
+ * Purpose.: Various tools and utils.
  */
 
 
@@ -72,8 +72,7 @@ int   util_printf(TextWriter   *writer, const char* fmt, va_list ap);
 int   util_printfln(TextWriter *writer, const char* fmt, ...);
 int   util_printfln(TextWriter *writer, const char* fmt, va_list ap);
 
-#pragma weak OutOffMemoryHandler
-#pragma weak EndProgramHandler 
+#define WEAK_ATTR __attribute__((weak))
 
-extern  int  OutOffMemoryHandler(const char *module, const char *subject, int size);
-extern  void EndProgramHandler(const char *module, const char *subject);
+extern void WEAK_ATTR OutOffMemoryHandler(const char *module, const char *subject, int size, int isFatal);
+extern void WEAK_ATTR EndProgramHandler(const char *module, const char *subject);

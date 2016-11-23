@@ -53,4 +53,3 @@ uint8_t * dados = (uint8_t *)ptr;
 	}
 	return ret;
 }
-

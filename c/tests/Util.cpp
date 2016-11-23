@@ -1,8 +1,8 @@
 /*
- * Arquivo....: Util.cpp
- * Autor......: José Ferreira - olvebra
- * Data.......: 06/08/2015 - 15:41
- * Objetivo...: Utilitários diversos.
+ * File.....: Util.cpp
+ * Author...: Jose Ferreira
+ * Date.....: 2015-08-06 - 15:41
+ * Purpose..: Various tools and utils.
  */
 
 
@@ -275,12 +275,13 @@ double valorf;
 }
 
 
-int __attribute__((weak)) OutOffMemoryHandler(const char *module, const char *subject, int size)
+
+void WEAK_ATTR OutOffMemoryHandler(const char *module, const char *subject, int size, int isFatal)
 {
-   Logger::LogMsg(
-      LEVEL_FATAL,
-      "Memory allocation failure in %s/%s for %d bytes",
-      module, subject, size);
-	exit(100);
+	Logger::LogMsg(
+		LEVEL_FATAL,
+		"Memory allocation failure in %s/%s for %d bytes",
+		module, subject, size);
+	if(isFatal)	exit(100);
 }
 

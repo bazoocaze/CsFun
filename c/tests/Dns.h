@@ -16,7 +16,7 @@
 class Dns
 {
 protected:
-	static void LogErr(cstr msg);
+	static void LogErr(cstr msg, cstr extra);
 
 public:
 	// Last dns error code.

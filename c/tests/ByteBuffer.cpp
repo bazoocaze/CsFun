@@ -1,15 +1,14 @@
 /*
- * Arquivo....: ByteBuffer.cpp
- * Autor......: José Ferreira - olvebra
- * Data.......: 10/08/2015 - 15:54
- * Objetivo...: Buffer de memoria flexivel para leitura/escrita
+ * File.....: ByteBuffer.cpp
+ * Author...: Jose Ferreira
+ * Date.....: 2015-08-10 - 15:54
+ * Purpose..: Byte buffer reader/writer
  */
 
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 
 #include "ByteBuffer.h"
 #include "Logger.h"
@@ -38,14 +37,8 @@ void ByteBuffer::Clear()
 
 int ByteBuffer::Write(char c)
 {
-int ret;
-vstr ptr;
-	if(this->m_WritePos + 1 > this->m_Capacity)
-	{
-		ret = Resize(this->m_WritePos + 1);
-		if(ret != RET_OK) return RET_ERROR;
-	}
-	ptr = (vstr)m_ptr.Get();
+	if(!Resize(m_WritePos + 1)) return RET_ERR;
+	vstr ptr = (vstr)m_ptr.Get();
 	ptr[m_WritePos] = c;
 	m_WritePos++;
 	m_Length++;
@@ -55,14 +48,8 @@ vstr ptr;
 
 int ByteBuffer::Write(const void * data, int index, int size)
 {
-int ret;
-vstr ptr;
-	if(this->m_WritePos + size > this->m_Capacity)
-	{
-		ret = Resize(this->m_WritePos + size);
-		if(ret != RET_OK) return RET_ERROR;
-	}
-	ptr = (vstr)m_ptr.Get();
+	if(!Resize(m_WritePos + size)) return RET_ERR;
+	vstr ptr = (vstr)m_ptr.Get();
 	memcpy(ptr + m_WritePos, ((char*)data) + index, size);
 	m_WritePos += size;
 	m_Length += size;
@@ -72,10 +59,9 @@ vstr ptr;
 
 int ByteBuffer::ReadByte()
 {
-int ret;
-vstr ptr = (vstr)m_ptr.Get();
 	if(m_Length == 0) return INT_EOF;
-	ret = (unsigned char)ptr[m_ReadPos];
+	vstr ptr = (vstr)m_ptr.Get();
+	int ret = (unsigned char)ptr[m_ReadPos];
 	m_ReadPos++;
 	m_Length--;
 	return ret;
@@ -84,10 +70,10 @@ vstr ptr = (vstr)m_ptr.Get();
 
 int ByteBuffer::Read(void * dest, int index, int size)
 {
-vstr ptr = (vstr)m_ptr.Get();
-	if(size > m_Length)
-		size = m_Length;
+	if(size < 0) size = 0;
+	if(size > m_Length) size = m_Length;
 	if(size > 0){
+		vstr ptr = (vstr)m_ptr.Get();
 		memcpy(((char*)dest) + index, ptr + m_ReadPos, size);
 	}
 	m_ReadPos += size;
@@ -96,11 +82,14 @@ vstr ptr = (vstr)m_ptr.Get();
 }
 
 
-int ByteBuffer::Resize(int size)
+bool ByteBuffer::Resize(int size)
 {
-int newSize = m_Capacity;
+int newSize;
 
-	if(size < m_Capacity) return RET_OK;
+	if(size < 0)          return false;
+	if(size < m_Capacity) return true;
+	
+	newSize = m_Capacity;
 
 	/* garante um size minimo valido */
 	if(newSize < 16)
@@ -117,7 +106,7 @@ int newSize = m_Capacity;
 
 	if(!m_ptr.Resize(newSize))
 	{
-		OutOffMemoryHandler("ByteBuffer", "resize", newSize);
+		OutOffMemoryHandler("ByteBuffer", "resize", newSize, true);
 		return RET_ERROR;
 	}
 

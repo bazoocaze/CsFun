@@ -1,3 +1,10 @@
+/*
+ * File....: StringBuilder.cpp
+ * Author..: Jose Ferreira
+ * Date....: 2016-11-22 22:30
+ * Purpose.: String builder
+ * */
+
 
 #include "StringBuilder.h"
 #include "Logger.h"
@@ -20,11 +27,6 @@ int StringBuilder::Write(uint8_t * buffer, int size)
 	m_buffer.Write(buffer, 0, size);
 	return size;
 }
-
-// const char * StringBuilder::GetStr()
-// {
-// 	return m_buffer.GetStr();
-// }
 
 String StringBuilder::GetString()
 {

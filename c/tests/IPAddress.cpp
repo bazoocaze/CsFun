@@ -4,6 +4,7 @@
  * Date....: 2016-11-16 - 16:42
  * Purpose.: IPAdress helper classes.
  */
+
  
 #include <stdlib.h>
 #include <string.h>
@@ -15,9 +16,11 @@
 #include "Logger.h"
 
 
+
 //////////////////////////////////////////////////////////////////////
 // SockAddr
 //////////////////////////////////////////////////////////////////////
+
 
 
 SockAddr::SockAddr()
@@ -261,7 +264,7 @@ size_t size;
 	size = (Count + 1)*sizeof(IPAddress);
 	if(!m_Items.Resize(size))
 	{
-		OutOffMemoryHandler("IPAddressList", "realloc", size);
+		OutOffMemoryHandler("IPAddressList", "realloc", size, false);
 		return;
 	}
 	Items = (IPAddress*)m_Items.Get();

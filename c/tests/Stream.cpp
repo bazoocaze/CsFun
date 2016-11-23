@@ -1,8 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
+/*
+ * File....: Stream.cpp
+ * Author..: Jose Ferreira
+ * Date....: 2016-11-22 22:29
+ * Purpose.: Stream of bytes
+ * */
+ 
+ 
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <inttypes.h>
+// #include <unistd.h>
+
 #include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
 #include <errno.h>
 
 #include "Stream.h"

@@ -1,26 +1,26 @@
 /*
- * Arquivo....: TcpClient.cpp
- * Autor......: José Ferreira - olvebra
- * Data.......: 12/08/2015 - 20:48
- * Objetivo...: Conexao de rede cliente.
+ * Files....: TcpClient.cpp
+ * Author...: Jose Ferreira
+ * Date.....: 2015-08-12 - 20:48
+ * Purpose..: Network client connection.
  */
  
  
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/time.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <errno.h>
-#include <arpa/inet.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <sys/types.h>
+// #include <sys/socket.h>
+// #include <netdb.h>
+// #include <string.h>
+// #include <unistd.h>
+// #include <errno.h>
+// #include <sys/time.h>
+// #include <fcntl.h>
+// #include <sys/ioctl.h>
+// #include <arpa/inet.h>
 
-// #include "comum.h"
+#include <errno.h>
+
 #include "TcpClient.h"
 #include "Config.h"
 #include "Logger.h"
@@ -31,9 +31,7 @@
 
 TcpClient::TcpClient()
 {
-	// m_sockfd = CLOSED_FD;
 	m_state = STATE_NOT_CONNECTED;
-	// LastError = RET_OK;
 }
 
 
@@ -43,7 +41,6 @@ TcpClient::TcpClient(int clientfd)
 	m_stream.SetFd(clientfd);
 	Logger::LogMsg(LEVEL_VERBOSE, "TcpClient:create with fd=%d", GetFd());
 	m_state = STATE_CONNECTED;
-	// LastError = RET_OK;
 }
 
 
@@ -72,7 +69,6 @@ bool TcpClient::Connect(const IPEndPoint& remoteEP)
 	m_sock.Close();
 	m_stream.SetFd(CLOSED_FD);
 
-	// LastError = RET_OK;
 	m_state = STATE_CONNECT_ERROR;
 
 	if(!addr.IsValid())
@@ -83,13 +79,10 @@ bool TcpClient::Connect(const IPEndPoint& remoteEP)
 
 	/* cria o socket */
 	if(!m_sock.Create(addr.GetFamily(), SOCK_STREAM))
-	{
-		// LastError = m_sock.LastErr;
 		return false;
-	}
 
-	/* ajusta o socket para nao-bloqueante */
-	m_sock.SetNonBlock(true);
+	// /* ajusta o socket para nao-bloqueante */
+	// m_sock.SetNonBlock(true);
 	
 	/* tenta conectar o socket */
 	errno = RET_OK;

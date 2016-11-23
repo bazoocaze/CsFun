@@ -77,9 +77,11 @@ class FdWriter : public TextWriter
 {
 protected:
 	int m_fd;
-	int m_lastErr;
 
 public:
+	// Last error code, or RET_OK in case of no errors.
+	int LastErr;
+
 	// Default constructor for a NULL writer
 	FdWriter();
 	
@@ -106,9 +108,11 @@ class FdReader : public TextReader
 {
 protected:
 	int m_fd;
-	int m_lastErr;
 
 public:
+	// Last error code, or RET_OK in case of no errors.
+	int LastErr;
+
 	// Default constructor that reads from an empty file.
 	FdReader();
 	

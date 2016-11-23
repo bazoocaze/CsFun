@@ -1,25 +1,26 @@
 /*
- * Arquivo....: TcpListener.cpp
- * Autor......: José Ferreira - olvebra
- * Data.......: 12/08/2015 - 20:52
- * Objetivo...: Servidor de conexoes TCP.
+ * File.....: TcpListener.cpp
+ * Author...: Jose Ferreira
+ * Date.....: 2015-08-12 - 20:52
+ * Purpose..: TCP server.
  */
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/time.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <errno.h>
-#include <arpa/inet.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <sys/types.h>
+// #include <sys/socket.h>
+// #include <netdb.h>
+// #include <string.h>
+// #include <unistd.h>
+// #include <errno.h>
+// #include <sys/time.h>
+// #include <fcntl.h>
+// #include <sys/ioctl.h>
+// #include <errno.h>
+// #include <arpa/inet.h>
 
+#include <errno.h>
 
 #include "TcpListener.h"
 #include "TcpClient.h"

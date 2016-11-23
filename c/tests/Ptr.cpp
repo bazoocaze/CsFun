@@ -1,3 +1,11 @@
+/*
+ * File....: Ptr.cpp
+ * Author..: Jose Ferreira
+ * Date....: 2016-11-22 22:18
+ * Purpose.: Memory and fd automatic management.
+ * */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,14 +15,15 @@
 
 
 struct MemPtr_s {
-        void * data;
-        int    count;
+	void * data;
+	int    count;
 };
 
 
 struct FdPtr_s {
-        int    count;
+	int    count;
 };
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -22,8 +31,9 @@ struct FdPtr_s {
 //////////////////////////////////////////////////////////////////////
 
 
+
 MemPtr::MemPtr() {
-	this->ref  = NULL;
+	this->ref = NULL;
 }
 
 
@@ -44,7 +54,7 @@ MemPtr& MemPtr::operator=(const MemPtr& other)
 	if(other.ref == this->ref) 
 		return *this;
 	release();
-	this->ref  = other.ref;
+	this->ref = other.ref;
 	add();
 	return *this;
 }
@@ -114,13 +124,10 @@ void MemPtr::release()
 	ref->count--;
 	if(ref->count > 0) return;
 
-	if(ref) {
-		// printf("[MemPtr.free(%p)]", ref->data);
-		if(ref->data) free(ref->data);
-		ref->data = NULL;
-		free(ref);
-	}
-	ref  = NULL;
+	if(ref->data) free(ref->data);
+	ref->data = NULL;
+	free(ref);
+	ref = NULL;
 }
 
 
@@ -170,14 +177,14 @@ void FdPtr::Close()
 
 void FdPtr::Set(int fd)
 {
-   if(Fd == fd) return;
-   release();
-	this->Fd  = fd;
-   if(fd == CLOSED_FD) {
-      this->ref = NULL;
-   } else {
-	   ref = (FdPtr_t*)malloc(sizeof(FdPtr_t));
-	   ref->count = 1;
+	if(Fd == fd) return;
+	release();
+	this->Fd = fd;
+	if(fd == CLOSED_FD) {
+		this->ref = NULL;
+	} else {
+		ref = (FdPtr_t*)malloc(sizeof(FdPtr_t));
+		ref->count = 1;
 	}
 }
 
@@ -192,7 +199,7 @@ void FdPtr::release()
    ref->count--;
    if(ref->count > 0) return;
 
-   printf("[FdPtr.CloseFd(%d)]\n", Fd);
+   printf("[fd.close(%d)]", Fd);
 
    if(Fd != CLOSED_FD) close(Fd);
    if(ref)             free(ref);

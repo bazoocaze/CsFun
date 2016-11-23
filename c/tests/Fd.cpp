@@ -1,25 +1,25 @@
 /*
- * File....: Fd.cpp
- * Author..: Jose Ferreira
+ * File.....: Fd.cpp
+ * Author...: Jose Ferreira
  * Date.....: 2016-11-22 16:22
  * Purpose..: File descriptor writer/reader
  * */
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/time.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <errno.h>
-#include <arpa/inet.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <sys/types.h>
+// #include <sys/socket.h>
+// #include <netdb.h>
+// #include <unistd.h>
+// #include <errno.h>
+// #include <sys/time.h>
+// #include <fcntl.h>
+// #include <errno.h>
+// #include <arpa/inet.h>
 
+#include <string.h>
+#include <sys/ioctl.h>
 
 #include "Fd.h"
 #include "Util.h"
@@ -171,15 +171,24 @@ const char * Fd::GetLastErrMsg() const
 
 
 FdWriter::FdWriter()
-{ m_fd = CLOSED_FD; m_lastErr = RET_OK; }
+{
+	m_fd = CLOSED_FD;
+	LastErr = RET_OK;
+}
 
 
 FdWriter::FdWriter(int fd)
-{ m_fd = fd; m_lastErr = RET_OK; }
+{
+	m_fd = fd;
+	LastErr = RET_OK;
+}
 
 
 void FdWriter::SetFd(int fd)
-{ m_fd = fd; m_lastErr = RET_OK; }
+{
+	m_fd = fd;
+	LastErr = RET_OK;
+}
 
 
 int FdWriter::Write(uint8_t c)
@@ -187,7 +196,7 @@ int FdWriter::Write(uint8_t c)
 int ret;
 	if(m_fd == CLOSED_FD) return 0;
 	ret = write(m_fd, &c, 1);
-	if(ret == RET_ERR) m_lastErr = errno;
+	if(ret == RET_ERR) LastErr = errno;
 	return ret;
 }
 
@@ -197,20 +206,20 @@ int FdWriter::Write(const uint8_t * buffer, int size)
 int ret;
 	if(m_fd == CLOSED_FD) return 0;
 	ret = write(m_fd, buffer, size);
-	if(ret == RET_ERR) m_lastErr = errno;
+	if(ret == RET_ERR) LastErr = errno;
 	return ret;
 }
 
 
 int FdWriter::GetLastErr()
 {
-	return m_lastErr;
+	return LastErr;
 }
 
 
 const char * FdWriter::GetLastErrMsg()
 {
-	return strerror(m_lastErr);
+	return strerror(LastErr);
 }
 
 
@@ -220,15 +229,24 @@ const char * FdWriter::GetLastErrMsg()
 
 
 FdReader::FdReader()
-{ m_fd = CLOSED_FD; m_lastErr = RET_OK; }
+{
+	m_fd = CLOSED_FD;
+	LastErr = RET_OK;
+}
 
 
 FdReader::FdReader(int fd)
-{ m_fd = fd; m_lastErr = RET_OK; }
+{
+	m_fd = fd;
+	LastErr = RET_OK;
+}
 
 
 void FdReader::SetFd(int fd)
-{ m_fd = fd; m_lastErr = RET_OK; }
+{
+	m_fd = fd;
+	LastErr = RET_OK;
+}
 
 
 int FdReader::Read()
@@ -237,8 +255,8 @@ int n;
 uint8_t c;
 	if(m_fd == CLOSED_FD) return INT_EOF;
 	n = read(m_fd, &c, 1);
-	if(n == -1) { m_lastErr = errno; return INT_ERR; } 
-	if(n == 0)  { return INT_EOF; } 
+	if(n == RET_ERR) { LastErr = errno; return INT_ERR; } 
+	if(n == 0) { return INT_EOF; } 
 	return c;
 }
 
@@ -248,18 +266,18 @@ int FdReader::Read(uint8_t * buffer, int size)
 int ret;
 	if(m_fd == CLOSED_FD) return 0;
 	ret = read(m_fd, buffer, size);
-	if(ret == RET_ERR) m_lastErr = errno;
+	if(ret == RET_ERR) LastErr = errno;
 	return ret;
 }
 
 
 int FdReader::GetLastErr()
 {
-	return m_lastErr;
+	return LastErr;
 }
 
 
 const char * FdReader::GetLastErrMsg()
 {
-	return strerror(m_lastErr);
+	return strerror(LastErr);
 }
