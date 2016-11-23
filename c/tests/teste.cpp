@@ -13,20 +13,20 @@
 class RpcPacket : public IMessage
 {
 public:
-	char * Name;
+	String Name;
 	int    Id;
 	int    Options;
 	int    PayloadSize;
 	void * Payload;
 
-	int CalculateSize()
+	int CalculateSize() const
 	{
 		int ret = 0;
 		ret += CodedOutputStream::CalculateStringSize(1, Name);
 		ret += CodedOutputStream::CalculateInt32Size( 2, Id);
 		ret += CodedOutputStream::CalculateInt32Size( 3, Options);
 		ret += CodedOutputStream::CalculateInt32Size( 4, PayloadSize);
-		ret += CodedOutputStream::CalculateBytesSize( 5, PayloadSize);
+		// ret += CodedOutputStream::CalculateBytesSize( 5, PayloadSize);
 		return ret;
 	}
 
@@ -36,18 +36,19 @@ public:
 		output->WriteInt32( 2, Id);
 		output->WriteInt32( 3, Options);
 		output->WriteInt32( 4, PayloadSize);
-		output->WriteBytes( 5, Payload, PayloadSize);
+		// output->WriteBytes( 5, Payload, PayloadSize);
 	}
 
 	void MergeFrom(CodedInputStream * input)
 	{
 		while(input->ReadTag())
 		{
-			if(input->ReadString(1, &Name)) continue;
-			if(input->ReadInt32( 2, &Id)) continue;
-			if(input->ReadInt32( 3, &Options)) continue;
-			if(input->ReadInt32( 4, &PayloadSize)) continue;
-			if(input->ReadBytes( 5, &Payload, PayloadSize)) continue;
+			if(input->ReadString(1, Name)) continue;
+			if(input->ReadInt32( 2, Id)) continue;
+			if(input->ReadInt32( 3, Options)) continue;
+			if(input->ReadInt32( 4, PayloadSize)) continue;
+			// if(input->ReadBytes( 5, Payload, PayloadSize)) continue;
+			input->SkipLastField();
 		}
 	}
 };
@@ -107,7 +108,7 @@ public:
 		int fd = m_client.GetFd();
 		FdStream stream = FdStream(fd);
 		BinaryWriter bw = BinaryWriter(&stream);
-		CodedOutputStream cos = CodedOutputStream(fd);
+		CodedOutputStream cos = CodedOutputStream();
 		bw.WriteInt32(request.CalculateSize());
 		request.WriteTo(&cos);
 		RpcPacket resp = WaitResponse(request.Id);
@@ -141,7 +142,7 @@ public:
 
 
 
-void TesteCliente()
+void TestarCliente()
 {
 	MyClient client;
 	if(!client.Connect(IPAddress::Loopback, 12345))
@@ -154,9 +155,9 @@ void TesteCliente()
 }
 
 
-int main()
+int teste_main()
 {
 	printf("[BEGIN]\n");
-	TesteCliente();
+	TestarCliente();
 	printf("[END]\n");
 }

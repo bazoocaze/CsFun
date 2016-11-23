@@ -71,6 +71,9 @@ public:
 	String(char * c, bool dynamic);
 
 	// Constructor for dynamic string with automatic memory management using pointer *mem*.
+	String(MemPtr mem);
+
+	// Constructor for dynamic string with automatic memory management using pointer *mem*.
 	String(MemPtr mem, char * c);
 
 	// Free the current string resources and sets the instance to the dynamic memory string c.
@@ -83,9 +86,13 @@ public:
 	// Automatic memory management selectable via *dynamic* flag.
 	void Set(char * c, bool dynamic);
 
-	// Free the current string resources and set the instance to string c
-	// with automatic memory management using pointer *mem*.
-	void Set(MemPtr mem, char * c);
+	/* Free the current string resources and set the instance to *mem*
+	 * with automatic memory management. */
+	void Set(const MemPtr& mem);
+
+	/* Free the current string resources and set the instance to string c
+	 * with automatic memory management using pointer *mem*. */
+	void Set(const MemPtr& mem, char * c);
 
 	// Free the current string resources and set the instance to be the same string of c
 	void Set(const String& c);

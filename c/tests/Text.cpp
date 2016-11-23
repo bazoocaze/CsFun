@@ -39,6 +39,7 @@ String Printable::ToString() const
 String::String()
 {
 	c_str = NULL;
+	m_aloc.Set(NULL);
 }
 
 
@@ -52,26 +53,38 @@ String::String(void * c)
 String::String(char * c)
 {
 	c_str = c;
+	m_aloc.Set(NULL);
 }
 
 
 String::String(const char * c)
 {
 	c_str = c;
+	m_aloc.Set(NULL);
 }
 
 
 String::String(char * c, bool dynamic)
 {
 	c_str = c;
-	if(dynamic) m_aloc.Set(c);
+	if(dynamic)
+		m_aloc.Set(c);
+	else
+		m_aloc.Set(NULL);
+}
+
+
+String::String(MemPtr mem)
+{
+	m_aloc = mem;
+	c_str  = (cstr)mem.Get();
 }
 
 
 String::String(MemPtr mem, char * c)
 {
-	c_str = c;
 	m_aloc = mem;
+	c_str = c;
 }
 
 
@@ -101,8 +114,22 @@ void String::Set(char * c, bool dynamic)
 
 void String::Set(const String& c)
 {
-	this->c_str  = c.c_str;
 	this->m_aloc = c.m_aloc;
+	this->c_str  = c.c_str;
+}
+
+
+void String::Set(const MemPtr& mem)
+{
+	this->m_aloc = mem;
+	this->c_str  = (cstr)mem.Get();
+}
+
+
+void String::Set(const MemPtr& mem, vstr c)
+{
+	this->m_aloc = mem;
+	this->c_str  = c;
 }
 
 

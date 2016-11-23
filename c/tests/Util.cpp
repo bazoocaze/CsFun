@@ -6,6 +6,7 @@
  */
 
 
+#include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <time.h>
@@ -275,7 +276,6 @@ double valorf;
 }
 
 
-
 void WEAK_ATTR OutOffMemoryHandler(const char *module, const char *subject, int size, int isFatal)
 {
 	Logger::LogMsg(
@@ -285,3 +285,121 @@ void WEAK_ATTR OutOffMemoryHandler(const char *module, const char *subject, int 
 	if(isFatal)	exit(100);
 }
 
+
+typedef struct {
+	void * ptr;
+	size_t size;
+	bool   free;
+	cstr   file;
+	int    line;
+} ptr_info_t;
+
+
+#define MAX_PTR_INFO 1024
+
+
+ptr_info_t ptr_info[MAX_PTR_INFO];
+
+
+int util_mem_find_entry(void * ptr)
+{
+	for(int n = 0; n < MAX_PTR_INFO; n++)
+		if(ptr_info[n].ptr == ptr) return n;
+	return RET_ERR;
+}
+
+
+int util_mem_find_free()
+{
+	for(int n = 0; n < MAX_PTR_INFO; n++)
+		if(ptr_info[n].ptr == NULL) return n;
+	dprintf(2, "\nMEMORY/ERROR: no free slots on ptr_info table\n");
+	exit(100);
+}
+
+
+char * util_mem_strdup(cstr sourceStr, cstr srcFile, int lineNumber)
+{
+int slot = util_mem_find_free();
+	ptr_info[slot].ptr = strdup(sourceStr);
+	ptr_info[slot].size = strlen(sourceStr) + 1;
+	ptr_info[slot].file = srcFile;
+	ptr_info[slot].line = lineNumber;
+	return (vstr)ptr_info[slot].ptr;
+}
+
+
+void * util_mem_malloc(size_t size, cstr srcFile, int lineNumber)
+{
+int slot;
+	slot = util_mem_find_free();
+	ptr_info[slot].ptr  = malloc(size);
+	ptr_info[slot].size = size;
+	ptr_info[slot].file = srcFile;
+	ptr_info[slot].line = lineNumber;
+	return ptr_info[slot].ptr;
+}
+
+
+void * util_mem_realloc(void * oldPtr, size_t newSize, cstr srcFile, int lineNumber)
+{
+int slot;
+void * newPtr;
+	if(oldPtr == NULL)
+		slot = util_mem_find_free();
+	else
+		slot = util_mem_find_entry(oldPtr);
+	if(slot == RET_ERR) {
+		dprintf(2, "\nMEMORY/ERROR: realloc of %ld bytes on unknow pointer %p\n", newSize, oldPtr);
+		exit(100);
+	}
+	newPtr = realloc(oldPtr, newSize);
+	if(newSize == 0)
+	{
+		ptr_info[slot].ptr  = NULL;
+		ptr_info[slot].size = newSize;
+	}
+	else if(newPtr != NULL)
+	{
+		ptr_info[slot].ptr  = newPtr;
+		ptr_info[slot].size = newSize;
+		ptr_info[slot].file = srcFile;
+		ptr_info[slot].line = lineNumber;
+		return newPtr;
+	}
+	return newPtr;
+}
+
+
+void util_mem_free(void * ptr, cstr srcFile, int lineNumber)
+{
+int slot;
+	if(ptr == NULL) return;
+	slot = util_mem_find_entry(ptr);
+	if(slot == RET_ERR) {
+		dprintf(2, "\nMEMORY/FREE: free on unknow pointer %p (at %s:%d)\n", ptr, srcFile, lineNumber);
+		exit(100);
+	}
+	free(ptr);
+	ptr_info[slot].ptr = NULL;
+}
+
+
+void util_mem_debug()
+{
+	dprintf(2, "\n--- BEGIN MEM DEBUG ---\n");
+	for(int n = 0; n < MAX_PTR_INFO; n++)
+	{
+		if(ptr_info[n].ptr == NULL) continue;
+		
+		const char * file;
+		file = strrchr((vstr)ptr_info[n].file, '\\');
+		if(file == NULL) file = strrchr((vstr)ptr_info[n].file, '/');
+		
+		if(file != NULL) file++;
+		else             file = ptr_info[n].file;
+		
+		dprintf(2, " %04d 0x%p %08ld %s:%d\n", n, ptr_info[n].ptr, ptr_info[n].size, file, ptr_info[n].line);
+	}
+	dprintf(2, "--- END MEM DEBUG ---\n");
+}

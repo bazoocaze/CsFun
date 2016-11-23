@@ -26,7 +26,7 @@ FdReader reader  = 0;
 FdWriter writer = 1;
 
 
-int main()
+int outro_main()
 {
 String a;
 	while(reader.ReadLine(a, 32))

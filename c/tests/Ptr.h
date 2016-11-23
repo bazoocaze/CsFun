@@ -9,6 +9,9 @@
 #pragma once
 
 
+#include <inttypes.h>
+
+
 struct MemPtr_s;
 struct FdPtr_s;
 typedef struct MemPtr_s MemPtr_t;
@@ -25,11 +28,11 @@ private:
 
 protected:
 	// Increments the reference counter for the data pointer.
-	void add();
+	void AddRef();
 	
 	/* Decrements the reference counter for the data pointer.
 	 * Free the data pointer if the counter reaches 0 references. */
-	void release();
+	void ReleaseRef();
 
 public:
 	// Default empty constructor
@@ -56,6 +59,9 @@ public:
 
 	// Resize the managed data pointer.
 	bool Resize(int newSize);
+
+	// Fill the data buffer.
+	void Memset(uint8_t val, int size);
 
 	/* Changes the current data pointer reference to the new reference,
 	 * without altering the reference count. (DANGER)*/	

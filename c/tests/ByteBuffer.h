@@ -89,8 +89,15 @@ public:
 	
 	/* Returns the total size of the dynamic allocated memory. */
 	int Capacity() const;
+	
+	/* Returns the read pos index. */
+	int ReadPos() const;
+	
+	/* Returns the write pos index. */
+	int WritePos() const;
 
-	char * Ptr() const;
+	/* Returns the pointer to the base memory of the buffer. */
+	uint8_t * GetPtr() const;
 
 	const char * GetStr();
 	String       GetString();

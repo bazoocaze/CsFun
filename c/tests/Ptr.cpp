@@ -45,7 +45,7 @@ MemPtr::MemPtr(void * data) {
 
 MemPtr::MemPtr(const MemPtr& other) {
 	this->ref  = other.ref;
-	add();
+	AddRef();
 }
 
 
@@ -53,9 +53,9 @@ MemPtr& MemPtr::operator=(const MemPtr& other)
 {
 	if(other.ref == this->ref) 
 		return *this;
-	release();
+	ReleaseRef();
 	this->ref = other.ref;
-	add();
+	AddRef();
 	return *this;
 }
 
@@ -75,11 +75,11 @@ void MemPtr::Clear()
 void MemPtr::Set(void * data)
 {
 	if(data == Get()) return;
-	release();
+	ReleaseRef();
 	if(data == NULL) {
 		this->ref = NULL;
 	} else {
-		ref = (MemPtr_t*)malloc(sizeof(MemPtr_t));
+		ref = (MemPtr_t*)UTIL_MEM_MALLOC(sizeof(MemPtr_t));
 		ref->count = 1;
 		ref->data  = data;
 	}
@@ -96,10 +96,17 @@ void * MemPtr::Get() const
 bool MemPtr::Resize(int newSize)
 {
 	void * curPtr = Get();
-	void * newPtr = realloc(curPtr, newSize);
+	void * newPtr = UTIL_MEM_REALLOC(curPtr, newSize);
 	if(newPtr == NULL) return false;
 	ChangeTo(newPtr);
 	return true;
+}
+
+
+void MemPtr::Memset(uint8_t val, int size)
+{
+	if(ref == NULL || ref->data == NULL || size < 0) return;
+	memset(ref->data, val, size);
 }
 
 
@@ -112,21 +119,21 @@ void MemPtr::ChangeTo(void * newPtr)
 }
 
 
-void MemPtr::add()
+void MemPtr::AddRef()
 {
 	if(ref != NULL) ref->count++;
 }
 
 
-void MemPtr::release()
+void MemPtr::ReleaseRef()
 {
 	if(ref == NULL) return;
 	ref->count--;
 	if(ref->count > 0) return;
 
-	if(ref->data) free(ref->data);
+	if(ref->data) UTIL_MEM_FREE(ref->data);
 	ref->data = NULL;
-	free(ref);
+	UTIL_MEM_FREE(ref);
 	ref = NULL;
 }
 
@@ -183,7 +190,7 @@ void FdPtr::Set(int fd)
 	if(fd == CLOSED_FD) {
 		this->ref = NULL;
 	} else {
-		ref = (FdPtr_t*)malloc(sizeof(FdPtr_t));
+		ref = (FdPtr_t*)UTIL_MEM_MALLOC(sizeof(FdPtr_t));
 		ref->count = 1;
 	}
 }
@@ -202,7 +209,7 @@ void FdPtr::release()
    printf("[fd.close(%d)]", Fd);
 
    if(Fd != CLOSED_FD) close(Fd);
-   if(ref)             free(ref);
+   if(ref)             UTIL_MEM_FREE(ref);
    ref = NULL;
    Fd  = CLOSED_FD;
 }

@@ -7,6 +7,7 @@
 #include "ByteBuffer.h"
 #include "Debug.h"
 #include "Util.h"
+#include "Text.h"
 
 
 
@@ -18,40 +19,45 @@
 
 CodedOutputStream::CodedOutputStream()
 {
-	m_fd = CLOSED_FD;
-	m_buffer = NULL;
+	// m_fd = CLOSED_FD;
+	// m_buffer = NULL;
+	m_output = &Stream::Null;
 }
 
 
+CodedOutputStream::CodedOutputStream(Stream* stream)
+{
+	if(stream != NULL)
+		m_output = stream;
+	else
+		m_output = &Stream::Null;
+}
+
+/*
 CodedOutputStream::CodedOutputStream(int fd)
 {
 	m_fd = fd;
 	m_buffer = NULL;
-}
+} 
 
 
 CodedOutputStream::CodedOutputStream(ByteBuffer* buffer)
 {
 	m_fd = CLOSED_FD;
 	m_buffer = buffer;
+} */
+
+
+void CodedOutputStream::WriteByte(uint8_t c)
+{
+	m_output->Write(c);
 }
 
 
-void CodedOutputStream::WriteByte(char c)
+void CodedOutputStream::WriteBytes(const void * data, int offset, int size)
 {
-	if(m_buffer)
-		m_buffer->Write(c);
-	else
-		write(m_fd, &c, 1);
-}
-
-
-void CodedOutputStream::WriteBytes(const char * data, int offset, int size)
-{
-	if(m_buffer)
-		m_buffer->Write((const void *)data, offset, size);
-	else
-		write(m_fd, &data[offset], size);
+	uint8_t * ptr = (uint8_t *)data;
+	m_output->Write(&ptr[offset], size);
 }
 
 
@@ -75,6 +81,7 @@ int tag = fieldNumber << 3;
 	return CalculateVarint32Size(tag) + CalculateVarint32Size(val);
 }
 
+
 int CodedOutputStream::CalculateStringSize(int fieldNumber, const char * val)
 {
 int tag = fieldNumber << 3;
@@ -88,6 +95,21 @@ int ret = 0;
 	return ret;
 }
 
+
+int CodedOutputStream::CalculateStringSize(int fieldNumber, const String& val)
+{
+int tag = fieldNumber << 3;
+int len = 0;
+int ret = 0;
+	if(val.c_str == NULL || val.c_str[0] == 0) return 0;
+	ret += CalculateVarint32Size(tag);
+	len  = strlen(val.c_str);
+	ret += CalculateVarint32Size(len);
+	ret += len;
+	return ret;
+}
+
+
 int CodedOutputStream::CalculateBoolSize(int fieldNumber, bool val)
 {
 int tag = fieldNumber << 3;
@@ -95,6 +117,19 @@ int ret = 0;
 	if(!val) return 0;
 	ret += CalculateVarint32Size(tag);
 	ret += CalculateVarint32Size(1);
+	return ret;
+}
+
+
+int CodedOutputStream::CalculateMessageSize(int fieldNumber, const IMessage& val)
+{
+	int msgSize = val.CalculateSize();
+	if(msgSize == 0) return 0;
+	int tag = fieldNumber << 3;
+	int ret = 0;
+	ret += CalculateVarint32Size(tag);
+	ret += CalculateVarint32Size(msgSize);
+	ret += msgSize;
 	return ret;
 }
 
@@ -133,6 +168,12 @@ int tag = (fieldNumber << 3) | P_STRING_WIRETYPE;
 }
 
 
+void CodedOutputStream::WriteString(int fieldNumber, const String& val)
+{
+	WriteString(fieldNumber, val.c_str);
+}
+
+
 void CodedOutputStream::WriteBool(int fieldNumber, bool val)
 {
 int tag = (fieldNumber << 3) | P_BOOL_WIRETYPE;
@@ -141,6 +182,17 @@ int tag = (fieldNumber << 3) | P_BOOL_WIRETYPE;
 	WriteVarint32(1);
 }
 
+
+void CodedOutputStream::WriteMessage(int fieldNumber, IMessage& val)
+{
+	int msgSize = val.CalculateSize();
+	if(msgSize == 0) return;
+	
+	int tag = (fieldNumber << 3) | CodedOutputStream::P_MESSAGE_WIRETYPE;
+	WriteVarint32(tag);
+	WriteVarint32(msgSize);
+	val.WriteTo(this);
+}
 
 
 //////////////////////////////////////////////////////////////////////
@@ -151,53 +203,68 @@ int tag = (fieldNumber << 3) | P_BOOL_WIRETYPE;
 
 CodedInputStream::CodedInputStream()
 {
+	m_input = ByteString();
 }
 
 
-CodedInputStream::CodedInputStream(ByteBuffer* buffer)
+CodedInputStream::CodedInputStream(Stream* input)
 {
-	m_buffer = buffer;
+	m_input = ByteString(input);
 }
 
 
-int CodedInputStream::ReadByte()
+CodedInputStream::CodedInputStream(ByteString& input)
 {
-int ret = m_buffer->ReadByte();
-	// printf("[ReadByte=%d]\n", ret);
-	return ret;
+	m_input = input;
 }
 
 
-bool CodedInputStream::ReadBytes(char * buffer, int offset, int size)
+int CodedInputStream::SourceReadByte()
 {
-	return m_buffer->Read((void *)buffer, offset, size) == size;
+	return m_input.ReadByte();
 }
 
 
-void CodedInputStream::DiscardBytes(int size)
+bool CodedInputStream::SourceCopyBytes(void * buffer, int offset, int size)
 {
-	m_buffer->DiscardBytes(size);
-	// TODO: test the DiscardBytes return value
-	return;
+	uint8_t* dest = ((uint8_t*)buffer) + offset;
+	
+	ByteString block = m_input.ReadBlock(size);
+	if(block.Size > 0)
+		memcpy(dest, block.GetPtr(), block.Size);
+	return block.Size == size;
+}
+
+
+bool CodedInputStream::SourceDiscardBytes(int size)
+{
+	ByteString ret = m_input.ReadBlock(size);
+	return ret.Size == size;
 }
 
 
 int CodedInputStream::ReadVarint32()
 {
+	int ret;
+	if(!ReadVarint32(ret)) return 0;
+	return ret;
+}
+
+
+bool CodedInputStream::ReadVarint32(int & retVal)
+{
 int v;
 int rot = 0;
 unsigned int ret = 0;
-	// printf("[ReadVaring32:begin]\n");
 	do
 	{
-		v = ReadByte();
-		// printf("[v=%d]\n", v);
-		if(v == -1) return 0;
+		v = SourceReadByte();
+		if(v < 0) { retVal = 0; return false; }
 		ret = ret | ((v & 0x7F) << rot);
 		rot = rot + 7;
 	} while(v > 127);
-	// printf("[ReadVaring32:end ret=%d]\n", ret);
-	return ret;
+	retVal = ret;
+	return true;
 }
 
 
@@ -223,48 +290,72 @@ void CodedInputStream::SkipLastField()
 	if(CurrentWireType == CodedOutputStream::P_WIRETYPE_DELIMITED)
 	{
 		int size = ReadVarint32();
-		DiscardBytes(size);
+		SourceDiscardBytes(size);
 		return;
 	}
-
 }
 
 
-bool CodedInputStream::ReadInt32(int fieldNumber, int * val)
+bool CodedInputStream::ReadInt32(int fieldNumber, int & val)
 {
 	if(	CurrentFieldNumber != fieldNumber ||
-			CurrentWireType != CodedOutputStream::P_WIRETYPE_VARINT) return false;
-	*val = ReadVarint32();
+		CurrentWireType != CodedOutputStream::P_WIRETYPE_VARINT) return false;
+	ReadVarint32(val);
 	return true;
 }
 
 
-bool CodedInputStream::ReadBool(int fieldNumber, bool * val)
+bool CodedInputStream::ReadBool(int fieldNumber, bool & val)
 {
 	if(	CurrentFieldNumber != fieldNumber ||
-			CurrentWireType != CodedOutputStream::P_WIRETYPE_VARINT) return false;
-	*val = (ReadVarint32() != 0);
+		CurrentWireType != CodedOutputStream::P_WIRETYPE_VARINT) return false;
+	val = (ReadVarint32() != 0);
 	return true;
 }
 
 
-bool CodedInputStream::ReadString(int fieldNumber, char ** val)
+bool CodedInputStream::ReadString(int fieldNumber, String & val)
 {
 	if(	CurrentFieldNumber != fieldNumber ||
-			CurrentWireType != CodedOutputStream::P_WIRETYPE_DELIMITED) return false;
+		CurrentWireType != CodedOutputStream::P_WIRETYPE_DELIMITED) return false;
+	
 	int size = ReadVarint32();
+	
 	printf("[ReadString: size=%d]\n", size);
+	
 	if(size == 0)
 	{
-		*val = (char *)"";
+		val = "";
 	}
 	else
 	{
-		char * ptr = (char*)malloc(size+1);
-		memset(ptr, 0, size+1);
-		ReadBytes(ptr, 0, size);
-		*val = ptr;
+		MemPtr strPtr;
+		strPtr.Resize(size+1);
+		strPtr.Memset(0, size+1);
+		SourceCopyBytes(strPtr.Get(), 0, size);
+		val.Set(strPtr);
 	}
+	return true;
+}
+
+
+bool CodedInputStream::ReadMessage(int fieldNumber, IMessage& val)
+{
+	if(	CurrentFieldNumber != fieldNumber ||
+		CurrentWireType != CodedOutputStream::P_WIRETYPE_DELIMITED) return false;
+	
+	int msgSize = ReadVarint32();
+	
+	printf("[ReadMessage: msgSize=%d]\n", msgSize);
+	
+	if(msgSize == 0) return true;
+	
+	ByteString block = m_input.ReadBlock(msgSize);
+	if(block.Size != msgSize) return true;
+	
+	CodedInputStream cis = CodedInputStream(block);
+	val.MergeFrom(&cis);
+	
 	return true;
 }
 
@@ -278,67 +369,96 @@ bool CodedInputStream::ReadString(int fieldNumber, char ** val)
 
 ByteString::ByteString()
 {
-	m_ptr = NULL;
-	Offset = 0;
-	Size = 0;
-	ReadPos = 0;
+	m_ptr    = NULL;
+	m_stream = &Stream::Null;
+	Offset   = 0;
+	Size     = 0;
+	ReadPos  = 0;
 }
 
 
-ByteString::ByteString(const char * ptr, int offset, int size)
+ByteString::ByteString(Stream* input)
 {
-	m_ptr = ptr;
-	Offset = offset;
-	Size = size;
-	ReadPos = 0;
+	m_ptr    = NULL;
+	m_stream = input;
+	Offset   = 0;
+	Size     = 0;
+	ReadPos  = 0;
 }
 
 
-ByteString::ByteString(MemPtr memPtr, const char * ptr, int offset, int size)
+ByteString::ByteString(const void * ptr, int offset, int size)
 {
-	m_mem = memPtr;
-	m_ptr = ptr;
-	Offset = offset;
-	Size = size;
-	ReadPos = 0;
+	m_stream = NULL;
+	m_ptr    = (uint8_t*) ptr;
+	Offset   = offset;
+	Size     = size;
+	ReadPos  = 0;
+}
+
+
+ByteString::ByteString(MemPtr memPtr, const void * ptr, int offset, int size)
+{
+	m_stream = NULL;
+	m_mem    = memPtr;
+	m_ptr    = (uint8_t*) ptr;
+	Offset   = offset;
+	Size     = size;
+	ReadPos  = 0;
+}
+
+
+const uint8_t * ByteString::GetPtr()
+{
+	if(m_ptr == NULL) return NULL;
+	return &m_ptr[Offset + ReadPos];
 }
 
 
 int ByteString::ReadByte()
 {
-	if(Size == 0) return -1;
-	Size--;
-	return m_ptr[Offset + ReadPos++];	
+	if(m_stream != NULL)
+	{
+		return m_stream->ReadByte();
+	}
+	
+	if(m_ptr != NULL)
+	{
+		if(Size == 0) return INT_EOF;
+		Size--;
+		return m_ptr[Offset + ReadPos++];
+	}
+	
+	return INT_ERR;
 }
 
 
 ByteString ByteString::ReadBlock(int size)
 {
-ByteString ret;
-	if(size < 0) size = 0;
-	if(size > Size) size = Size;
-	ret = ByteString(m_mem, m_ptr, Offset + ReadPos, size);
-	Size    -= size;
-	ReadPos += size;
-	return ret;
+	ByteString block;
+	if(size <= 0) return block;
+	
+	if(m_stream != NULL)
+	{
+		MemPtr mem = MemPtr();
+		if(!mem.Resize(size))
+		{
+			OutOffMemoryHandler("ByteString", "ReadBlock", size, false);
+			return block;
+		}
+		int ret = m_stream->Read(mem.Get(), size);
+		block = ByteString(mem, mem.Get(), 0, ret);
+		return block;
+	}
+	
+	if(m_ptr != NULL)
+	{
+		if(Size == 0) return block;
+		if(size > Size) size = Size;
+		block = ByteString(m_mem, m_ptr, Offset + ReadPos, size);
+		Size    -= size;
+		ReadPos += size;
+	}
+	
+	return block;
 }
-
-
-const char * ByteString::ReadString(int size)
-{
-char * ret;
-	if(size < 0) size = 0;
-	if(size > Size) size = Size;
-	if(size == 0) return strdup("");
-	ret = (char *)malloc(size + 1);
-	memset(ret, 0, size + 1);
-	memcpy(ret, &m_ptr[Offset + ReadPos], size);
-	Size    -= size;
-	ReadPos += size;
-	return ret;
-}
-
-
-// void ByteString::Write(char c) { }
-// void ByteString::Write(const char *, int offset, int size) { }
-

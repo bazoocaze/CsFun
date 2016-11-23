@@ -38,6 +38,9 @@
     <File Name="StringBuilder.cpp"/>
     <File Name="TcpClient.cpp"/>
     <File Name="TcpListener.cpp"/>
+    <File Name="outro.cpp"/>
+    <File Name="gpb.cpp"/>
+    <File Name="teste.cpp"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>

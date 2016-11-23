@@ -44,43 +44,6 @@ int OutOffMemoryHandler(const char *modulo, const char *assunto, int tamanho)
 int lastId = 0;
 
 
-class Teste
-{
-public:
-	int Id;
-	int Extra;
-
-	Teste()
-	{
-		Id = ++lastId;
-		Extra = 0;
-		printf("Teste:ctor %d %d\n", Id, Extra);
-	}
-
-	~Teste()
-	{
-		printf("Teste:dtor %d %d\n", Id, Extra);
-	}
-};
-
-
-bool Teste2(Teste& teste)
-{
-	printf("Teste2: begin\n");
-	printf("Teste2: end\n");
-	return true;
-}
-
-
-void Teste1()
-{
-	printf("Teste1: begin\n");
-	Teste teste;
-	Teste2(teste);
-	printf("Teste1: end\n");
-}
-
-
 void TesteDnsForHost(const char * hostname)
 {
 	IPAddressList list;
@@ -254,21 +217,83 @@ StreamWriter sw;
 }
 
 
-int main(int argc, char **argv)
-{
+void TesteValPtr(int32_t val)
+{	printf("[Val32=%d]\n", val); }
 
-	printf("Inicio\n");	
+void TesteValPtr(int64_t val)
+{	printf("[Val64=%ld]\n", val); }
+
+void TesteValPtr(uint32_t val)
+{	printf("[UVal32=%d]\n", val); }
+
+void TesteValPtr(uint64_t val)
+{	printf("[UVal64=%ld]\n", val); }
+
+
+class StringDucker
+{
+public:
+	int    Valor;
+	String Nome;
+	bool   Flag;
+};
+
+
+String m_MeuNome;
+String m_MeuSobrenome;
+
+
+void TesteString()
+{
+	StringDucker sd;
+	sd.Valor = 12345;
+	sd.Nome  = String(UTIL_MEM_STRDUP("teste"), true);
+	sd.Flag  = true;
+	
+	sd.Nome.Debug();
+}
+
+
+int ReturnReadByte()
+{
+	uint8_t v1 = 255;
+	int8_t v2 = v1;
+	return v2;
+}
+
+
+void main_main()
+{
+	printf("Main/inicio\n");	
 	Logger::LogLevel = LEVEL_VERBOSE;
+	
+	int ret = ReturnReadByte();
+	printf("[ret = %d]\n", ret);
+	
 
 	// TesteIPAddress();
 	// TesteDns();
 	// TesteListener();
-	TesteCliente();
+	// TesteCliente();
 	// TesteSb();
 	// TesteHexDump();
 	// TesteBinary();
-	TesteFileStream();
+	// TesteFileStream();
+	// TesteString();
 	
 	printf("Fim\n");	
-	return 0;
+}
+
+extern void teste_main();
+extern void outro_main();
+extern void gpb_main();
+
+int main(int argc, char **argv)
+{
+	// main_main();
+	// teste_main();
+	gpb_main();
+	// outro_main();
+	
+	util_mem_debug();
 }

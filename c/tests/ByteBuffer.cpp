@@ -107,11 +107,11 @@ int newSize;
 	if(!m_ptr.Resize(newSize))
 	{
 		OutOffMemoryHandler("ByteBuffer", "resize", newSize, true);
-		return RET_ERROR;
+		return false;
 	}
 
 	m_Capacity = newSize;
-	return RET_OK;
+	return true;
 }
 
 
@@ -256,10 +256,23 @@ MemPtr ByteBuffer::GetMemPtr()
 }
 
 
-char * ByteBuffer::Ptr() const
+uint8_t * ByteBuffer::GetPtr() const
 {
-	return (vstr)m_ptr.Get();
+	return (uint8_t*)m_ptr.Get();
 }
+
+
+int ByteBuffer::ReadPos() const
+{
+	return m_ReadPos;
+}
+
+
+int ByteBuffer::WritePos() const
+{
+	return m_WritePos;
+}
+
 
 
 //////////////////////////////////////////////////////////////////////

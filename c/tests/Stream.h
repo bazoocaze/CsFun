@@ -41,20 +41,24 @@ public:
 
 	/* Write a byte to the stream.
 	 * Return the number of bytes written, or RET_ERR on error. */
-	virtual int Write(const uint8_t c) { return RET_ERR; }
+	virtual int Write(const uint8_t c) = 0; // { return RET_ERR; }
 	
 	/* Write bytes to the stream.
 	 * Return the number of bytes written, or RET_ERR on error. */
-	virtual int Write(const uint8_t * c, int size) { return RET_ERR; } 
+	virtual int Write(const void * c, int size) = 0; // { return RET_ERR; } 
 
 	/* Read a byte from stream.
 	 * Returns the byte read, or INT_EOF on EOF or INT_ERR on error. */
-	virtual int ReadByte() { return INT_ERR; }
+	virtual int ReadByte() = 0; // { return INT_ERR; }
 
 	/* Read bytes from stream.
 	 * Returns the number of read bytes, including 0 on EOF.
 	 * Returns RET_ERR on error. */
-	virtual int Read(uint8_t * buffer, int size) { return RET_ERR; }
+	virtual int Read(void * buffer, int size) = 0; //  { return RET_ERR; }
+	
+	/* Discard from the input the total amount of bytes.
+	 * Returns the number of bytes discarded, or RET_ERR on error. */
+	virtual int DiscardBytes(int size);
 
 	/* Returns the last error code, or RET_OK in case of no error. */
 	virtual int GetLastErr() = 0;
@@ -73,9 +77,9 @@ class NullStream : public Stream
 public:
 	void Close()                             { }
 	int  Write(const uint8_t c)              { return 1; }
-	int  Write(const uint8_t * c, int size)  { return size; }
+	int  Write(const void * c, int size)     { return size; }
 	int  ReadByte()                          { return INT_EOF; }
-	int  Read(uint8_t buffer, int size)      { return 0; }
+	int  Read(void * buffer, int size)       { return 0; }
 	int  GetLastErr()                        { return RET_OK; }
 	const char * GetLastErrMsg()             { return ""; }
 	
@@ -111,13 +115,13 @@ public:
 	int  Write(const uint8_t c);
 
 	// Write byte buffer to the fd. Return the number of bytes written, or RET_ERR if error.
-	int  Write(const uint8_t * c, int size);
+	int  Write(const void * c, int size);
 
 	// Read a byte from the fd. Returns INT_EOF on EOF or INT_ERR on error.
 	int  ReadByte();
 
 	// Read a block of bytes from the fd. Returns the number of bytes read, 0 on EOF, or RET_ERR on error.
-	int  Read(uint8_t * buffer, int size);
+	int  Read(void * buffer, int size);
 
 	// Returns the last error code, or RET_OK in case of no error found
 	int  GetLastErr();

@@ -230,10 +230,10 @@ int strSize;
 		strSize = blockSize;
 
 	if(strSize > 0) {
-		uint8_t * strBuffer = (uint8_t*)malloc(strSize+1);
+		uint8_t * strBuffer = (uint8_t*)UTIL_MEM_MALLOC(strSize+1);
 		if(!TryReadBytes(strBuffer, strSize))
 		{
-			free(strBuffer);
+			UTIL_MEM_FREE(strBuffer);
 			return false;
 		}
 		strBuffer[strSize] = 0;

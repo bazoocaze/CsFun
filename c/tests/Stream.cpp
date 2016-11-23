@@ -23,6 +23,25 @@
 NullStream Stream::Null = NullStream();
 
 
+//////////////////////////////////////////////////////////////////////
+// Stream
+//////////////////////////////////////////////////////////////////////
+
+
+int Stream::DiscardBytes(int size)
+{
+	uint8_t buffer[128];
+	int total = 0;
+	while(total < size)
+	{
+		int len = MIN(size - total, sizeof(buffer));
+		int ret = Read(buffer, len);
+		if(ret <= 0) return total;
+		total += ret;
+	}
+	return total;
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // FdStream
@@ -83,7 +102,7 @@ int ret;
 }
 
 
-int FdStream::Write(const uint8_t * c, int size)
+int FdStream::Write(const void * c, int size)
 {
 int ret;
 	if(m_fd == CLOSED_FD) return RET_ERR;
@@ -103,7 +122,7 @@ int ret = read(m_fd, &c, 1);
 }
 
 
-int  FdStream::Read(uint8_t * buffer, int size)
+int  FdStream::Read(void * buffer, int size)
 {
 int ret = read(m_fd, buffer, size);
 	if(ret < 0) m_lastErr = errno;
@@ -120,6 +139,18 @@ int ret = read(m_fd, buffer, size);
 
 MemoryStream::MemoryStream()
 {
+}
+
+
+int MemoryStream::Length() const
+{
+	return m_buffer.Length();
+}
+
+
+const uint8_t * MemoryStream::GetReadPtr()
+{
+	return m_buffer.GetPtr() + m_buffer.ReadPos();
 }
 
 
@@ -142,7 +173,7 @@ int MemoryStream::ReadByte()
 }
 
 
-int MemoryStream::Read(uint8_t * buffer, int size)
+int MemoryStream::Read(void * buffer, int size)
 {
 int len = size;
 	if(len > m_buffer.Length()) len = m_buffer.Length();
@@ -158,7 +189,7 @@ int MemoryStream::Write(const uint8_t c)
 }
 
 
-int MemoryStream::Write(const uint8_t * c, int size)
+int MemoryStream::Write(const void * c, int size)
 {
 	return m_buffer.Write(c, 0, size);
 }
