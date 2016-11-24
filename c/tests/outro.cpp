@@ -3,6 +3,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <unistd.h>
+#include <errno.h>
 
 
 #include "Stream.h"
@@ -11,30 +12,31 @@
 #include "Text.h"
 #include "StringBuilder.h"
 #include "Fd.h"
+#include "IO.h"
+#include "FdSelect.h"
 
 
-String ReadLine()
+
+void outro_multi()
 {
-StringBuilder sb;
-	sb.print("Alfa ");
-	sb.print("Bravo ");
-	return sb.GetString();
+	FdSelect sel;
+	sel.Add(0, SEL_READ);
+	StdErr.println("Begin waiting");
+	int ret = sel.WaitAll(5000);
+	StdErr.printf("End waiting. ret=%d  fd.status=%d", ret, sel.GetStatus(0));
 }
 
 
-FdReader reader  = 0;
-FdWriter writer = 1;
-
-
-int outro_main()
+void outro_single()
 {
-String a;
-	while(reader.ReadLine(a, 32))
-	{
-		writer.printf("Linha:[%z]\n", &a);	
-		// a.debug();
-	}
-	
-	return 0;
+	int ret = FdSelect::Wait(0, SEL_READ, 2100);
 }
 
+
+
+void outro_main()
+{
+	outro_multi();
+	// outro_single();
+	delay(6000);
+}

@@ -500,6 +500,13 @@ const char * StreamWriter::GetLastErrMsg()
 	return m_stream->GetLastErrMsg();
 }
 
+
+bool StreamWriter::IsError()
+{
+	return m_stream->IsError();
+}
+
+
 int StreamWriter::Write(const uint8_t c)
 {
 	return m_stream->Write(c);
@@ -535,7 +542,12 @@ void StreamReader::Close()
 
 bool StreamReader::IsEof()
 {
-	return this->Eof;
+	return m_stream->IsEof();
+}
+
+bool StreamReader::IsError()
+{
+	return m_stream->IsError();
 }
 
 int StreamReader::GetLastErr()
@@ -550,16 +562,12 @@ const char * StreamReader::GetLastErrMsg()
 
 int StreamReader::Read()
 {
-	int ret = m_stream->ReadByte();
-	if(ret == INT_EOF) Eof = true;
-	return ret;
+	return m_stream->ReadByte();
 }
 
 int StreamReader::Read(uint8_t * c, int size)
 {
-	int ret = m_stream->Read(c, size);
-	if(ret == 0) Eof = true;
-	return ret;
+	return m_stream->Read(c, size);
 }
 
 

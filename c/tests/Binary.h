@@ -32,16 +32,19 @@ public:
 	// Sets the base stream to the *stream*.
 	void SetStream(Stream * stream);
 
-	int  WriteInt8(uint8_t val);
-	int  WriteInt8(int8_t val);
+	int  WriteInt8 (int8_t val);
 	int  WriteInt16(int16_t val);
 	int  WriteInt32(int32_t val);
 	int  WriteInt64(int64_t val);
 
-	int  WriteFloat(float val);
-	int  WriteDouble(double val);
+	int  WriteUInt8 (uint8_t val);
+	int  WriteUInt16(uint16_t val);
+	int  WriteUInt32(uint32_t val);
+	int  WriteUInt64(uint64_t val);
 
-	int  WriteBool(bool val);
+	int  WriteBool  (bool val);
+	int  WriteFloat (float val);
+	int  WriteDouble(double val);
 
 	int  WriteBytes(const uint8_t * data, int size);
 
@@ -81,21 +84,21 @@ public:
 	// Sets the base stream to the *stream*.
 	void SetStream(Stream * stream);
 
-	bool TryReadInt8(int8_t     *val);
+	bool TryReadInt8 (int8_t    *val);
 	bool TryReadInt16(int16_t   *val);
 	bool TryReadInt32(int32_t   *val);
 	bool TryReadInt64(int64_t   *val);
 
-	bool TryReadUInt8(uint8_t    *val);
+	bool TryReadUInt8 (uint8_t   *val);
 	bool TryReadUInt16(uint16_t  *val);
 	bool TryReadUInt32(uint32_t  *val);
 	bool TryReadUInt64(uint64_t  *val);
 
-	bool TryReadFloat(float   *val);
+	bool TryReadBool  (bool *val);
+	bool TryReadFloat (float   *val);
 	bool TryReadDouble(double *val);
 
-	bool TryReadBool(bool *val);
-
+	bool TryReadString(char * c, int maxSize);
 	bool TryReadString(String& c, int maxSize);
 	bool TryReadBytes(uint8_t * buffer, int size);
 	bool TryDiscardBytes(int size);
@@ -110,11 +113,12 @@ public:
 	uint32_t ReadUInt32();
 	uint64_t ReadUInt64();
 
-	float    ReadFloat();
-	double   ReadDouble();
+	bool   ReadBool();
+	float  ReadFloat();
+	double ReadDouble();
 
-	String   ReadString(int maxSize);
-	int      ReadBytes(uint8_t * buffer, int size);
-	void     DiscardBytes(int size);
+	String ReadString(int maxSize);
+	void   ReadString(char * str, int maxSize);
+	int    ReadBytes(uint8_t * buffer, int size);
+	void   DiscardBytes(int size);
 };
-

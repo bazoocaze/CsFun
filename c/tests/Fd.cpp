@@ -120,7 +120,7 @@ int Fd::BytesAvailable() const
 }
 
 
-int Fd::IsReadable(int fd)
+bool Fd::IsReadable(int fd)
 {
 fd_set fdread;
 int ret;
@@ -134,7 +134,7 @@ struct timeval t;
 }
 
 
-int Fd::IsWritable(int fd)
+bool Fd::IsWritable(int fd)
 {
 fd_set fdwrite;
 int ret;
@@ -179,7 +179,6 @@ const char * Fd::GetLastErrMsg() const
 {
 	return strerror(LastErr);
 }
-
 
 
 //////////////////////////////////////////////////////////////////////
@@ -240,6 +239,12 @@ const char * FdWriter::GetLastErrMsg()
 }
 
 
+bool FdWriter::IsError()
+{
+	return LastErr != RET_OK;
+}
+
+
 //////////////////////////////////////////////////////////////////////
 // FdWriter
 //////////////////////////////////////////////////////////////////////
@@ -266,12 +271,6 @@ void FdReader::SetFd(int fd)
 	m_fd = fd;
 	LastErr = RET_OK;
 	Eof = false;
-}
-
-
-bool FdReader::IsEof()
-{
-	return Eof;
 }
 
 

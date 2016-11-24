@@ -48,6 +48,7 @@ int ByteBuffer::Write(char c)
 
 int ByteBuffer::Write(const void * data, int index, int size)
 {
+	if(size <= 0) return 0;
 	if(!Resize(m_WritePos + size)) return RET_ERR;
 	vstr ptr = (vstr)m_ptr.Get();
 	memcpy(ptr + m_WritePos, ((char*)data) + index, size);
@@ -72,10 +73,31 @@ int ByteBuffer::Read(void * dest, int index, int size)
 {
 	if(size < 0) size = 0;
 	if(size > m_Length) size = m_Length;
-	if(size > 0){
+	if(size > 0) {
 		vstr ptr = (vstr)m_ptr.Get();
 		memcpy(((char*)dest) + index, ptr + m_ReadPos, size);
 	}
+	m_ReadPos += size;
+	m_Length -= size;
+	return size;
+}
+
+
+BytePtr ByteBuffer::ReadBlock(int size)
+{
+	if(size < 0) size = 0;
+	if(size > m_Length) size = m_Length;
+	BytePtr ret = BytePtr(this->m_ptr, m_ReadPos, size);
+	m_ReadPos += size;
+	m_Length -= size;
+	return ret;
+}
+
+
+int ByteBuffer::ConfirmRead(int size)
+{
+	if(size <= 0) return 0;
+	if(size > m_Length) size = m_Length;
 	m_ReadPos += size;
 	m_Length -= size;
 	return size;
@@ -115,18 +137,21 @@ int newSize;
 }
 
 
-int ByteBuffer::LockRead(void** dest) {
-	return LockRead(m_Length, dest);
+int ByteBuffer::LockRead(int size, void ** dest)
+{	
+	if(size <= 0) size = 0;
+	if(size > m_Length) size = m_Length;
+	vstr ptr = (vstr)m_ptr.Get();
+	*dest = (ptr + m_ReadPos);
+	return size;
 }
 
 
-int ByteBuffer::LockRead(int size, void ** dest)
+BytePtr ByteBuffer::LockRead(int size)
 {
-vstr ptr = (vstr)m_ptr.Get();
-	if(size <= 0) size = 16;
+	if(size < 0) size = 0;
 	if(size > m_Length) size = m_Length;
-	*dest = (ptr + m_ReadPos);
-	return size;
+	return BytePtr(this->m_ptr, m_ReadPos, size);
 }
 
 
@@ -169,42 +194,25 @@ int ByteBuffer::Length() const
 
 int  ByteBuffer::LockWrite(int size, void ** dest)
 {
-vstr ptr;
-
+	if(size < 0) size = 0;
+	Resize(m_WritePos + size);
 	if(m_Capacity - m_WritePos < size)
-	{
-		Resize(m_WritePos + size);
-
-		if(m_Capacity - m_WritePos < size)
-			size = m_Capacity - m_WritePos;
-	}
-
-	if(size < 0)
 		size = m_Capacity - m_WritePos;
 
-	ptr = (vstr)m_ptr.Get();
+	vstr ptr = (vstr)m_ptr.Get();
 	*dest = (ptr + m_WritePos);
-
 	return size;
 }
 
 
 BytePtr ByteBuffer::LockWrite(int size)
 {
+	if(size < 0) size = 0;
+	Resize(m_WritePos + size);
 	if(m_Capacity - m_WritePos < size)
-	{
-		Resize(m_WritePos + size);
-
-		if(m_Capacity - m_WritePos < size)
-			size = m_Capacity - m_WritePos;
-	}
-
-	if(size < 0)
 		size = m_Capacity - m_WritePos;
 
-	BytePtr ret = BytePtr(m_ptr, m_WritePos, size);
-
-	return ret;
+	return BytePtr(m_ptr, m_WritePos, size);
 }
 
 
@@ -230,6 +238,7 @@ int ByteBuffer::Capacity() const {
 }
 
 
+/*
 const char * ByteBuffer::GetStr()
 {
 vstr ptr;
@@ -237,7 +246,7 @@ vstr ptr;
 	ptr = (vstr)m_ptr.Get();
 	ptr[m_WritePos] = 0;	
 	return &ptr[m_ReadPos];
-}
+} */
 
 
 String ByteBuffer::GetString()
@@ -250,16 +259,16 @@ vstr ptr;
 }
 
 
-MemPtr ByteBuffer::GetMemPtr()
-{
-	return m_ptr;
-}
+// MemPtr ByteBuffer::GetMemPtr()
+// {
+// 	return m_ptr;
+// }
 
 
-uint8_t * ByteBuffer::GetPtr() const
-{
-	return (uint8_t*)m_ptr.Get();
-}
+// uint8_t * ByteBuffer::GetPtr() const
+// {
+// 	return (uint8_t*)m_ptr.Get();
+// }
 
 
 int ByteBuffer::ReadPos() const

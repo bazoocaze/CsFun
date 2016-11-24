@@ -59,7 +59,11 @@ public:
 	/* Discard from the input the total amount of bytes.
 	 * Returns the number of bytes discarded, or RET_ERR on error. */
 	virtual int DiscardBytes(int size);
-
+	
+	virtual bool IsEof() = 0;
+	
+	virtual bool IsError() = 0;
+	
 	/* Returns the last error code, or RET_OK in case of no error. */
 	virtual int GetLastErr() = 0;
 	
@@ -80,6 +84,8 @@ public:
 	int  Write(const void * c, int size)     { return size; }
 	int  ReadByte()                          { return INT_EOF; }
 	int  Read(void * buffer, int size)       { return 0; }
+	bool IsEof()                             { return true; }
+	bool IsError()                           { return false; }
 	int  GetLastErr()                        { return RET_OK; }
 	const char * GetLastErrMsg()             { return ""; }
 	
@@ -94,6 +100,8 @@ protected:
 	int m_fd;
 	// last error code
 	int m_lastErr;
+	// Eof flag
+	bool m_Eof;
 
 public:
 	// Constructs a closed fd stream
@@ -122,6 +130,12 @@ public:
 
 	// Read a block of bytes from the fd. Returns the number of bytes read, 0 on EOF, or RET_ERR on error.
 	int  Read(void * buffer, int size);
+	
+	/* Returns true/false if on end of file/stream. */
+	bool IsEof();
+	
+	/* Returns true/false if error found. */
+	bool IsError();
 
 	// Returns the last error code, or RET_OK in case of no error found
 	int  GetLastErr();
@@ -129,4 +143,3 @@ public:
 	// Returns the string message for the last error code
 	const char * GetLastErrMsg();
 };
-

@@ -120,6 +120,9 @@ protected:
 	int printFloat(float  number, int digits);
 
 public:
+
+	virtual bool IsError() = 0;
+
 	// Returns the last error code, or RET_OK if not error found.
 	virtual int GetLastErr() {
 		return RET_OK;
@@ -177,7 +180,7 @@ public:
 	virtual bool IsEof() = 0;
 
 	/* True/false on error. */
-	virtual bool IsError() { return GetLastErr()!=RET_OK; }
+	virtual bool IsError() = 0; // { return GetLastErr()!=RET_OK; }
 
 	// Returns the last error code, or RET_OK if not error found.
 	virtual int GetLastErr() = 0;
@@ -223,6 +226,9 @@ public:
 
 	/* Returns the string message for the last error code. */
 	virtual const char * GetLastErrMsg();
+	
+	/* Returns true/false if error found. */
+	virtual bool IsError();
 
 	int  Write(const uint8_t c);
 	int  Write(const uint8_t * c, int size);
@@ -235,7 +241,6 @@ class StreamReader : public TextReader
 protected:
 	// Internal base stream.
 	Stream  * m_stream;
-	bool      Eof;
 
 public:
 	// Default constructor that reads from an empty stream.
@@ -248,6 +253,8 @@ public:
 	void Close();
 
 	bool IsEof();
+	
+	bool IsError();
 
 	// Returns the last error code, or RET_OK if not error found.
 	virtual int GetLastErr();
@@ -265,8 +272,32 @@ class NullText : public TextReader, public TextWriter
 {
 public:
 	bool IsEof()                 { return true; }
+	bool IsError()               { return false; }
 	int GetLastErr()             { return RET_OK; }
 	const char* GetLastErrMsg()  { return ""; }
 	int Read()                   { return INT_EOF; }
 	int Write(const uint8_t c)   { return 1; }
+};
+
+
+class NullReader : public TextReader
+{
+public:
+	bool IsEof()         { return true; }
+	bool IsError()       { return false; }
+	int  GetLastErr()    { return RET_OK; }
+	cstr GetLastErrMsg() { return ""; }
+	int Read()           { return INT_EOF; }
+};
+
+
+class NullWriter : public TextWriter
+{
+public:
+	// bool IsEof()         { return true; }
+	bool IsError()       { return false; }
+	int  GetLastErr()    { return RET_OK; }
+	cstr GetLastErrMsg() { return ""; }
+	int Write(const uint8_t c)             { return 1; }
+	int Write(const uint8_t * c, int size) { return size; }
 };

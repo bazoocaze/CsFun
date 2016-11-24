@@ -41,7 +41,7 @@ void BinaryWriter::Close()
 }
 
 
-int BinaryWriter::WriteInt8(uint8_t val)
+int BinaryWriter::WriteUInt8(uint8_t val)
 {
 	m_stream->Write(val); return 1;
 }

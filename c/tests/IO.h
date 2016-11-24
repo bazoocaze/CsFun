@@ -25,7 +25,7 @@
 #include "Config.h"
 
 
-// Represents a stream for a file on disk
+// Represents a stream for a file on disk.
 class FileStream : public FdStream
 {
 protected:

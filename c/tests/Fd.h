@@ -69,8 +69,15 @@ public:
 	 * Returns true/false if success in changing state. */
 	bool SetNonBlock(int enabled);
 
-	static int  IsReadable(int fd);
-	static int  IsWritable(int fd);
+	// --- Static methods ---
+
+	/* Tests if the fd is readable (i.e. can read data without blocking). */
+	static bool IsReadable(int fd);
+
+	/* Tests if the fd is writeable (i.e. can write data without blocking). */
+	static bool IsWritable(int fd);
+
+	/* Adjusts the non-blocking state of the fd. */
 	static bool SetNonBlock(int fd, int enable);
 
 	/* Get the number of bytes that are immediately available for reading. */
@@ -103,6 +110,9 @@ public:
 	
 	/* Returns string message for the last error code. */
 	virtual const char * GetLastErrMsg();
+	
+	/* Returns true/false if error found. */
+	virtual bool IsError();
 
 	int Write(uint8_t c);
 	int Write(const uint8_t * buffer, int size);
@@ -131,7 +141,9 @@ public:
 	// Sets the base fd to the fd informed.
 	void SetFd(int fd);
 
-	bool IsEof();
+	bool IsEof() { return Eof; }
+	
+	bool IsError() { return LastErr != RET_OK; }
 	
 	/* Returns the error code for the last error,
 	 * of RET_OK if no error found. */

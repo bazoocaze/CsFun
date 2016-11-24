@@ -118,7 +118,7 @@ int count = 3;
 		// {
 			TcpClient client;
 			StdOut.println("Waiting for client...");
-			if(listener.Accept(client))
+			if(listener.Accept(client, 10000))
 			{
 				StdOut.println("Client connected...");
 
@@ -137,8 +137,9 @@ int count = 3;
 				client.Close();
 
 				StdOut.println("Client disconnected...");
+			} else {
+				StdOut.println("Failed to accept client");
 			}
-		// }
 		delay(1000);
 	}
 	listener.Stop();
@@ -157,13 +158,13 @@ void TesteCliente()
 		Stream * s = client.GetStream();
 		StreamWriter sw = StreamWriter(s);
 		StreamReader sr = StreamReader(s);
-		char linha[1000];
 		sw.println("GET /index.html HTTP/1.0");
 		sw.println("");
 		delay(100);
 		while(!(sr.IsEof() || sr.IsError()))
 		{
-			sr.ReadLine(linha, sizeof(linha));
+			String linha;
+			sr.ReadLine(linha, 1024);
 			StdOut.printf("[Lido:%z]", &linha);
 		}
 	}
@@ -285,8 +286,8 @@ void main_main()
 
 	// TesteIPAddress();
 	// TesteDns();
-	TesteListener();
-	// TesteCliente();
+	// TesteListener();
+	TesteCliente();
 	// TesteSb();
 	// TesteHexDump();
 	// TesteBinary();

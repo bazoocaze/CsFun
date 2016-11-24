@@ -26,6 +26,7 @@
 #include "TcpClient.h"
 #include "Config.h"
 #include "Logger.h"
+#include "FdSelect.h"
 
 
 TcpListener::TcpListener()
@@ -70,14 +71,15 @@ bool TcpListener::Start(const IPEndPoint& localEP)
 		return false;
 	}
 
+	/* create TCP socket for the family. */
 	if(!m_sock.Create(addr.GetFamily(), SOCK_STREAM))
 	{
 		LogErr("socket()");
 		return false;
 	}
 	
-	/* adjust socket to non-blocking */
-	m_sock.SetNonBlock(true);
+	// /* adjust socket to non-blocking */
+	// m_sock.SetNonBlock(true);
 	
 	/* bind into address_any and port */
 	if(!m_sock.Bind(addr))
@@ -87,7 +89,7 @@ bool TcpListener::Start(const IPEndPoint& localEP)
 		return false;
 	}
 
-	if(!m_sock.Listen(1))
+	if(!m_sock.Listen(P_NETWORK_SOCK_BACKLOG))
 	{
 		m_sock.Close();
 		LogErr("listen()");
@@ -110,6 +112,13 @@ bool TcpListener::Available() const {
 }
 
 
+bool TcpListener::WaitAvailable(int timeoutMillis) const {
+	if(m_sock.IsClosed()) return false;
+	int status = FdSelect::Wait(m_sock.GetFd(), SEL_READ | SEL_ERROR, timeoutMillis);
+	return (HAS_FLAG(status, SEL_READ));
+}
+
+
 bool TcpListener::InternalAccept(TcpClient& cliente)
 {
 int clientfd;
@@ -128,7 +137,7 @@ SockAddr addr;
 	Logger::LogMsg(
 			LEVEL_DEBUG,
 			"TCP client %z accepted on %z (fd %d)",
-			remoteEP,
+			&remoteEP,
 			&m_endpoint,
 			clientfd);
 	cliente.SetFd(clientfd);
@@ -139,6 +148,16 @@ SockAddr addr;
 bool TcpListener::Accept(TcpClient &cliente) {
 	if(!IsListening()) return false;
 	m_sock.SetNonBlock(false);
+	return InternalAccept(cliente);
+}
+
+
+bool TcpListener::Accept(TcpClient &cliente, int timeoutMillis)
+{
+	if(!IsListening()) return false;
+	int status = FdSelect::Wait(m_sock.GetFd(), SEL_READ | SEL_ERROR, timeoutMillis);
+	if(!HAS_FLAG(status, SEL_READ))
+		return false;
 	return InternalAccept(cliente);
 }
 

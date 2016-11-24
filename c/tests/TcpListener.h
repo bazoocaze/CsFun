@@ -60,11 +60,22 @@ public:
 	/* Returns true/false if the server has an connection pending for Accept(). */
 	bool Available() const;
 
+	/* Waits the timeout for a connection availability.
+	 * Returns true/false if the server has an connection pending for Accept(). */
+	bool WaitAvailable(int timeoutMillis) const;
+
 	/* Accepts a pending connection.
 	 * Puts the accepted connection on the TcpClient.
 	 * If no connection is pending, then awaits for a new connection and accepts it.
 	 * Returns true/false on success accepting. */
 	bool Accept(TcpClient & client);
+
+	/* Accepts a pending connection.
+	 * Puts the accepted connection on the TcpClient.
+	 * If no connection is pending, then awaits the timeout
+	 * for a new connection and accepts it.
+	 * Returns true/false on success accepting. */
+	bool Accept(TcpClient & client, int timeoutMillis);
 	
 	/* Accepts a pending connection.
 	 * Puts the accepted connection on the TcpClient.

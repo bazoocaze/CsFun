@@ -21,6 +21,8 @@
 #define RET_ENUM_STR(var, val)        if(var == val) return #val
 #define RET_ENUM_DESC(var, val, desc) if(var == val) return desc
 
+#define HAS_FLAG(flags, bit) ((flags & bit) == bit)
+
 #ifndef MAX
 #define MAX(a,b) ((a)>=(b)?(a):(b))
 #endif /* !MAX */

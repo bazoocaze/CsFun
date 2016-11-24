@@ -28,6 +28,8 @@ NullStream Stream::Null = NullStream();
 //////////////////////////////////////////////////////////////////////
 
 
+/* Default discard bytes implementation.
+ * Reads and discards block of bytes from input. */
 int Stream::DiscardBytes(int size)
 {
 	uint8_t buffer[128];
@@ -43,6 +45,7 @@ int Stream::DiscardBytes(int size)
 }
 
 
+
 //////////////////////////////////////////////////////////////////////
 // FdStream
 //////////////////////////////////////////////////////////////////////
@@ -53,6 +56,7 @@ FdStream::FdStream()
 {
 	m_fd = CLOSED_FD;
 	m_lastErr = RET_OK;
+	m_Eof = false;
 }
 
 
@@ -60,6 +64,7 @@ FdStream::FdStream(int fd)
 {
 	m_fd = fd;
 	m_lastErr = RET_OK;
+	m_Eof = false;
 }
 
 
@@ -69,6 +74,7 @@ void FdStream::Close()
 		close(m_fd);
 		m_fd = CLOSED_FD;
 		m_lastErr = RET_OK;
+		m_Eof = false;
 	}
 }
 
@@ -77,6 +83,7 @@ void FdStream::SetFd(int fd)
 {
 	m_fd = fd;
 	m_lastErr = RET_OK;
+	m_Eof = false;
 }
 
 
@@ -90,6 +97,14 @@ int FdStream::GetLastErr()
 
 const char * FdStream::GetLastErrMsg()
 { return strerror(m_lastErr); }
+
+
+bool FdStream::IsEof()
+{ return m_Eof; }
+
+
+bool FdStream::IsError()
+{ return m_lastErr == RET_ERR; }
 
 
 int FdStream::Write(const uint8_t c)
@@ -116,7 +131,7 @@ int  FdStream::ReadByte()
 {
 uint8_t c;
 int ret = read(m_fd, &c, 1);
-	if(ret==0) { return INT_EOF; }
+	if(ret==0) { m_Eof = true; return INT_EOF; }
 	if(ret<0)  { m_lastErr = errno; return INT_ERR; }
 	return (int)c;
 }
@@ -125,7 +140,8 @@ int ret = read(m_fd, &c, 1);
 int  FdStream::Read(void * buffer, int size)
 {
 int ret = read(m_fd, buffer, size);
-	if(ret < 0) m_lastErr = errno;
+	if(ret < 0)  m_lastErr = errno;
+	if(ret == 0) m_Eof = true;
 	return ret;
 }
 
@@ -150,7 +166,9 @@ int MemoryStream::Length() const
 
 const uint8_t * MemoryStream::GetReadPtr()
 {
-	return m_buffer.GetPtr() + m_buffer.ReadPos();
+void * ret;
+	m_buffer.LockRead(0, &ret);
+	return (uint8_t *)ret;
 }
 
 
@@ -163,6 +181,18 @@ int MemoryStream::GetLastErr()
 const char * MemoryStream::GetLastErrMsg()
 {
 	return "";
+}
+
+
+bool MemoryStream::IsEof()
+{
+	return (m_buffer.Length() == 0);
+}
+
+
+bool MemoryStream::IsError()
+{
+	return false;
 }
 
 

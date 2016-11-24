@@ -54,4 +54,11 @@ public:
 	
 	/* Returns the string message for the last error code. */
 	const char * GetLastErrMsg();
+	
+	/* Returns/false if the buffer is empty. */
+	bool IsEof();
+	
+	/* Returns trye/false if error found.
+	 * Default implementation allways return false. */
+	bool IsError();
 };

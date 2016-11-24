@@ -41,6 +41,7 @@
     <File Name="outro.cpp"/>
     <File Name="gpb.cpp"/>
     <File Name="teste.cpp"/>
+    <File Name="info.txt"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>
@@ -66,6 +67,7 @@
     <File Name="Text.h"/>
     <File Name="Threading.h"/>
     <File Name="Util.h"/>
+    <File Name="FdSelect.h"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

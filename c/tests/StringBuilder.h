@@ -28,6 +28,8 @@ public:
 
 	int Write(uint8_t c);
 	int Write(uint8_t * buffer, int size);
+	
+	bool IsError() { return false; }
 
 	// const char * GetStr();
 	
@@ -36,4 +38,3 @@ public:
 	 * empty state. */
 	String GetString();
 };
-

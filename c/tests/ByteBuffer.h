@@ -51,7 +51,8 @@ public:
 };
 
 
-// Represents a dynamic growing writable/readable byte buffer.
+/* Represents a dynamic growing writable/readable byte buffer.
+ * The allocated memory is automatic released on destruction. */
 class ByteBuffer
 {
 private:
@@ -96,14 +97,14 @@ public:
 	/* Returns the write pos index. */
 	int WritePos() const;
 
-	/* Returns the pointer to the base memory of the buffer. */
-	uint8_t * GetPtr() const;
+	/* Constructs and returns a null-terminated String representation
+	 * from the contents of the buffer.
+	 * Uses zero-copy referencing to construct the String.
+	 * The String contents are valid until the next change to the buffer.
+	 * Do Clear() the buffer to make the String content permanent. */
+	String GetString();
 
-	const char * GetStr();
-	String       GetString();
-	MemPtr       GetMemPtr();
-
-	/* Clear the buffer, discarding the stored data. */
+	/* Clear the buffer, discarding the stored data and releasing the memory. */
 	void Clear();
 
 	/* Write data to the buffer. */
@@ -125,22 +126,34 @@ public:
 	// Updates the write cursor to reflect a lock write of *confirmBytes* bytes.
 	void ConfirmWrite(int confirmBytes);
 
+
 	/* Read a byte from the buffer. Return the byte read, or INT_EOF if the buffer is empty. */
 	int ReadByte();
 	
 	/* Read a block of maximum *size* bytes of data from the buffer.
 	 * Returns the number of bytes read. */
 	int Read(void * dest, int index, int size);
-	
+
+	/* Read a block of bytes from the buffer.
+	 * Returns the pointer to the read data (ptr and size). */
+	BytePtr ReadBlock(int size);
+
 	/* Lock an area of the buffer for reading.
-	 * Returns the number of bytes locked for reading.
+	 * Returns the pointer to the locked data (ptr and size).
+	 * Returns a valid pointer even if size is zero.
+	 * Use ConfirmRead() to confirm the number of bytes read.
 	 * The area is valid until the next change on the buffer (read or write). */
-	int LockRead(void ** dest);
+	BytePtr LockRead(int size);
 	
 	/* Lock an area of the buffer for reading, with maximum of *size* bytes.
 	 * Returns the number of bytes locked for reading.
-	 * The area is valid until the next change on the buffer (read or write). */	
+	 * The area is valid until the next change on the buffer (read or write). */
 	int LockRead(int size, void ** dest);
+
+	/* Confirm the number of bytes read by a LockRead or ReadBlock.
+	 * Updates the read cursor pointer.
+	 * Returns the number of confirmed bytes. */
+	int ConfirmRead(int size);
 
 	/* Discards bytes from the read buffer.
 	 * Returns the number of bytes discarded. */

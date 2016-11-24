@@ -17,6 +17,7 @@
 #define P_NETWORK_READ_SIZE        1024
 #define P_NETWORK_WRITE_SIZE       128
 #define P_NETWORK_READ_TIMEOUT     2000
+#define P_NETWORK_SOCK_BACKLOG     1
 
 
 #define HAVE_CONSOLE
