@@ -12,6 +12,7 @@
 
 #include "Ptr.h"
 #include "Util.h"
+#include "IO.h"
 
 
 struct MemPtr_s {
@@ -158,17 +159,17 @@ FdPtr::FdPtr(int fd) {
 FdPtr::FdPtr(const FdPtr& other) {
    this->ref = other.ref;
    this->Fd  = other.Fd;
-   add();
+   AddRef();
 }
 
 FdPtr& FdPtr::operator=(const FdPtr& other)
 {
    if(other.ref == this->ref)
       return *this;
-   release();
+   ReleaseRef();
    this->ref = other.ref;
    this->Fd  = other.Fd;
-   add();
+   AddRef();
    return *this;
 }
 
@@ -185,7 +186,7 @@ void FdPtr::Close()
 void FdPtr::Set(int fd)
 {
 	if(Fd == fd) return;
-	release();
+	ReleaseRef();
 	this->Fd = fd;
 	if(fd == CLOSED_FD) {
 		this->ref = NULL;
@@ -195,18 +196,18 @@ void FdPtr::Set(int fd)
 	}
 }
 
-void FdPtr::add()
+void FdPtr::AddRef()
 {
    if(ref != NULL) ref->count++;
 }
 
-void FdPtr::release()
+void FdPtr::ReleaseRef()
 {
    if(ref == NULL) return;
    ref->count--;
    if(ref->count > 0) return;
 
-   printf("[fd.close(%d)]", Fd);
+   StdErr.printf("[FdPtr:close(%d)]", Fd);
 
    if(Fd != CLOSED_FD) close(Fd);
    if(ref)             UTIL_MEM_FREE(ref);
@@ -214,3 +215,7 @@ void FdPtr::release()
    Fd  = CLOSED_FD;
 }
 
+void FdPtr::Debug()
+{
+	StdErr.printf("[FdPtr:fd=%d,c=%d,ref=%p]", Fd, (ref != NULL) ? ref->count : 0, ref);
+}

@@ -82,8 +82,8 @@ private:
 	FdPtr_t * ref;
 
 protected:
-	void add();
-	void release();
+	void AddRef();
+	void ReleaseRef();
 
 public:
 	// Cached read-only copy of the managed file descriptor.
@@ -112,5 +112,7 @@ public:
 
 	// Release the current fd and begin management for the new fd.
 	void Set(int fd);
+
+	void Debug();
 };
 

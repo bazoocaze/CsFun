@@ -73,14 +73,24 @@ int SockAddr::GetPort() const
 	return 0;
 }
 
-const sockaddr * SockAddr::GetSockAddr() const
+sockaddr * SockAddr::GetSockAddr() const
 {
-	return &(m_addr.sa);
+	return (sockaddr*)&(m_addr.sa);
 }
 
 int SockAddr::GetSize() const
 {
 	return m_size;
+}
+
+int SockAddr::GetMaxSize() const
+{
+	return sizeof(m_addr);
+}
+
+void SockAddr::SetSize(int size)
+{
+	m_size = size;
 }
 
 bool SockAddr::IsValid() const

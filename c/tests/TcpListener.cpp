@@ -113,7 +113,8 @@ bool TcpListener::Available() const {
 bool TcpListener::InternalAccept(TcpClient& cliente)
 {
 int clientfd;
-	clientfd = m_sock.Accept();
+SockAddr addr;
+	clientfd = m_sock.Accept(addr);
 	if(clientfd == RET_ERROR) {
 		Logger::LogMsg(
 				LEVEL_ERROR,
@@ -123,9 +124,11 @@ int clientfd;
 				m_sock.GetLastErrMsg());
 		return false;
 	}
+	IPEndPoint remoteEP = IPEndPoint(addr);
 	Logger::LogMsg(
 			LEVEL_DEBUG,
-			"TCP client accepted on %z (fd %d)",
+			"TCP client %z accepted on %z (fd %d)",
+			remoteEP,
 			&m_endpoint,
 			clientfd);
 	cliente.SetFd(clientfd);

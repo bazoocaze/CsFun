@@ -9,16 +9,17 @@
 #pragma once
 
 
-#include "Util.h"
+// #include "Util.h"
 
 
 #define P_BUFFER_START_SIZE        256
-#define P_DEFAULT_LOG_LEVEL        (LEVEL_VERBOSE)
+#define P_DEFAULT_LOG_LEVEL        LEVEL_VERBOSE
 #define P_NETWORK_READ_SIZE        1024
 #define P_NETWORK_WRITE_SIZE       128
 #define P_NETWORK_READ_TIMEOUT     2000
-#define P_PROTOCOLO_SLOW_TICK_MS   15000
-#define P_PROTOCOLO_TIPO_DEBUG     0
-#define P_MONITOR_TCP_PORT         32323
-#define TCP_DNS_USE_getaddrinfo    (FALSE)
+
+
+#define HAVE_CONSOLE
+#define HAVE_DNS_getaddrinfo
+#define HAVE_THREAD_pthreads
 

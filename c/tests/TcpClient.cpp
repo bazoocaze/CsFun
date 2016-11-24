@@ -39,7 +39,7 @@ TcpClient::TcpClient(int clientfd)
 {
 	m_sock.SetFd(clientfd);
 	m_stream.SetFd(clientfd);
-	Logger::LogMsg(LEVEL_VERBOSE, "TcpClient:create with fd=%d", GetFd());
+	Logger::LogMsg(LEVEL_VERBOSE, "Created network client (fd %d)", GetFd());
 	m_state = STATE_CONNECTED;
 }
 
@@ -94,7 +94,7 @@ bool TcpClient::Connect(const IPEndPoint& remoteEP)
 			m_state = STATE_CONNECTING;
 		errno = RET_OK;
 		m_sock.LastErr = RET_OK;
-		Logger::LogMsg(LEVEL_VERBOSE, "TcpClient:connected with fd=%d", GetFd());
+		Logger::LogMsg(LEVEL_VERBOSE, "Connected on %z (fd %d)", &addr, GetFd());
 		return true;
 	} else {
 		ret = errno;
@@ -114,7 +114,7 @@ void TcpClient::Close()
 void TcpClient::InternalClose(ConnectionStateEnum newState, int errorCode)
 {
 	if(!m_sock.IsClosed())	{
-		Logger::LogMsg(LEVEL_VERBOSE, "TcpClient:closefd(%d)", GetFd());
+		Logger::LogMsg(LEVEL_VERBOSE, "Closing TCP client (fd %d)", GetFd());
 		m_sock.Close();
 	}
 	m_sock.LastErr = errorCode;

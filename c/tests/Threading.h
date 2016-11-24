@@ -9,7 +9,13 @@
 #pragma once
 
 
-#include <pthread.h>
+#include "Config.h"
+
+#if defined HAVE_THREAD_pthreads
+	#include <pthread.h>
+#else
+	typedef int pthread_t;
+#endif
 
 
 // Represents a monitor sincronization primitive.
@@ -52,7 +58,7 @@ protected:
 	static void * ThreadEntry(void * arg);
 
 	// Start a new thread.
-	bool Run();
+	bool Start();
 
 public:
 	// Thread Id of the created thread.
@@ -62,11 +68,11 @@ public:
 	Thread();
 
 	// Starts a new thread running the entry point informed.
-	bool Run(ThreadStart_t entry);
+	bool Start(ThreadStart_t entry);
 	
 	/* Start a new thread running the entry point informed
 	 * and passing the data as argument. */
-	bool Run(ThreadStart_t entry, void * data);
+	bool Start(ThreadStart_t entry, void * data);
 
 	// Join the running thread / waits for it's finalization.
 	void Join();

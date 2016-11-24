@@ -42,7 +42,7 @@ const char* LogLevelDesc(LogLevelEnum level) {
 
 
 TextWriter*  Logger::Default  = &StdErr;
-LogLevelEnum Logger::LogLevel = LEVEL_VERBOSE;
+LogLevelEnum Logger::LogLevel = P_DEFAULT_LOG_LEVEL;
 
 
 void Logger::LogMsg(LogLevelEnum level, const char * fmt, ...)

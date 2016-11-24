@@ -24,6 +24,7 @@
 class Printable;
 class TextWriter;
 class String;
+class NullText;
 
 
 /** The Printable class provides a way for new classes to allow themselves to be printed.
@@ -35,8 +36,10 @@ class Printable
 {
 public:
 	// Print the current instance to the writer
-	virtual int printTo(TextWriter& p) const { return 0; }
-	
+	virtual int printTo(TextWriter& p) const {
+		return 0;
+	}
+
 	// Returns the string representation of the current instance
 	String ToString() const;
 };
@@ -118,10 +121,14 @@ protected:
 
 public:
 	// Returns the last error code, or RET_OK if not error found.
-	virtual int GetLastErr() { return RET_OK; }
-	
+	virtual int GetLastErr() {
+		return RET_OK;
+	}
+
 	// Returns the string message for the last error code.
-	virtual const char * GetLastErrMsg() { return ""; }
+	virtual const char * GetLastErrMsg() {
+		return "";
+	}
 
 	virtual int Write(const uint8_t c) = 0;
 	virtual int Write(const uint8_t * c, int size);
@@ -156,6 +163,9 @@ public:
 	// Print the data using printf semantics. You can also
 	// use %z to print *Printable* objects.
 	int printf(const char* fmt, va_list ap);
+
+	// Represents a null writer.
+	static NullText Null;
 };
 
 
@@ -163,9 +173,15 @@ public:
 class TextReader
 {
 public:
+	/* True/false on EndOfStream/File. */
+	virtual bool IsEof() = 0;
+
+	/* True/false on error. */
+	virtual bool IsError() { return GetLastErr()!=RET_OK; }
+
 	// Returns the last error code, or RET_OK if not error found.
 	virtual int GetLastErr() = 0;
-	
+
 	// Returns the string message for the last error code.
 	virtual const char * GetLastErrMsg() = 0;
 
@@ -179,6 +195,9 @@ public:
 	/* Read a line of text, terminated by LF character, and put in the ret string.
 	 * Returns true/false if success. */
 	virtual bool ReadLine(String& ret, int maxSize);
+
+	// Represents a null writer.
+	static NullText Null;
 };
 
 
@@ -188,20 +207,20 @@ class StreamWriter : public TextWriter
 protected:
 	// Internal base stream.
 	Stream * m_stream;
-	
+
 public:
 	// Default constructor that writes to a null stream.
 	StreamWriter();
-	
+
 	// Constructor that writes on the target stream.
 	StreamWriter(Stream * stream);
-	
+
 	/* Closes the writer. Does not close the stream. */
 	void Close();
 
 	/* Returns the last error code, or RET_OK if not error found. */
 	virtual int GetLastErr();
-	
+
 	/* Returns the string message for the last error code. */
 	virtual const char * GetLastErrMsg();
 
@@ -216,23 +235,38 @@ class StreamReader : public TextReader
 protected:
 	// Internal base stream.
 	Stream  * m_stream;
-	
+	bool      Eof;
+
 public:
 	// Default constructor that reads from an empty stream.
 	StreamReader();
-	
+
 	// Constructor that reads from the source stream.
 	StreamReader(Stream * stream);
-	
+
 	/* Closes the reader. Does not close the stream. */
 	void Close();
 
+	bool IsEof();
+
 	// Returns the last error code, or RET_OK if not error found.
 	virtual int GetLastErr();
-	
+
 	// Returns the string message for the last error code.
 	virtual const char * GetLastErrMsg();
 
 	int  Read();
 	int  Read(uint8_t * c, int size);
+};
+
+
+// Represents a null text reader/writer (EOF on read and null store on write).
+class NullText : public TextReader, public TextWriter
+{
+public:
+	bool IsEof()                 { return true; }
+	int GetLastErr()             { return RET_OK; }
+	const char* GetLastErrMsg()  { return ""; }
+	int Read()                   { return INT_EOF; }
+	int Write(const uint8_t c)   { return 1; }
 };

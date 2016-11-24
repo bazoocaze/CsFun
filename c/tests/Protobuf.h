@@ -56,10 +56,10 @@ protected:
 	// ByteBuffer *m_buffer;
 
 	/* Calculates the size in bytes of the varint32 value. */
-	static int CalculateVarint32Size(int val);
+	static int CalculateVarint32Size(int32_t val);
 
 	/* Writes a varint32 value to the destination. */
-	void WriteVarint32(int val);
+	void WriteVarint32(int32_t val);
 	
 	/* Writes a byte to the destination. */
 	void WriteByte(uint8_t c);
@@ -78,23 +78,45 @@ public:
 	static const int P_STRING_WIRETYPE  = P_WIRETYPE_DELIMITED;
 	static const int P_MESSAGE_WIRETYPE = P_WIRETYPE_DELIMITED;
 
-	static int CalculateInt32Size(int fieldNumber, int val);
-	static int CalculateBoolSize(int fieldNumber, bool val);
-	static int CalculateStringSize(int fieldNumber, const char * val);
-	static int CalculateStringSize(int fieldNumber, const String& val);
-	static int CalculateBytesSize(int fieldNumber, int size);
+	static int CalculateInt8Size   (int fieldNumber, int8_t val);
+	static int CalculateInt16Size  (int fieldNumber, int16_t val);
+	static int CalculateInt32Size  (int fieldNumber, int32_t val);
+	static int CalculateInt64Size  (int fieldNumber, int64_t val);
+
+	static int CalculateUInt8Size  (int fieldNumber, uint8_t val);
+	static int CalculateUInt16Size (int fieldNumber, uint16_t val);
+	static int CalculateUInt32Size (int fieldNumber, uint32_t val);
+	static int CalculateUInt64Size (int fieldNumber, uint64_t val);
+
+	static int CalculateFloatSize  (int fieldNumber, float val);
+	static int CalculateDoubleSize (int fieldNumber, double val);
+	static int CalculateBoolSize   (int fieldNumber, bool val);
+
+	static int CalculateStringSize (int fieldNumber, const char * val);
+	static int CalculateStringSize (int fieldNumber, const String& val);
+	static int CalculateBytesSize  (int fieldNumber, int size);
 	static int CalculateMessageSize(int fieldNumber, const IMessage& val);
 
 	CodedOutputStream();
 	CodedOutputStream(Stream* output);
 
-	void WriteInt8(int fieldNumber,    int8_t val);
-	void WriteInt16(int fieldNumber,   int16_t val);
-	void WriteInt32(int fieldNumber,   int32_t val);
-	void WriteBool(int fieldNumber,    bool val);
-	void WriteString(int fieldNumber,  const char * val);
-	void WriteString(int fieldNumber,  const String& val);
-	void WriteBytes(int fieldNumber,   const void * val, int size);
+	void WriteInt8   (int fieldNumber, int8_t val);
+	void WriteInt16  (int fieldNumber, int16_t val);
+	void WriteInt32  (int fieldNumber, int32_t val);
+	void WriteInt64  (int fieldNumber, int64_t val);
+
+	void WriteUInt8  (int fieldNumber, uint8_t val);
+	void WriteUInt16 (int fieldNumber, uint16_t val);
+	void WriteUInt32 (int fieldNumber, uint32_t val);
+	void WriteUInt64 (int fieldNumber, uint64_t val);
+
+	void WriteFloat  (int fieldNumber, float val);
+	void WriteDouble (int fieldNumber, double val);
+	void WriteBool   (int fieldNumber, bool val);
+
+	void WriteString (int fieldNumber, const char * val);
+	void WriteString (int fieldNumber, const String& val);
+	void WriteBytes  (int fieldNumber, const void * val, int size);
 	void WriteMessage(int fieldNumber, IMessage& val);
 };
 
@@ -109,13 +131,13 @@ protected:
 	int  CurrentWireType;
 	
 	/* Read a varint32 from source. Return the value read or 0 on error. */ 
-	int ReadVarint32();
+	int32_t ReadVarint32();
 
 	/* Read a varint64 from source. Return the value read or 0 on error. */ 
 	int64_t ReadVarint64();
 	
 	/* Read a varint32 from source. Return true/false on success. *Val* is set to zero on error. */ 
-	bool ReadVarint32(int & val);
+	bool ReadVarint32(int32_t & val);
 
 	/* Read a varint64 from source. Return true/false on success. *Val* is set to zero on error. */ 
 	bool ReadVarint64(int64_t & val);
@@ -140,13 +162,25 @@ public:
 	/* Skip/discard the data for unknow/unprocessed fields. */
 	void   SkipLastField();
 	
-	bool   ReadInt32(int fieldNumber,   int & val);
-	bool   ReadBool(int fieldNumber,    bool & val);
-	bool   ReadString(int fieldNumber,  String & val);
-	bool   ReadMessage(int fieldNumber, IMessage & val);
+	bool   ReadInt8    (int fieldNumber, int8_t & val);
+	bool   ReadInt16   (int fieldNumber, int16_t & val);
+	bool   ReadInt32   (int fieldNumber, int32_t & val);
+	bool   ReadInt64   (int fieldNumber, int64_t & val);
+
+	bool   ReadUInt8   (int fieldNumber, uint8_t & val);
+	bool   ReadUInt16  (int fieldNumber, uint16_t & val);
+	bool   ReadUInt32  (int fieldNumber, uint32_t & val);
+	bool   ReadUInt64  (int fieldNumber, uint64_t & val);
+
+	bool   ReadBool    (int fieldNumber, bool & val);
+	bool   ReadFloat   (int fieldNumber, float & val);
+	bool   ReadDouble  (int fieldNumber, double & val);
+
+	bool   ReadString  (int fieldNumber, String & val);
+	bool   ReadMessage (int fieldNumber, IMessage & val);
 	
-	bool   ReadBytes(int fieldNumber,   void ** val);
-	bool   ReadBytes(int fieldNumber,   void ** val, int size);
+	bool   ReadBytes   (int fieldNumber,   void ** val);
+	bool   ReadBytes   (int fieldNumber,   void ** val, int size);
 };
 
 

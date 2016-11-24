@@ -104,24 +104,45 @@ void TesteIPAddress()
 
 void TesteListener()
 {
-int count = 10;
+int count = 3;
+	StdOut.println("TesteListener:BEGIN");
 	TcpListener listener;
 	listener.Start(IPAddress::Any, 12345);
+	if(!listener.IsListening())
+	{
+		return;
+	}
 	while(--count > 0)
 	{
-		if(listener.Available())
-		{
+		// if(listener.Available())
+		// {
 			TcpClient client;
+			StdOut.println("Waiting for client...");
 			if(listener.Accept(client))
 			{
-				// client.println("Alfa");
-				// client.println("Bravo");
+				StdOut.println("Client connected...");
+
+				FdWriter wr(client.GetFd());
+				FdReader rd(client.GetFd());
+
+				String linha;
+
+				while(!(rd.IsEof() || rd.IsError()))
+				{
+					wr.println("Alfa");
+					rd.ReadLine(linha, sizeof(linha));
+					StdOut.printf("[Lido:%z]", &linha);
+				}
+
 				client.Close();
+
+				StdOut.println("Client disconnected...");
 			}
-		}
+		// }
 		delay(1000);
 	}
 	listener.Stop();
+	StdOut.println("TesteListener:END");
 }
 
 
@@ -140,15 +161,10 @@ void TesteCliente()
 		sw.println("GET /index.html HTTP/1.0");
 		sw.println("");
 		delay(100);
-		while(true)
+		while(!(sr.IsEof() || sr.IsError()))
 		{
-			int lidos = sr.ReadLine(linha, sizeof(linha));
-			printf("[lidos=%d]", lidos);
-			if(lidos < 0)
-			{
-				break;
-			}
-			printf("[linha=%s]\n", linha);
+			sr.ReadLine(linha, sizeof(linha));
+			StdOut.printf("[Lido:%z]", &linha);
 		}
 	}
 	else
@@ -266,14 +282,10 @@ void main_main()
 {
 	printf("Main/inicio\n");	
 	Logger::LogLevel = LEVEL_VERBOSE;
-	
-	int ret = ReturnReadByte();
-	printf("[ret = %d]\n", ret);
-	
 
 	// TesteIPAddress();
 	// TesteDns();
-	// TesteListener();
+	TesteListener();
 	// TesteCliente();
 	// TesteSb();
 	// TesteHexDump();
@@ -290,9 +302,9 @@ extern void gpb_main();
 
 int main(int argc, char **argv)
 {
-	// main_main();
+	main_main();
 	// teste_main();
-	gpb_main();
+	// gpb_main();
 	// outro_main();
 	
 	util_mem_debug();

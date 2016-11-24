@@ -87,6 +87,16 @@ int ret = accept(m_fd, NULL, NULL);
 }
 
 
+int Socket::Accept(SockAddr& address)
+{
+	socklen_t addrSize = address.GetMaxSize();
+	int ret = accept(m_fd, address.GetSockAddr(), &addrSize);
+	if(ret == RET_ERROR) LastErr = errno;
+	address.SetSize(addrSize);
+	return ret;
+}
+
+
 int Socket::GetSockError() const
 {
 	return Socket::GetSockError(m_fd);

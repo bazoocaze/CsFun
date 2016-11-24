@@ -58,10 +58,16 @@ public:
 
 	/* Returns a pointer to the internal sockaddr structure.
 	 * The pointer is valid until the next change on the instance. */
-	const sockaddr* GetSockAddr() const;
+	sockaddr* GetSockAddr() const;
 	
+	/* Sets the size of the internal sockaddr. For use with accept(). */
+	void SetSize(int size);
+
 	// Returns the size of the internal sockaddr.
 	int GetSize()     const;
+
+	/* Returns the max size of the internal sockaddr. For use with accept(). */
+	int GetMaxSize()  const;
 };
 
 

@@ -6,7 +6,6 @@
  * */
 
 
-// #include <stdio.h>
 // #include <stdlib.h>
 // #include <sys/types.h>
 // #include <sys/socket.h>
@@ -18,6 +17,7 @@
 // #include <errno.h>
 // #include <arpa/inet.h>
 
+#include <stdio.h>
 #include <string.h>
 #include <sys/ioctl.h>
 
@@ -26,10 +26,21 @@
 #include "IO.h"
 
 
-CConsole Console;
-FdReader StdIn(0);
-FdWriter StdOut(1);
-FdWriter StdErr(2);
+#if defined HAVE_CONSOLE
+
+	CConsole Console;
+	FdReader StdIn(0);
+	FdWriter StdOut(1);
+	FdWriter StdErr(2);
+
+#else
+
+	NullText Console;
+	NullText StdIn;
+	NullText StdOut;
+	NullText StdErr;
+
+#endif
 
 
 
@@ -69,6 +80,12 @@ int Fd::GetFd() const
 void Fd::Close()
 {
 	m_fd = CLOSED_FD;
+}
+
+
+void Fd::Clear()
+{
+	Close();
 	LastErr = RET_OK;
 }
 
@@ -232,6 +249,7 @@ FdReader::FdReader()
 {
 	m_fd = CLOSED_FD;
 	LastErr = RET_OK;
+	Eof = false;
 }
 
 
@@ -239,6 +257,7 @@ FdReader::FdReader(int fd)
 {
 	m_fd = fd;
 	LastErr = RET_OK;
+	Eof = false;
 }
 
 
@@ -246,6 +265,13 @@ void FdReader::SetFd(int fd)
 {
 	m_fd = fd;
 	LastErr = RET_OK;
+	Eof = false;
+}
+
+
+bool FdReader::IsEof()
+{
+	return Eof;
 }
 
 
@@ -256,7 +282,7 @@ uint8_t c;
 	if(m_fd == CLOSED_FD) return INT_EOF;
 	n = read(m_fd, &c, 1);
 	if(n == RET_ERR) { LastErr = errno; return INT_ERR; } 
-	if(n == 0) { return INT_EOF; } 
+	if(n == 0) { Eof = true; return INT_EOF; }
 	return c;
 }
 
@@ -267,6 +293,7 @@ int ret;
 	if(m_fd == CLOSED_FD) return 0;
 	ret = read(m_fd, buffer, size);
 	if(ret == RET_ERR) LastErr = errno;
+	if(ret == 0) Eof = true;
 	return ret;
 }
 

@@ -22,6 +22,7 @@
 #include "Ptr.h"
 #include "Util.h"
 #include "Fd.h"
+#include "Config.h"
 
 
 // Represents a stream for a file on disk
@@ -74,21 +75,38 @@ public:
 };
 
 
-// Abstraction for the console terminal
-class CConsole : public FdWriter, public FdReader
-{
-public: CConsole() : FdWriter(1), FdReader(0) { }
-};
+#if defined HAVE_CONSOLE
 
+	// Abstraction for the console terminal
+	class CConsole : public FdWriter, public FdReader
+	{
+	public: CConsole() : FdWriter(1), FdReader(0) { }
+	};
 
-// Console (standard input and output) for the current session.
-extern CConsole Console;
+	// Console (standard input and output) for the current session.
+	extern CConsole Console;
 
-// Standard input reader
-extern FdReader StdIn;
+	// Standard input reader
+	extern FdReader StdIn;
 
-// Standard output writer
-extern FdWriter StdOut;
+	// Standard output writer
+	extern FdWriter StdOut;
 
-// Standard error writer
-extern FdWriter StdErr;
+	// Standard error writer
+	extern FdWriter StdErr;
+
+#else
+
+	// Dummy console.
+	extern NullText Console;
+
+	// Dummy stdin.
+	extern NullText StdIn;
+
+	// Dummy stdout.
+	extern NullText StdOut;
+
+	// Dummy stderr.
+	extern NullText StdErr;
+
+#endif

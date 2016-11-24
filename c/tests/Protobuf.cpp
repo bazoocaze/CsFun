@@ -1,3 +1,11 @@
+/*
+ * File.....: Protobuf.cpp
+ * Author...: Jose Ferreira
+ * Date.....: 2016-11-23 20:13
+ * Purpose..: Simple protobuf implementation
+ * */
+
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -19,8 +27,6 @@
 
 CodedOutputStream::CodedOutputStream()
 {
-	// m_fd = CLOSED_FD;
-	// m_buffer = NULL;
 	m_output = &Stream::Null;
 }
 
@@ -32,20 +38,6 @@ CodedOutputStream::CodedOutputStream(Stream* stream)
 	else
 		m_output = &Stream::Null;
 }
-
-/*
-CodedOutputStream::CodedOutputStream(int fd)
-{
-	m_fd = fd;
-	m_buffer = NULL;
-} 
-
-
-CodedOutputStream::CodedOutputStream(ByteBuffer* buffer)
-{
-	m_fd = CLOSED_FD;
-	m_buffer = buffer;
-} */
 
 
 void CodedOutputStream::WriteByte(uint8_t c)
@@ -61,12 +53,11 @@ void CodedOutputStream::WriteBytes(const void * data, int offset, int size)
 }
 
 
-int CodedOutputStream::CalculateVarint32Size(int val)
+int CodedOutputStream::CalculateVarint32Size(int32_t val)
 {
 unsigned int v = val;
 int ret = 0;
-	do
-	{
+	do {
 		ret++;
 		v = v >> 7;
 	} while(v > 0);
@@ -74,7 +65,7 @@ int ret = 0;
 }
 
 
-int CodedOutputStream::CalculateInt32Size(int fieldNumber, int val)
+int CodedOutputStream::CalculateInt32Size(int fieldNumber, int32_t val)
 {
 int tag = fieldNumber << 3;
 	if(val == 0) return 0;
@@ -89,7 +80,7 @@ int len = 0;
 int ret = 0;
 	if(val == NULL || val[0] == 0) return 0;
 	ret += CalculateVarint32Size(tag);
-	len = strlen(val);
+	len  = strlen(val);
 	ret += CalculateVarint32Size(strlen(val));
 	ret += len;
 	return ret;
@@ -98,15 +89,7 @@ int ret = 0;
 
 int CodedOutputStream::CalculateStringSize(int fieldNumber, const String& val)
 {
-int tag = fieldNumber << 3;
-int len = 0;
-int ret = 0;
-	if(val.c_str == NULL || val.c_str[0] == 0) return 0;
-	ret += CalculateVarint32Size(tag);
-	len  = strlen(val.c_str);
-	ret += CalculateVarint32Size(len);
-	ret += len;
-	return ret;
+	return CalculateStringSize(fieldNumber, val.c_str);
 }
 
 
@@ -134,9 +117,9 @@ int CodedOutputStream::CalculateMessageSize(int fieldNumber, const IMessage& val
 }
 
 
-void CodedOutputStream::WriteVarint32(int val)
+void CodedOutputStream::WriteVarint32(int32_t val)
 {
-unsigned int v = val;
+uint32_t v = val;
 int c;
 	do
 	{
@@ -147,9 +130,9 @@ int c;
 }
 
 
-void CodedOutputStream::WriteInt32(int fieldNumber, int val)
+void CodedOutputStream::WriteInt32(int fieldNumber, int32_t val)
 {
-int tag = (fieldNumber << 3) | P_INT32_WIRETYPE;
+int tag = (fieldNumber << 3) | CodedOutputStream::P_INT32_WIRETYPE;
 	if(val == 0) return;
 	WriteVarint32(tag);
 	WriteVarint32(val);
@@ -159,7 +142,7 @@ int tag = (fieldNumber << 3) | P_INT32_WIRETYPE;
 void CodedOutputStream::WriteString(int fieldNumber, const char * val)
 {
 int len;
-int tag = (fieldNumber << 3) | P_STRING_WIRETYPE;
+int tag = (fieldNumber << 3) | CodedOutputStream::P_STRING_WIRETYPE;
 	if(val == NULL || val[0] == 0) return;
 	WriteVarint32(tag);
 	len = strlen(val);
@@ -176,7 +159,7 @@ void CodedOutputStream::WriteString(int fieldNumber, const String& val)
 
 void CodedOutputStream::WriteBool(int fieldNumber, bool val)
 {
-int tag = (fieldNumber << 3) | P_BOOL_WIRETYPE;
+int tag = (fieldNumber << 3) | CodedOutputStream::P_BOOL_WIRETYPE;
 	if(!val) return;
 	WriteVarint32(tag);
 	WriteVarint32(1);
@@ -243,7 +226,7 @@ bool CodedInputStream::SourceDiscardBytes(int size)
 }
 
 
-int CodedInputStream::ReadVarint32()
+int32_t CodedInputStream::ReadVarint32()
 {
 	int ret;
 	if(!ReadVarint32(ret)) return 0;
@@ -251,11 +234,11 @@ int CodedInputStream::ReadVarint32()
 }
 
 
-bool CodedInputStream::ReadVarint32(int & retVal)
+bool CodedInputStream::ReadVarint32(int32_t & retVal)
 {
 int v;
 int rot = 0;
-unsigned int ret = 0;
+uint32_t ret = 0;
 	do
 	{
 		v = SourceReadByte();
@@ -296,7 +279,7 @@ void CodedInputStream::SkipLastField()
 }
 
 
-bool CodedInputStream::ReadInt32(int fieldNumber, int & val)
+bool CodedInputStream::ReadInt32(int fieldNumber, int32_t & val)
 {
 	if(	CurrentFieldNumber != fieldNumber ||
 		CurrentWireType != CodedOutputStream::P_WIRETYPE_VARINT) return false;
@@ -314,7 +297,7 @@ bool CodedInputStream::ReadBool(int fieldNumber, bool & val)
 }
 
 
-bool CodedInputStream::ReadString(int fieldNumber, String & val)
+bool CodedInputStream::ReadString(int fieldNumber, String & strRet)
 {
 	if(	CurrentFieldNumber != fieldNumber ||
 		CurrentWireType != CodedOutputStream::P_WIRETYPE_DELIMITED) return false;
@@ -325,7 +308,7 @@ bool CodedInputStream::ReadString(int fieldNumber, String & val)
 	
 	if(size == 0)
 	{
-		val = "";
+		strRet = "";
 	}
 	else
 	{
@@ -333,7 +316,7 @@ bool CodedInputStream::ReadString(int fieldNumber, String & val)
 		strPtr.Resize(size+1);
 		strPtr.Memset(0, size+1);
 		SourceCopyBytes(strPtr.Get(), 0, size);
-		val.Set(strPtr);
+		strRet.Set(strPtr);
 	}
 	return true;
 }

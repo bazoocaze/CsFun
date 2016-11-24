@@ -33,6 +33,8 @@ Monitor::Monitor()
 
 void Monitor::Enter()
 {
+#if defined HAVE_THREAD_pthreads
+
 pthread_t id = pthread_self();
 
 	if(id == current) {
@@ -47,10 +49,18 @@ pthread_t id = pthread_self();
 
 	current = id;
 	counter = 1;
+
+#endif
 }
 
 
-void Monitor::Exit() { if(--counter == 0) lockVal = 0; }
+void Monitor::Exit()
+{
+#if defined HAVE_THREAD_pthreads
+	if(--counter == 0)
+		lockVal = 0;
+#endif
+}
 
 
 
@@ -74,28 +84,35 @@ void * Thread::ThreadEntry(void * arg)
 	return NULL;
 }
 
-bool Thread::Run(ThreadStart_t entry)
+bool Thread::Start(ThreadStart_t entry)
 {
+	if(Id != 0) return false;
 	m_entry = entry;
 	m_data  = NULL;
-	return Run();
+	return Start();
 }
 
-bool Thread::Run(ThreadStart_t entry, void * data)
+bool Thread::Start(ThreadStart_t entry, void * data)
 {
+	if(Id != 0) return false;
 	m_entry = entry;
-	m_data = data;
-	return Run();
+	m_data  = data;
+	return Start();
 }
 
-bool Thread::Run()
+bool Thread::Start()
 {
+#if defined HAVE_THREAD_pthreads
 	int s = pthread_create(&Id, NULL, &ThreadEntry, this);
 	return (s == RET_OK);
+#else
+	return false;
+#endif
 }
 
 void Thread::Join()
 {
+#if defined HAVE_THREAD_pthreads
 	pthread_join(Id, NULL);
+#endif
 }
-

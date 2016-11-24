@@ -44,8 +44,14 @@ public:
 	int  GetFd() const;
 	
 	/* Release the current open file descriptor.
-	 * Closes it if it's the last reference. */
+	 * Closes it if it's the last reference.
+	 * Keeps LastErr state. */
 	void Close();
+
+	/* Release the current open file descriptor.
+	 * Closes it if it's the last reference.
+	 * Clear LastErr state to RET_OK. */
+	void Clear();
 	
 	/* Returns true/false if the fd is readable (i.e. can read data without blocking). */
 	bool IsReadable() const;
@@ -111,7 +117,10 @@ protected:
 
 public:
 	// Last error code, or RET_OK in case of no errors.
-	int LastErr;
+	int  LastErr;
+
+	/* True on End of Stream/File. */
+	bool Eof;
 
 	// Default constructor that reads from an empty file.
 	FdReader();
@@ -121,6 +130,8 @@ public:
 	
 	// Sets the base fd to the fd informed.
 	void SetFd(int fd);
+
+	bool IsEof();
 	
 	/* Returns the error code for the last error,
 	 * of RET_OK if no error found. */

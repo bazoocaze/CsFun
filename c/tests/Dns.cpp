@@ -52,52 +52,54 @@ int ret;
 
 	if(!(ipv4 || ipv6)) return retList;
 
-	if(true) {
-		/* resolve o nome do servidor usando DNS */
+#if defined HAVE_DNS_getaddrinfo
 
-		struct addrinfo *dnsResult, *rp;
-		struct addrinfo hints;
+	/* resolve o nome do servidor usando DNS */
 
-		memset(&hints, 0, sizeof(hints));
-		hints.ai_socktype = SOCK_STREAM;
-		hints.ai_family = AF_INET;
+	struct addrinfo *dnsResult, *rp;
+	struct addrinfo hints;
 
-		if(ipv4 && ipv6)
-			hints.ai_family = AF_UNSPEC;
-		else if(ipv6)
-			hints.ai_family = AF_INET6;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_family = AF_INET;
 
-		ret = getaddrinfo(hostName, NULL, &hints, &dnsResult);
-		if (ret != RET_OK) {
-			Dns::LastErr = ret;
-			return retList;
-		}
+	if(ipv4 && ipv6)
+		hints.ai_family = AF_UNSPEC;
+	else if(ipv6)
+		hints.ai_family = AF_INET6;
 
-		/* For each ip/dns found */
-		for (rp = dnsResult; rp != NULL; rp = rp->ai_next) {
-			SockAddr sockAddr = SockAddr(rp->ai_addr, rp->ai_addrlen);
-			IPAddress addr = IPAddress(sockAddr);
-			retList.Add(addr);
-		}
-	  
-		Dns::LastErr = RET_OK;
-
-		/* Free the DNS search resources */
-		freeaddrinfo(dnsResult);
-	
-	} else {
-	
-		IPAddress addr = IPAddress(hostName);
-		if(addr.GetSockAddr().IsValid())
-		{
-			retList.Add(addr);
-			Dns::LastErr = RET_OK;
-		}
-		else
-		{
-			Dns::LastErr = -1;
-		}
+	ret = getaddrinfo(hostName, NULL, &hints, &dnsResult);
+	if (ret != RET_OK) {
+		Dns::LastErr = ret;
+		return retList;
 	}
-	
+
+	/* For each ip/dns found */
+	for (rp = dnsResult; rp != NULL; rp = rp->ai_next) {
+		SockAddr sockAddr = SockAddr(rp->ai_addr, rp->ai_addrlen);
+		IPAddress addr = IPAddress(sockAddr);
+		retList.Add(addr);
+	}
+
+	Dns::LastErr = RET_OK;
+
+	/* Free the DNS search resources */
+	freeaddrinfo(dnsResult);
+
+#else
+
+	IPAddress addr = IPAddress(hostName);
+	if(addr.GetSockAddr().IsValid())
+	{
+		retList.Add(addr);
+		Dns::LastErr = RET_OK;
+	}
+	else
+	{
+		Dns::LastErr = -1;
+	}
+
+#endif
+
 	return retList;
 }

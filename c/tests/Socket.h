@@ -60,10 +60,16 @@ public:
 	/* Accept one pending client connection.
 	 * Return the socket fd for the new client,
 	 * or RET_ERR in case of error. */
-	int  Accept();
+	int Accept();
+
+	/* Accept one pending client connection.
+	 * Fills the SockAddr with the addres of the remote point.
+	 * Return the socket fd for the new client,
+	 * or RET_ERR in case of error. */
+	int Accept(SockAddr& address);
 	
 	/* Reads the error code from kernel socket state. */
-	int  GetSockError() const;
+	int GetSockError() const;
 	
 	/* Enable/disable UDP broadcast state for the socket.
 	 * Returns true/false if success in changing state. */
