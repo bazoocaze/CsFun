@@ -21,10 +21,17 @@
 class IMessage;
 
 
+/* Represents a read-only buffer.
+ * The data can come from a stream or a
+ * memory block. */
 class ByteString {
 protected:
+
+	/* Data memory pointer */
 	MemPtr m_mem;
 	const uint8_t * m_ptr;
+
+	/* Base stream */
 	Stream * m_stream;
 	
 public:
@@ -32,28 +39,42 @@ public:
 	int Offset;
 	int Size;
 
+	/* Default constructor for an empty buffer. */
 	ByteString();
+
+	/* Constructor for a stream based buffer. */
 	ByteString(Stream *stream);
+
+	/* Constructor for a memory block based buffer. */
 	ByteString(const void * ptr, int offset, int size);
+
+	/* Constructor for a memory block based buffer.
+	 * The pointer permits auto-management of the memory block. */
 	ByteString(MemPtr memPtr, const void * ptr, int offset, int size);
-	
+
+	/* Returns a pointer to the read position. */
 	const uint8_t* GetPtr();
 
-	int          ReadByte();
-	ByteString   ReadBlock(int size);
-	String       ReadString(int size);
-	int          DiscardBytes(int size);
+	/* Read a byte from the buffer.
+	 * Returns the byte read, INT_EOF on EOF or INT_ERR on error. */
+	int ReadByte();
 
-	void Write(uint8_t c);
-	void Write(const void *, int offset, int size);
+	/* Read a block of data from the buffer.
+	 * Remember to verify the returned block size. */
+	ByteString ReadBlock(int size);
+
+	/* Discards *size* bytes from the buffer.
+	 * Returns the number of bytes sucessfully discarded. */
+	int DiscardBytes(int size);
 };
 
 
+/* Represents a Protobuf encoder that writes data to
+ * a destination stream. */
 class CodedOutputStream {
 protected:
+	/* Base stream */
 	Stream * m_output;
-	// int         m_fd;
-	// ByteBuffer *m_buffer;
 
 	/* Calculates the size in bytes of the varint32 value. */
 	static int CalculateVarint32Size(int32_t val);
@@ -97,7 +118,12 @@ public:
 	static int CalculateBytesSize  (int fieldNumber, int size);
 	static int CalculateMessageSize(int fieldNumber, const IMessage& val);
 
+	/* Default constructor for a Null encoder that
+	 * discards the encoded data. */
 	CodedOutputStream();
+
+	/* Constructor for a encoder that writes the
+	 * encoded data to the output Stream. */
 	CodedOutputStream(Stream* output);
 
 	void WriteInt8   (int fieldNumber, int8_t val);
@@ -121,10 +147,11 @@ public:
 };
 
 
+/* Represents a Protobuf decoder that reads the
+ * encoded data from a ByteString. */
 class CodedInputStream {
 protected:
 	ByteString m_input;
-	// Stream     *m_stream;
 
 	int  CurrentTag;
 	int  CurrentFieldNumber;
@@ -156,7 +183,8 @@ public:
 	CodedInputStream(ByteString& input);
 	CodedInputStream(Stream*     input);
 
-	/* Read the tag for the next field. Returns true/false on success. */
+	/* Read the tag for the next field.
+	 * Returns true/false on success. */
 	bool   ReadTag();
 	
 	/* Skip/discard the data for unknow/unprocessed fields. */
@@ -176,11 +204,13 @@ public:
 	bool   ReadFloat   (int fieldNumber, float & val);
 	bool   ReadDouble  (int fieldNumber, double & val);
 
+	bool   ReadString  (int fieldNumber, char * val, int maxSize);
 	bool   ReadString  (int fieldNumber, String & val);
+	bool   ReadString  (int fieldNumber, String & val, int maxSize);
 	bool   ReadMessage (int fieldNumber, IMessage & val);
 	
-	bool   ReadBytes   (int fieldNumber,   void ** val);
-	bool   ReadBytes   (int fieldNumber,   void ** val, int size);
+	bool   ReadBytes   (int fieldNumber, void ** val);
+	bool   ReadBytes   (int fieldNumber, void ** val, int size);
 };
 
 

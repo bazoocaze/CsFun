@@ -14,6 +14,7 @@
 #include "Stream.h"
 #include "Util.h"
 #include "Logger.h"
+#include "Config.h"
 
 
 
@@ -270,7 +271,8 @@ IPAddressList::IPAddressList()
 
 void IPAddressList::Add(const IPAddress& address)
 {
-size_t size;
+	if(Count >= P_DNS_MAX_IPS) return;
+	size_t size;
 	size = (Count + 1)*sizeof(IPAddress);
 	if(!m_Items.Resize(size))
 	{

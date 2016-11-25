@@ -1,7 +1,7 @@
 /*
  * File......: Dns.h
  * Author....: Jose Ferreira
- * Date......: 12/08/2015 - 20:48
+ * Date......: 2015-08-12 - 20:48
  * Purpose...: Dns name resolution services.
  */
 

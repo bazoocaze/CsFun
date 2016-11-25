@@ -108,23 +108,19 @@ bool ByteBuffer::Resize(int size)
 {
 int newSize;
 
-	if(size < 0)          return false;
+	if(size < 0) return false;
+	if(size > P_BYTEBUFFER_MAX_SIZE) return false;
 	if(size < m_Capacity) return true;
 	
 	newSize = m_Capacity;
 
-	/* garante um size minimo valido */
+	/* validate minimum size */
 	if(newSize < 16)
 		newSize = 16;
 
-	/* aumenta o size do buffer dobrando o size anterior */
+	/* double the size */
 	while(newSize < size)
 		newSize = newSize * 2;
-
-	// Logger::LogMsg(LEVEL_VERBOSE,
-	// 	"ByteBuffer/Resize: from %d to %d",
-	// 	m_Capacity,
-	// 	newSize);
 
 	if(!m_ptr.Resize(newSize))
 	{
@@ -238,17 +234,6 @@ int ByteBuffer::Capacity() const {
 }
 
 
-/*
-const char * ByteBuffer::GetStr()
-{
-vstr ptr;
-	Resize(m_WritePos + 1);
-	ptr = (vstr)m_ptr.Get();
-	ptr[m_WritePos] = 0;	
-	return &ptr[m_ReadPos];
-} */
-
-
 String ByteBuffer::GetString()
 {
 vstr ptr;
@@ -257,18 +242,6 @@ vstr ptr;
 	ptr[m_WritePos] = 0;	
 	return String(m_ptr, &ptr[m_ReadPos]);
 }
-
-
-// MemPtr ByteBuffer::GetMemPtr()
-// {
-// 	return m_ptr;
-// }
-
-
-// uint8_t * ByteBuffer::GetPtr() const
-// {
-// 	return (uint8_t*)m_ptr.Get();
-// }
 
 
 int ByteBuffer::ReadPos() const

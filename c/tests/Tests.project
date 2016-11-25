@@ -42,9 +42,10 @@
     <File Name="gpb.cpp"/>
     <File Name="teste.cpp"/>
     <File Name="info.txt"/>
+    <File Name="IO.cpp"/>
+    <File Name="FdSelect.cpp"/>
+    <File Name="MemoryStream.cpp"/>
   </VirtualDirectory>
-  <Dependencies Name="Debug"/>
-  <Dependencies Name="Release"/>
   <VirtualDirectory Name="h">
     <File Name="Binary.h"/>
     <File Name="ByteBuffer.h"/>
@@ -157,4 +158,6 @@
       </Completion>
     </Configuration>
   </Settings>
+  <Dependencies Name="Debug"/>
+  <Dependencies Name="Release"/>
 </CodeLite_Project>

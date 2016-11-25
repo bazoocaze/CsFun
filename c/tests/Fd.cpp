@@ -19,28 +19,14 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <fcntl.h>
+#include <errno.h>
 #include <sys/ioctl.h>
+#include <sys/select.h>
 
 #include "Fd.h"
 #include "Util.h"
 #include "IO.h"
-
-
-#if defined HAVE_CONSOLE
-
-	CConsole Console;
-	FdReader StdIn(0);
-	FdWriter StdOut(1);
-	FdWriter StdErr(2);
-
-#else
-
-	NullText Console;
-	NullText StdIn;
-	NullText StdOut;
-	NullText StdErr;
-
-#endif
 
 
 

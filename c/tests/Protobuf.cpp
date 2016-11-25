@@ -16,6 +16,7 @@
 #include "Debug.h"
 #include "Util.h"
 #include "Text.h"
+#include "Config.h"
 
 
 
@@ -297,26 +298,60 @@ bool CodedInputStream::ReadBool(int fieldNumber, bool & val)
 }
 
 
-bool CodedInputStream::ReadString(int fieldNumber, String & strRet)
+bool CodedInputStream::ReadString(int fieldNumber, char * strRet, int maxSize)
+{
+	if(	CurrentFieldNumber != fieldNumber ||
+		CurrentWireType != CodedOutputStream::P_WIRETYPE_DELIMITED) return false;
+
+	if(strRet == NULL) return false;
+
+	int blockSize = ReadVarint32();
+
+	if(blockSize <= 0 || maxSize < 2)
+	{
+		if(maxSize > 0)
+			strRet[0] = 0;
+	}
+	else
+	{
+		int strSize = MIN(blockSize, maxSize - 1);
+		memset(strRet, 0, strSize + 1);
+		SourceCopyBytes(strRet, 0, strSize);
+		if(strSize < blockSize)
+			SourceDiscardBytes(blockSize - strSize);
+	}
+	return true;
+}
+
+
+bool CodedInputStream::ReadString(int fieldNumber, String & val)
+{
+	return ReadString(fieldNumber, val, P_PROTOBUF_DEF_MAX_STR_SIZE);
+}
+
+
+
+bool CodedInputStream::ReadString(int fieldNumber, String & strRet, int maxSize)
 {
 	if(	CurrentFieldNumber != fieldNumber ||
 		CurrentWireType != CodedOutputStream::P_WIRETYPE_DELIMITED) return false;
 	
-	int size = ReadVarint32();
+	int blockSize = ReadVarint32();
 	
-	printf("[ReadString: size=%d]\n", size);
-	
-	if(size == 0)
+	if(blockSize <= 0 || maxSize < 2)
 	{
 		strRet = "";
 	}
 	else
 	{
+		int strSize = MIN(blockSize, maxSize - 1);
 		MemPtr strPtr;
-		strPtr.Resize(size+1);
-		strPtr.Memset(0, size+1);
-		SourceCopyBytes(strPtr.Get(), 0, size);
+		strPtr.Resize(strSize+1);
+		strPtr.Memset(0, strSize+1);
+		SourceCopyBytes(strPtr.Get(), 0, strSize);
 		strRet.Set(strPtr);
+		if(strSize < blockSize)
+			SourceDiscardBytes(blockSize - strSize);
 	}
 	return true;
 }

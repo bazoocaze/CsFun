@@ -14,13 +14,15 @@ class TesteSubMensagem : public IMessage
 {
 public:
 	int    SubValor;
-	String SubStr;
+	String SubStr1;
+	char   SubStr2[128];
 
 	int CalculateSize() const
 	{
 		int ret = 0;
-		ret += CodedOutputStream::CalculateInt32Size(1, SubValor);
-		ret += CodedOutputStream::CalculateStringSize(2, SubStr);
+		ret += CodedOutputStream::CalculateInt32Size(1,  SubValor);
+		ret += CodedOutputStream::CalculateStringSize(2, SubStr1);
+		ret += CodedOutputStream::CalculateStringSize(3, SubStr2);
 		return ret;
 	}
 	
@@ -29,15 +31,17 @@ public:
 		while(input->ReadTag())
 		{
 			if(input->ReadInt32(1, SubValor)) continue;
-			if(input->ReadString(2, SubStr)) continue;
+			if(input->ReadString(2, SubStr1, 16)) continue;
+			if(input->ReadString(3, SubStr2, 16)) continue;
 			input->SkipLastField();
 		}
 	}
 	
 	void WriteTo(CodedOutputStream * output)
 	{
+		output->WriteString(2, SubStr1);
+		output->WriteString(3, SubStr2);
 		output->WriteInt32(1, SubValor);
-		output->WriteString(2, SubStr);
 	}
 	
 	// TesteSubMensagem()  { printf("[SubMensagem:ctor]"); }
@@ -70,7 +74,7 @@ public:
 		while(input->ReadTag())
 		{
 			if(input->ReadInt32(1,   Valor))  continue;
-			if(input->ReadString(2,  Nome))   continue;
+			if(input->ReadString(2,  Nome, 16))   continue;
 			if(input->ReadBool(3,    Flag))   continue;
 			if(input->ReadInt32(4,   Valor1)) continue;
 			if(input->ReadMessage(5, Sub))    continue;
@@ -80,11 +84,11 @@ public:
 
 	void WriteTo(CodedOutputStream * output)
 	{
+		output->WriteMessage(5, Sub);
 		output->WriteInt32(1,   Valor);
 		output->WriteString(2,  Nome);
 		output->WriteBool(3,    Flag);
 		output->WriteInt32(4,   Valor1);
-		output->WriteMessage(5, Sub);
 	}
 };
 
@@ -100,12 +104,13 @@ int gpb_main()
 	
 	TesteMensagem teste1;
 	teste1.Valor = 123456789;
-	teste1.Nome  = "olvebra";
+	teste1.Nome  = "Porto Alegre Rio Grande do Sul Brasil";
 	teste1.Flag  = true;
 	teste1.Valor1 = 1024;
 	
 	teste1.Sub.SubValor = 234;
-	teste1.Sub.SubStr = "ducker";
+	teste1.Sub.SubStr1 = "The quick brown fox jumps over the lazy dog.";
+	strcpy(teste1.Sub.SubStr2, "alfa bravo charlie");
 	
 	teste1.WriteTo(&cos);
 	
@@ -120,9 +125,9 @@ int gpb_main()
 	teste2.MergeFrom(&cis);
 	
 	printf("\n");
-	printf("[teste1: V=%d, S=%s, F=%d, V1=%d, SubV=%d, SubS=%s]\n", teste1.Valor, teste1.Nome.c_str, teste1.Flag, teste1.Valor1, teste1.Sub.SubValor, teste1.Sub.SubStr.c_str);
-	printf("[teste2: V=%d, S=%s, F=%d, V1=%d, SubV=%d, SubS=%s]\n", teste2.Valor, teste2.Nome.c_str, teste2.Flag, teste2.Valor1, teste2.Sub.SubValor, teste2.Sub.SubStr.c_str);
-	printf("[teste3: V=%d, S=%s, F=%d, V1=%d, SubV=%d, SubS=%s]\n", teste3.Valor, teste3.Nome.c_str, teste3.Flag, teste3.Valor1, teste3.Sub.SubValor, teste3.Sub.SubStr.c_str);
+	printf("[teste1: V=%d, S=%s, F=%d, V1=%d, SubV=%d, SubS1=%s, SubS1=%s]\n", teste1.Valor, teste1.Nome.c_str, teste1.Flag, teste1.Valor1, teste1.Sub.SubValor, teste1.Sub.SubStr1.c_str, teste1.Sub.SubStr2);
+	printf("[teste2: V=%d, S=%s, F=%d, V1=%d, SubV=%d, SubS1=%s, SubS1=%s]\n", teste2.Valor, teste2.Nome.c_str, teste2.Flag, teste2.Valor1, teste2.Sub.SubValor, teste2.Sub.SubStr1.c_str, teste2.Sub.SubStr2);
+	printf("[teste3: V=%d, S=%s, F=%d, V1=%d, SubV=%d, SubS1=%s, SubS1=%s]\n", teste3.Valor, teste3.Nome.c_str, teste3.Flag, teste3.Valor1, teste3.Sub.SubValor, teste3.Sub.SubStr1.c_str, teste3.Sub.SubStr2);
 
 	return 0;
 }

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <inttypes.h>
+// #include <inttypes.h>
 
 #include "Text.h"
 #include "Ptr.h"

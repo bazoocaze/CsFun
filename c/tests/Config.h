@@ -1,15 +1,12 @@
 /*
- * Arquivo....: Config.h
- * Autor......: José Ferreira - olvebra
- * Data.......: 06/08/2015 - 14:47
- * Objetivo...: Configurações do programa.
+ * File.....: Config.h
+ * Author...: Jose Ferreira
+ * Date.....: 2015-08-06 - 14:47
+ * Purpose..: Global configurations.
  */
 
 
 #pragma once
-
-
-// #include "Util.h"
 
 
 #define P_BUFFER_START_SIZE        256
@@ -18,6 +15,11 @@
 #define P_NETWORK_WRITE_SIZE       128
 #define P_NETWORK_READ_TIMEOUT     2000
 #define P_NETWORK_SOCK_BACKLOG     1
+
+
+#define P_DNS_MAX_IPS                     16
+#define P_BYTEBUFFER_MAX_SIZE             (1024*1024*16)
+#define P_PROTOBUF_DEF_MAX_STR_SIZE       1024
 
 
 #define HAVE_CONSOLE

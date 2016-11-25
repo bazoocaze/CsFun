@@ -1,3 +1,4 @@
+/*
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +14,12 @@
 #include "StringBuilder.h"
 #include "Fd.h"
 #include "IO.h"
+ *
+ * */
+
+
 #include "FdSelect.h"
+#include "IO.h"
 
 
 
@@ -29,7 +35,7 @@ void outro_multi()
 
 void outro_single()
 {
-	int ret = FdSelect::Wait(0, SEL_READ, 2100);
+	FdSelect::Wait(0, SEL_READ, 2100);
 }
 
 

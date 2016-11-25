@@ -303,9 +303,9 @@ extern void gpb_main();
 
 int main(int argc, char **argv)
 {
-	main_main();
+	// main_main();
 	// teste_main();
-	// gpb_main();
+	gpb_main();
 	// outro_main();
 	
 	util_mem_debug();

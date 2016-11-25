@@ -12,9 +12,9 @@ OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
-User                   :=usuario
+User                   :=jose
 Date                   :=24/11/16
-CodeLitePath           :="/home/usuario/.codelite"
+CodeLitePath           :="/home/jose/.codelite"
 LinkerName             :=/usr/bin/g++
 SharedObjectLinkerName :=/usr/bin/g++ -shared -fPIC
 ObjectSuffix           :=.o
@@ -63,7 +63,7 @@ CodeLiteDir:=/usr/share/codelite
 LANG:=en_US.UTF-8
 Objects0=$(IntermediateDirectory)/main.cpp$(ObjectSuffix) $(IntermediateDirectory)/Binary.cpp$(ObjectSuffix) $(IntermediateDirectory)/ByteBuffer.cpp$(ObjectSuffix) $(IntermediateDirectory)/Debug.cpp$(ObjectSuffix) $(IntermediateDirectory)/Dns.cpp$(ObjectSuffix) $(IntermediateDirectory)/Fd.cpp$(ObjectSuffix) $(IntermediateDirectory)/IPAddress.cpp$(ObjectSuffix) $(IntermediateDirectory)/Logger.cpp$(ObjectSuffix) $(IntermediateDirectory)/Text.cpp$(ObjectSuffix) $(IntermediateDirectory)/Threading.cpp$(ObjectSuffix) \
 	$(IntermediateDirectory)/Util.cpp$(ObjectSuffix) $(IntermediateDirectory)/Protobuf.cpp$(ObjectSuffix) $(IntermediateDirectory)/Ptr.cpp$(ObjectSuffix) $(IntermediateDirectory)/Socket.cpp$(ObjectSuffix) $(IntermediateDirectory)/Stream.cpp$(ObjectSuffix) $(IntermediateDirectory)/StringBuilder.cpp$(ObjectSuffix) $(IntermediateDirectory)/TcpClient.cpp$(ObjectSuffix) $(IntermediateDirectory)/TcpListener.cpp$(ObjectSuffix) $(IntermediateDirectory)/outro.cpp$(ObjectSuffix) $(IntermediateDirectory)/gpb.cpp$(ObjectSuffix) \
-	$(IntermediateDirectory)/teste.cpp$(ObjectSuffix) 
+	$(IntermediateDirectory)/teste.cpp$(ObjectSuffix) $(IntermediateDirectory)/IO.cpp$(ObjectSuffix) $(IntermediateDirectory)/FdSelect.cpp$(ObjectSuffix) $(IntermediateDirectory)/MemoryStream.cpp$(ObjectSuffix) 
 
 
 
@@ -261,6 +261,30 @@ $(IntermediateDirectory)/teste.cpp$(DependSuffix): teste.cpp
 
 $(IntermediateDirectory)/teste.cpp$(PreprocessSuffix): teste.cpp
 	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/teste.cpp$(PreprocessSuffix) "teste.cpp"
+
+$(IntermediateDirectory)/IO.cpp$(ObjectSuffix): IO.cpp $(IntermediateDirectory)/IO.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/dados/zdesenv/CsFun/c/tests/IO.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/IO.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/IO.cpp$(DependSuffix): IO.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/IO.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/IO.cpp$(DependSuffix) -MM "IO.cpp"
+
+$(IntermediateDirectory)/IO.cpp$(PreprocessSuffix): IO.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/IO.cpp$(PreprocessSuffix) "IO.cpp"
+
+$(IntermediateDirectory)/FdSelect.cpp$(ObjectSuffix): FdSelect.cpp $(IntermediateDirectory)/FdSelect.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/dados/zdesenv/CsFun/c/tests/FdSelect.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/FdSelect.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/FdSelect.cpp$(DependSuffix): FdSelect.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/FdSelect.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/FdSelect.cpp$(DependSuffix) -MM "FdSelect.cpp"
+
+$(IntermediateDirectory)/FdSelect.cpp$(PreprocessSuffix): FdSelect.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/FdSelect.cpp$(PreprocessSuffix) "FdSelect.cpp"
+
+$(IntermediateDirectory)/MemoryStream.cpp$(ObjectSuffix): MemoryStream.cpp $(IntermediateDirectory)/MemoryStream.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/dados/zdesenv/CsFun/c/tests/MemoryStream.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/MemoryStream.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/MemoryStream.cpp$(DependSuffix): MemoryStream.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/MemoryStream.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/MemoryStream.cpp$(DependSuffix) -MM "MemoryStream.cpp"
+
+$(IntermediateDirectory)/MemoryStream.cpp$(PreprocessSuffix): MemoryStream.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/MemoryStream.cpp$(PreprocessSuffix) "MemoryStream.cpp"
 
 
 -include $(IntermediateDirectory)/*$(DependSuffix)

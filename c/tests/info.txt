@@ -1,10 +1,10 @@
 Binary.h
-	class BinaryWriter   (write data to Stream)
-	class BinaryReader   (read data from Stream)
+	class BinaryWriter    (write data to Stream)
+	class BinaryReader    (read data from Stream)
 
 ByteBuffer.h
-	class BytePtr        (MemPtr storage)
-	class ByteBuffer     (MemPtr storage)
+	class BytePtr         (MemPtr storage)
+	class ByteBuffer      (MemPtr storage)
 
 Config.h
 

@@ -9,6 +9,7 @@
 #include "Stream.h"
 #include "Binary.h"
 
+/*
 
 class RpcPacket : public IMessage
 {
@@ -155,9 +156,11 @@ void TestarCliente()
 }
 
 
-int teste_main()
+ * */
+
+void teste_main()
 {
 	printf("[BEGIN]\n");
-	TestarCliente();
+	// TestarCliente();
 	printf("[END]\n");
 }

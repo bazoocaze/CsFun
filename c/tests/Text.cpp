@@ -224,70 +224,87 @@ int TextWriter::print(char c)
 {
 	return Write(c);
 }
+
 int TextWriter::print(unsigned char b, int base)
 {
 	return print((unsigned long) b, base);
 }
+
 int TextWriter::print(int n, int base)
 {
 	return print((long) n, base);
 }
+
 int TextWriter::print(unsigned int n, int base)
 {
 	return print((unsigned long) n, base);
 }
+
 int TextWriter::print(unsigned long n, int base)
 {
 	return printNumber(n, base);
 }
+
 int TextWriter::print(double n, int digits)
 {
 	return printFloat(n, digits);
 }
+
 int TextWriter::print(float n, int digits)
 {
 	return printFloat(n, digits);
 }
+
 int TextWriter::print(const Printable& x)
 {
 	return x.printTo(*this);
 }
+
 int TextWriter::println(const char c[])
 {
 	return print(c) + println();
 }
+
 int TextWriter::println(char c)
 {
 	return print(c) + println();
 }
+
 int TextWriter::println(unsigned char b, int base)
 {
 	return print(b, base) + println();
 }
+
 int TextWriter::println(int num, int base)
 {
 	return print(num, base) + println();
 }
+
 int TextWriter::println(unsigned int num, int base)
 {
 	return print(num, base) + println();
 }
+
 int TextWriter::println(long num, int base)
 {
 	return print(num, base) + println();
 }
+
 int TextWriter::println(unsigned long num, int base)
 {
 	return print(num, base) + println();
 }
+
 int TextWriter::println(double num, int digits)
 {
 	return print(num, digits) + println();
 }
+
 int TextWriter::println(float num, int digits)
 {
 	return print(num, digits) + println();
 }
+
 int TextWriter::println(const Printable& x)
 {
 	return print(x) + println();
