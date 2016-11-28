@@ -9,13 +9,6 @@
 #pragma once
 
 
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
-// #include <inttypes.h>
-// #include <unistd.h>
-
-
 #include "Util.h"
 
 
@@ -108,7 +101,7 @@ public:
 	FdStream();
 
 	// Constructs a stream on fd
-	FdStream(int fd);
+	explicit FdStream(int fd);
 
 	// Sets file descriptor to fd
 	virtual void SetFd(int fd);

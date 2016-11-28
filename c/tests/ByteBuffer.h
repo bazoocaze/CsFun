@@ -83,7 +83,7 @@ public:
 	ByteBuffer();
 	
 	// Constructor for a buffer with *initialCapacity* initial size.
-	ByteBuffer(int initialCapacity);
+	explicit ByteBuffer(int initialCapacity);
 
 	/* Returns the size of the readable data on the buffer. */
 	int Length() const;

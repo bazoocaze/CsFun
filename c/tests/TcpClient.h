@@ -42,7 +42,7 @@ public:
 	TcpClient();
 	
 	// Constructor for an open connection on the fd.
-	TcpClient(int clientfd);
+	explicit TcpClient(int clientfd);
 	
 	/* Sets the connection fd. */
 	void SetFd(int fd);

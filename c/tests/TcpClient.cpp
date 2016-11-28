@@ -226,15 +226,13 @@ int TcpClient::Available() {
 
 int TcpClient::Read() {
 unsigned char c;
-int lido;
 	if(State() == STATE_CONNECTED) {
 		if(m_sock.IsReadable())
-			lido = read(GetFd(), &c, 1);
+		{
+			int lido = read(GetFd(), &c, 1);
 			if(lido != 1) return -1;
-			if(c < 0) {
-				Logger::LogMsg(LEVEL_DEBUG, "c < 0 (c=%d)", c);
-			}
 			return c;
+		}
 	}
 	return -1;
 }

@@ -43,7 +43,13 @@ public:
 	T* Add(T * item)
 	{
 		printf("[add %p]\n", item);
-		m_list = (void **)realloc(m_list, sizeof(void*) * m_count + 1);
+		int newSize = sizeof(void*) * m_count + 1;
+		void * ret = realloc(m_list, newSize);
+		if(ret == NULL) {
+			OutOffMemoryHandler("List", "Add", newSize, true);
+			return item;
+		}
+		m_list = (void **)ret;
 		m_list[m_count++] = item;
 		return item;
 	}

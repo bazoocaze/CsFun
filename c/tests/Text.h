@@ -60,12 +60,6 @@ public:
 	// Default constructor for a NULL string.
 	String();
 
-	// Constructor for dynamic memory string. Free the memory resource on end of use.
-	String(void * c);
-
-	// Constructor for readonly or stack string.
-	String(char * c);
-
 	// Constructor for readonly or stack string.
 	String(const char * c);
 
@@ -74,7 +68,7 @@ public:
 	String(char * c, bool dynamic);
 
 	// Constructor for dynamic string with automatic memory management using pointer *mem*.
-	String(MemPtr mem);
+	explicit String(MemPtr mem);
 
 	// Constructor for dynamic string with automatic memory management using pointer *mem*.
 	String(MemPtr mem, char * c);
@@ -216,7 +210,7 @@ public:
 	StreamWriter();
 
 	// Constructor that writes on the target stream.
-	StreamWriter(Stream * stream);
+	explicit StreamWriter(Stream * stream);
 
 	/* Closes the writer. Does not close the stream. */
 	void Close();
@@ -247,7 +241,7 @@ public:
 	StreamReader();
 
 	// Constructor that reads from the source stream.
-	StreamReader(Stream * stream);
+	explicit StreamReader(Stream * stream);
 
 	/* Closes the reader. Does not close the stream. */
 	void Close();

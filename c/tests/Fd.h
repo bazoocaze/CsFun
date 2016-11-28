@@ -34,7 +34,7 @@ public:
 	Fd();
 	
 	// Constructor for the *fd* informed.
-	Fd(int fd);
+	explicit Fd(int fd);
 	
 	/* Release the current fd and
 	 * sets the new fd for the instance. */
@@ -99,7 +99,7 @@ public:
 	FdWriter();
 	
 	// Constructor that writes on the *fd* informed.
-	FdWriter(int fd);
+	explicit FdWriter(int fd);
 	
 	// Sets the target fd to the fd informed.
 	void SetFd(int fd);
@@ -136,7 +136,7 @@ public:
 	FdReader();
 	
 	// Constructor for reading the fd informed.
-	FdReader(int fd);
+	explicit FdReader(int fd);
 	
 	// Sets the base fd to the fd informed.
 	void SetFd(int fd);

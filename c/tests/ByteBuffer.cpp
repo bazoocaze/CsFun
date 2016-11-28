@@ -166,7 +166,7 @@ void ByteBuffer::Compress()
 	if(m_ReadPos > 1024 && m_Length == 0)
 	{
 		Logger::LogMsg(LEVEL_VERBOSE, "ByteBuffer/Compress");
-		m_ptr = NULL;
+		m_ptr.Clear();
 		Init();
 	}
 }
@@ -174,7 +174,7 @@ void ByteBuffer::Compress()
 
 void ByteBuffer::Init()
 {
-	m_ptr      = NULL;
+	m_ptr.Clear();
 	m_Capacity = 0;
 	m_Length   = 0;
 	m_ReadPos  = 0;

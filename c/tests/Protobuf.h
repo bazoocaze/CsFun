@@ -43,7 +43,7 @@ public:
 	ByteString();
 
 	/* Constructor for a stream based buffer. */
-	ByteString(Stream *stream);
+	explicit ByteString(Stream *stream);
 
 	/* Constructor for a memory block based buffer. */
 	ByteString(const void * ptr, int offset, int size);
@@ -124,7 +124,7 @@ public:
 
 	/* Constructor for a encoder that writes the
 	 * encoded data to the output Stream. */
-	CodedOutputStream(Stream* output);
+	explicit CodedOutputStream(Stream* output);
 
 	void WriteInt8   (int fieldNumber, int8_t val);
 	void WriteInt16  (int fieldNumber, int16_t val);
@@ -180,8 +180,8 @@ protected:
 
 public:
 	CodedInputStream();	
-	CodedInputStream(ByteString& input);
-	CodedInputStream(Stream*     input);
+	explicit CodedInputStream(const ByteString& input);
+	explicit CodedInputStream(Stream*     input);
 
 	/* Read the tag for the next field.
 	 * Returns true/false on success. */

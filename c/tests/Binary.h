@@ -24,7 +24,7 @@ public:
 	BinaryWriter();
 	
 	// Constructor that writes data to the target stream.
-	BinaryWriter(Stream * stream);
+	explicit BinaryWriter(Stream * stream);
 	
 	// Closes the writer. Does not close the base stream.
 	void Close();
@@ -70,7 +70,7 @@ public:
 	BinaryReader();
 	
 	// Constructor that reads from the source streeam.
-	BinaryReader(Stream * stream);
+	explicit BinaryReader(Stream * stream);
 	
 	// Return the last error code, or RET_OK if no error found.
 	int GetLastErr();

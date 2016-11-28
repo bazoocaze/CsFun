@@ -136,14 +136,13 @@ struct timeval t;
 
 bool Fd::SetNonBlock(int fd, int enable)
 {
-	int ret;
 	int fdfl = fcntl(fd, F_GETFL);
 	if(fdfl != RET_ERROR)	{
 		if(enable)
 			fdfl |= O_NONBLOCK;
 		else
 			fdfl &= (~O_NONBLOCK);
-		ret = fcntl(fd, F_SETFL, fdfl);
+		int ret = fcntl(fd, F_SETFL, fdfl);
 		return ret != RET_ERROR;
 	}
 	return false;

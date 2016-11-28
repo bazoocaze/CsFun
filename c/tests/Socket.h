@@ -40,7 +40,7 @@ public:
 	Socket();
 	
 	// Constructor for the socket informed.
-	Socket(int fd);
+	explicit Socket(int fd);
 
 	/* Release the current fd and creates a
 	 * new socket with the family and types informed.

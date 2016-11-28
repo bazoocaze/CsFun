@@ -121,10 +121,9 @@ int CodedOutputStream::CalculateMessageSize(int fieldNumber, const IMessage& val
 void CodedOutputStream::WriteVarint32(int32_t val)
 {
 uint32_t v = val;
-int c;
 	do
 	{
-		c = (v & 0x7F) | (v > 127 ? 0x80 : 0x00);
+		int c = (v & 0x7F) | (v > 127 ? 0x80 : 0x00);
 		v = v >> 7;
 		WriteByte(c);
 	} while(v > 0);
@@ -188,18 +187,27 @@ void CodedOutputStream::WriteMessage(int fieldNumber, IMessage& val)
 CodedInputStream::CodedInputStream()
 {
 	m_input = ByteString();
+	CurrentTag = 0;
+	CurrentFieldNumber = 0;
+	CurrentWireType = 0;
 }
 
 
 CodedInputStream::CodedInputStream(Stream* input)
 {
 	m_input = ByteString(input);
+	CurrentTag = 0;
+	CurrentFieldNumber = 0;
+	CurrentWireType = 0;
 }
 
 
-CodedInputStream::CodedInputStream(ByteString& input)
+CodedInputStream::CodedInputStream(const ByteString& input)
 {
 	m_input = input;
+	CurrentTag = 0;
+	CurrentFieldNumber = 0;
+	CurrentWireType = 0;
 }
 
 

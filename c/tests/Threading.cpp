@@ -28,6 +28,7 @@ Monitor::Monitor()
 {
 	lockVal = 0;
 	current = 0;
+	counter = 0;
 }
 
 

@@ -51,20 +51,6 @@ String::String()
 }
 
 
-String::String(void * c)
-{
-	c_str = (char *)c;
-	m_aloc.Set(c);
-}
-
-
-String::String(char * c)
-{
-	c_str = c;
-	m_aloc.Set(NULL);
-}
-
-
 String::String(const char * c)
 {
 	c_str = c;
@@ -106,7 +92,7 @@ void String::Set(void * c)
 void String::Set(const char * c)
 {
 	c_str = c;
-	m_aloc = NULL;
+	m_aloc.Clear();
 }
 
 
@@ -116,7 +102,7 @@ void String::Set(char * c, bool dynamic)
 	if(dynamic)
 		m_aloc.Set(c);
 	else
-		m_aloc.Set(NULL);
+		m_aloc.Clear();
 }
 
 
@@ -431,10 +417,9 @@ int TextReader::Read(uint8_t * buffer, int size)
 
 int TextReader::ReadLine(char * buffer, int size)
 {
-	int c;
 	int pos = 0;
 	while(pos < (size - 1)) {
-		c = Read();
+		int c = Read();
 		if(c < 0) {
 			// printf("[TextReader:c==%d]", c);
 			buffer[pos] = 10;
@@ -459,11 +444,10 @@ int TextReader::ReadLine(char * buffer, int size)
 
 bool TextReader::ReadLine(String& ret, int maxSize)
 {
-	int c;
 	ByteBuffer buffer;
 	if(maxSize <= 1) return false;
 	while(buffer.Length() < maxSize) {
-		c = Read();
+		int c = Read();
 		// printf("[C=%d,%c]", c, c);
 		if(c < 0) {
 			if(buffer.Length() == 0) {

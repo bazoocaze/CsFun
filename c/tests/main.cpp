@@ -225,7 +225,7 @@ StreamWriter sw;
 		return;
 	}
 
-	sw = &fs;
+	sw = StreamWriter(&fs);
 	
 
 	sw.println("Teste");

@@ -48,9 +48,10 @@ LogLevelEnum Logger::LogLevel = P_DEFAULT_LOG_LEVEL;
 void Logger::LogMsg(LogLevelEnum level, const char * fmt, ...)
 {
 	va_list ap;
-	va_start(ap, fmt);
 
 	if(Default == NULL) return;
+
+	va_start(ap, fmt);
 
 	if(level < LEVEL_VERBOSE) level = LEVEL_INFO;
 	if(level > LEVEL_FATAL) level = LEVEL_INFO;

@@ -84,14 +84,14 @@ public:
 	
 	/* Constructor for the INADDR_* IPv4 address.
 	 * Common values: INADDR_ANY, INADDR_LOOPBACK, INADDR_BROADCAST. */
-	IPAddress(in_addr_t addr);
+	explicit IPAddress(in_addr_t addr);
 	
 	// Constructor using the SockAddr informed.
-	IPAddress(const SockAddr& addr);
+	explicit IPAddress(const SockAddr& addr);
 	
 	/* Constructor using the textual representantion of the ip address (IPv4 ou IPv6).
 	 * No name resolution is done on the textual representantion. */
-	IPAddress(const char *addr);
+	explicit IPAddress(const char *addr);
 	
 	// Returns the SockAddr for the current address;
 	const SockAddr GetSockAddr() const;
@@ -122,7 +122,7 @@ public:
 	IPEndPoint();
 	
 	// Constructor using the SockAddr informed.
-	IPEndPoint(const SockAddr& addr);
+	explicit IPEndPoint(const SockAddr& addr);
 	
 	// Constructor using the address and tcp port.
 	IPEndPoint(const IPAddress& address, int port);

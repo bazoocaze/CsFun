@@ -39,7 +39,7 @@ public:
 	MemPtr();
 
 	// Constructor for automatic management of the dynamic data pointer *data*.
-	MemPtr(void * data); 
+	explicit MemPtr(void * data);
 
 	// Copy constructor. Copy and increments the reference.
 	MemPtr(const MemPtr& other);

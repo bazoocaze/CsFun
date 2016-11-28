@@ -31,7 +31,7 @@ public:
 	FileStream();
 	
 	// Constructor for the file on the informed descriptor.
-	FileStream(int fd);
+	explicit FileStream(int fd);
 
 	// Sets the current descriptor for the *fd*.
 	void SetFd(int fd);
