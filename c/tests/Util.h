@@ -62,11 +62,10 @@ typedef char *       vstr;
 class TextWriter;
 
 
-unsigned long int millis();
-void delay(int ms);
+uint64_t millis();
+uint32_t uptime();
 
-int get_uptime();
-
+void delay(uint32_t ms);
 void do_events();
 
 uint16_t simple_hash(cstr text);
@@ -94,3 +93,4 @@ int   util_printfln(TextWriter *writer, const char* fmt, va_list ap);
 
 extern void WEAK_ATTR OutOffMemoryHandler(const char *module, const char *subject, int size, int isFatal);
 extern void WEAK_ATTR EndProgramHandler(const char *module, const char *subject);
+extern void WEAK_ATTR IdleHandler();

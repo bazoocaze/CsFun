@@ -52,14 +52,14 @@ uint16_t simple_data_hash(void * data, int size) {
 }
 
 
-unsigned long int millis() {
+uint64_t millis() {
 struct timespec spec;
 	clock_gettime(CLOCK_REALTIME, &spec);
 	return (spec.tv_nsec/1000000) + (spec.tv_sec * 1000);
 }
 
 
-void delay(int ms) {
+void delay(uint32_t ms) {
 struct timespec t;
 	t.tv_sec = ms / 1000;
 	t.tv_nsec = (ms % 1000) * 1000000;
@@ -67,7 +67,7 @@ struct timespec t;
 }
 
 
-int get_uptime() {
+uint32_t uptime() {
 	return millis()/1000;
 }
 
@@ -75,20 +75,12 @@ int get_uptime() {
 // ----------------------------------------
 
 
-int util_itoa(TextWriter *dest, unsigned long valor, int basen, int padsize, int zeropad, int lalign, int comSinal)
+int util_itoa(TextWriter *dest, uint64_t valor, int basen, int padsize, int zeropad, int lalign, bool negative)
 {
 char stack[64 + padsize];
 char * sp = stack;
-int negative = (valor < 0 ? 1 : 0);
 int size = 0;
 	if(lalign) zeropad=0;
-
-	if(comSinal && (valor & 0x80000000)) {
-		negative = 1;
-		valor = (-((int)valor));
-	} else {
-		if(negative) valor = -valor;
-	}
 
 	char fillchar = (zeropad ? '0' : ' ');
 
@@ -156,10 +148,14 @@ int state = 0;
 int argZero;
 int argSize;
 int argLAlign;
-int valor;
-char *str;
+int argIntLen;
+int negative;
+int64_t  valor;
+uint64_t uval;
+const char *str;
 char charVal;
 int argDecs;
+void *vptr;
 #if PRINTF_SUPPORTS_PRINTABLE
 Printable *pz;
 #endif
@@ -177,6 +173,7 @@ double valorf;
 				argSize = 0;
 				argLAlign = 0;
 				argDecs = 2;
+				argIntLen = 32;
 				continue;
 			}
 			size += writer->Write(c);
@@ -212,32 +209,45 @@ double valorf;
 
 		if(state == PRINTF_STATE_TYPE || state == PRINTF_STATE_DECS) {
 			switch(c) {
+			case 'l':
+				argIntLen = 64;
+				continue;
 			case 'c':
 				// HACK: va_arg nao funcionando para (char)
 				charVal = (char)va_arg(ap, int);
 				size += writer->Write((char)charVal);
 				break;
 			case 'd':
-				valor = va_arg(ap, int);
-				size += util_itoa(writer, valor, 10, argSize, argZero, argLAlign, 1);
+				if(argIntLen == 64) valor = va_arg(ap, int64_t);
+				else                valor = va_arg(ap, int32_t);
+				negative = (valor < 0);
+				if(negative) valor = -valor;
+				size += util_itoa(writer, valor, 10, argSize, argZero, argLAlign, negative);
 				break;
 			case 'o':
-				valor = va_arg(ap, int);
-				size += util_itoa(writer, valor, 8, argSize, argZero, argLAlign, 0);
+				if(argIntLen == 64) uval = va_arg(ap, uint64_t);
+				else                uval = va_arg(ap, uint32_t);
+				size += util_itoa(writer, uval, 8, argSize, argZero, argLAlign, false);
 				break;
 			case 'b':
-				valor = va_arg(ap, int);
-				size += util_itoa(writer, valor, 2, argSize, argZero, argLAlign, 0);
+				if(argIntLen == 64) uval = va_arg(ap, uint64_t);
+				else                uval = va_arg(ap, uint32_t);
+				size += util_itoa(writer, uval, 2, argSize, argZero, argLAlign, false);
 				break;
 			case 'u':
-				// TODO: printf: tratar unsigned
-				valor = va_arg(ap, int);
-				size += util_itoa(writer, valor, 10, argSize, argZero, argLAlign, 0);
+				if(argIntLen == 64) uval = va_arg(ap, uint64_t);
+				else                uval = va_arg(ap, uint32_t);
+				size += util_itoa(writer, uval, 10, argSize, argZero, argLAlign, false);
 				break;
 			case 'p':
+				size += writer->print("0x");
+				uval = (uint64_t)va_arg(ap, void*);
+				size += util_itoa(writer, uval, 16, argSize, argZero, argLAlign, false);
+				break;
 			case 'x':
-				valor = va_arg(ap, int);
-				size += util_itoa(writer, valor, 16, argSize, argZero, argLAlign, 0);
+				if(argIntLen == 64) uval = va_arg(ap, uint64_t);
+				else                uval = va_arg(ap, uint32_t);
+				size += util_itoa(writer, uval, 16, argSize, argZero, argLAlign, false);
 				break;
 #if PRINTF_SUPPORTS_FLOAT
 			case 'f':

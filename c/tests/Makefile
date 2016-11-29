@@ -14,3 +14,6 @@ main: main.cpp teste.cpp outro.cpp gpb.cpp $(OBJS)
 clean:
 	rm -f *.o $(EXECS)
 
+check:
+	cppcheck --enable=all . 2>&1
+

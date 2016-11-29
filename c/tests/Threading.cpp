@@ -15,6 +15,7 @@
 
 #include "Threading.h"
 #include "Util.h"
+#include "IO.h"
 
 
 
@@ -73,47 +74,58 @@ void Monitor::Exit()
 
 Thread::Thread()
 {
-	Id      = 0;
-	m_entry = NULL;
-	m_data  = NULL;
+	Id = 0;
 }
 
-void * Thread::ThreadEntry(void * arg)
+#if defined HAVE_THREAD_pthreads
+void * Thread::ThreadEntry_pthread(void * arg)
 {
 	Thread * t = (Thread*)arg;
-	if(t->m_entry != NULL) return (void *)t->m_entry(t->m_data);
+	t->ExecuteThread();
 	return NULL;
 }
-
-bool Thread::Start(ThreadStart_t entry)
-{
-	if(Id != 0) return false;
-	m_entry = entry;
-	m_data  = NULL;
-	return Start();
-}
-
-bool Thread::Start(ThreadStart_t entry, void * data)
-{
-	if(Id != 0) return false;
-	m_entry = entry;
-	m_data  = data;
-	return Start();
-}
+#endif
 
 bool Thread::Start()
 {
 #if defined HAVE_THREAD_pthreads
-	int s = pthread_create(&Id, NULL, &ThreadEntry, this);
-	return (s == RET_OK);
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	int ret = pthread_create(&Id, &attr, &ThreadEntry_pthread, this);
+	pthread_attr_destroy(&attr);
+	return (ret == RET_OK);
 #else
 	return false;
 #endif
 }
 
-void Thread::Join()
+
+bool Thread::IsRunning()
 {
 #if defined HAVE_THREAD_pthreads
-	pthread_join(Id, NULL);
+	int policy;
+	struct sched_param param;
+	int ret = pthread_getschedparam(Id, &policy, &param);
+	return (ret == RET_OK);
 #endif
+	return false;
+}
+
+
+void Thread::Join()
+{
+	while(IsRunning()) { delay(1); }
+}
+
+
+bool Thread::TryJoin(uint32_t timeoutMillis)
+{
+	uint64_t timeout = millis() + timeoutMillis;
+	while(millis() < timeout)
+	{
+		if(!IsRunning()) { return true; }
+		delay(1);
+	}
+	return false;
 }

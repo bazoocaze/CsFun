@@ -16,16 +16,16 @@
 
 
 
+#define RESIZE_SMALL_MIN_SIZE  16
+#define RESIZE_SMALL_SIZE_MULT 4
+#define RESIZE_BIG_THRESHOULD  (4 * 1024 * 1024)
+#define RESIZE_BIG_STEP        (4 * 1024 * 1024)
+
+
+
 ByteBuffer::ByteBuffer()
 {
 	Init();
-}
-
-
-ByteBuffer::ByteBuffer(int initialCapacity)
-{
-	Init();
-	Resize(initialCapacity);
 }
 
 
@@ -104,31 +104,37 @@ int ByteBuffer::ConfirmRead(int size)
 }
 
 
-bool ByteBuffer::Resize(int size)
+bool ByteBuffer::Resize(int targetSize)
 {
-int newSize;
-
-	if(size < 0) return false;
-	if(size > P_BYTEBUFFER_MAX_SIZE) return false;
-	if(size < m_Capacity) return true;
-	
-	newSize = m_Capacity;
-
-	/* validate minimum size */
-	if(newSize < 16)
-		newSize = 16;
-
-	/* double the size */
-	while(newSize < size)
-		newSize = newSize * 2;
-
-	if(!m_ptr.Resize(newSize))
-	{
-		OutOffMemoryHandler("ByteBuffer", "resize", newSize, true);
+	if(targetSize < 0) {
+		OutOffMemoryHandler("ByteBuffer", "resize: size overflow", targetSize, true);
 		return false;
 	}
 
-	m_Capacity = newSize;
+	if(targetSize <= m_Capacity) return true;
+
+	int newCapacity = RESIZE_SMALL_MIN_SIZE;
+	while(newCapacity <= targetSize)
+	{
+		if(newCapacity < RESIZE_BIG_THRESHOULD) {
+			newCapacity = newCapacity * RESIZE_SMALL_SIZE_MULT;
+		} else {
+			int newtarget = newCapacity + RESIZE_BIG_STEP;
+			if(newtarget < newCapacity) {
+				OutOffMemoryHandler("ByteBuffer", "resize: size overflow", targetSize, true);
+				return false;
+			}
+			newCapacity = newtarget;
+		}
+	}
+
+	if(!m_ptr.Resize(newCapacity))
+	{
+		OutOffMemoryHandler("ByteBuffer", "resize", newCapacity, true);
+		return false;
+	}
+
+	m_Capacity = newCapacity;
 	return true;
 }
 

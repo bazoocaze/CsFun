@@ -10,6 +10,7 @@
 
 
 #include "Fd.h"
+#include "Text.h"
 #include "Config.h"
 
 
@@ -61,6 +62,9 @@ public:
 	// Standard error writer
 	extern FdWriter StdErr;
 
+	extern CConsole bConsole;
+	extern NullText bStdIn;
+
 #else
 
 	// Dummy console.
@@ -76,3 +80,4 @@ public:
 	extern NullText StdErr;
 
 #endif
+

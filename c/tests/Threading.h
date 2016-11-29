@@ -9,7 +9,9 @@
 #pragma once
 
 
+#include <inttypes.h>
 #include "Config.h"
+
 
 #if defined HAVE_THREAD_pthreads
 	#include <pthread.h>
@@ -41,39 +43,44 @@ public:
 };
 
 
-typedef void * (*ThreadStart_t)(void *);
-
-
-// Represents a thread.
+/* Represents a thread.
+ * Inherit from this class and implement the ExecuteThread method
+ * to make a custom thread class.
+ * Call Start() to start a new thread. */
 class Thread
 {
 protected:
-	// User entry point for the thread.
-	ThreadStart_t  m_entry;
-	
-	// User data for the thread.
-	void *         m_data;
+#if defined HAVE_THREAD_pthreads
+	/* Internal entry point for the new thread. */
+	static void * ThreadEntry_pthread(void * arg);
+#endif
 
-	// Internal entry point for the thread.
-	static void * ThreadEntry(void * arg);
-
-	// Start a new thread.
-	bool Start();
+	/* This member is called as the entry point for the new created thread.
+	 * Implement this member to customize the thread execution. */
+	virtual void ExecuteThread() = 0;
 
 public:
-	// Thread Id of the created thread.
+	/* Thread Id of the created thread.
+	 * This value is updated after a call to Start(). */
 	pthread_t Id;
 
-	// Default constructor for a standard thread.
+	/* Default constructor for a standard thread. */
 	Thread();
 
-	// Starts a new thread running the entry point informed.
-	bool Start(ThreadStart_t entry);
-	
-	/* Start a new thread running the entry point informed
-	 * and passing the data as argument. */
-	bool Start(ThreadStart_t entry, void * data);
+	/* Starts a new thread and run the *ExecuteThread()* entry point.
+	 * Updates the field *Id* with the thread identifier. */
+	bool Start();
 
-	// Join the running thread / waits for it's finalization.
+	/* Join the running thread, waiting for it's termination.
+	 * Can be called multiple times if needed. */
 	void Join();
+
+	/* Try to join the running thread, waiting for it's termination.
+	 * Wait *timeoutMillis* milliseconds for the thread termination.
+	 * Return true if the thread terminated during the timeout periodo,
+	 * of false in case of timeout. */
+	bool TryJoin(uint32_t timeoutMillis);
+
+	/* Returns true/false if the thread is running. */
+	bool IsRunning();
 };
