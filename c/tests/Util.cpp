@@ -27,6 +27,9 @@
 #define PRINTF_STATE_DECS     2
 
 
+#define EXIT_MEM_ERROR 100
+
+
 uint16_t simple_hash(const char * text) {
 	uint16_t ret = 0x55AA;
 	int pos = 0;
@@ -72,13 +75,13 @@ uint32_t uptime() {
 }
 
 
-void do_events()
+void doevents()
 {
 	IdleHandler();
 }
 
 
-void do_events(uint32_t milliseconds)
+void doevents(uint32_t milliseconds)
 {
 	uint64_t timeout = millis() + milliseconds;
 	while(millis() < timeout)
@@ -91,7 +94,7 @@ void do_events(uint32_t milliseconds)
 // ----------------------------------------
 
 
-int util_itoa(TextWriter *dest, uint64_t input, int basen, int padsize, bool zeropad, bool leftalign, bool negative)
+int util_itoa(CTextWriter *dest, uint64_t input, int basen, int padsize, bool zeropad, bool leftalign, bool negative)
 {
 char stack[(sizeof(input) * 8) + padsize + 1];
 char * sp = stack;
@@ -99,11 +102,13 @@ int size = 0;
 int signalSize = (negative ? 1 : 0);
 int ret = 0;
 
-	if(leftalign) zeropad = false;
+	if(leftalign)
+		zeropad = false;
 
 	char fillchar = (zeropad ? '0' : ' ');
 
-	if(basen < 2 || basen > 16)  basen = 10;
+	if(basen < 2 || basen > 16)
+		basen = 10;
 
 	// push the number onto the stack
 	do {
@@ -118,7 +123,8 @@ int ret = 0;
 	} while (input);
 
 	// push the negative signal if not zeropadded
-	if(negative && !zeropad) *sp++ = '-';
+	if(negative && !zeropad)
+		*sp++ = '-';
 
 	// left pad the number
 	if(!leftalign) {
@@ -127,7 +133,8 @@ int ret = 0;
 	}
 
 	// push the negative signal if zeropadded
-	if(negative && zeropad) *sp++ = '-';
+	if(negative && zeropad)
+		*sp++ = '-';
 
 	// write stack contents to output
 	do {
@@ -143,7 +150,7 @@ int ret = 0;
 }
 
 
-int util_printf(TextWriter *print, const char* fmt, ...) {
+int util_printf(CTextWriter *print, const char* fmt, ...) {
 va_list ap;
 int ret;
 	va_start(ap, fmt);
@@ -153,7 +160,7 @@ int ret;
 }
 
 
-int util_printf(TextWriter *writer, const char* fmt, va_list ap) {
+int util_printf(CTextWriter *writer, const char* fmt, va_list ap) {
 int size = 0;
 int state = 0;
 int argZero;
@@ -168,7 +175,7 @@ char charVal;
 int argDecs;
 
 #if PRINTF_SUPPORTS_PRINTABLE
-Printable *pz;
+CPrintable *pz;
 #endif
 
 #if PRINTF_SUPPORTS_FLOAT
@@ -287,7 +294,7 @@ double valorf;
 
 #if PRINTF_SUPPORTS_PRINTABLE
 			case 'P':
-				pz = va_arg(ap, Printable *);
+				pz = va_arg(ap, CPrintable *);
 				size += pz->printTo(*writer);
 				break;
 #endif
@@ -304,11 +311,12 @@ double valorf;
 
 void WEAK_ATTR OutOffMemoryHandler(const char *module, const char *subject, int size, bool isFatal)
 {
-	Logger::LogMsg(
+	CLogger::LogMsg(
 		LEVEL_FATAL,
 		"Memory allocation failure in %s/%s for %d bytes",
 		module, subject, size);
-	if(isFatal)	exit(100);
+	if(isFatal)
+		exit(EXIT_MEM_ERROR);
 }
 
 
@@ -330,7 +338,8 @@ ptr_info_t ptr_info[MAX_PTR_INFO];
 int util_mem_find_entry(void * ptr)
 {
 	for(int n = 0; n < MAX_PTR_INFO; n++)
-		if(ptr_info[n].ptr == ptr) return n;
+		if(ptr_info[n].ptr == ptr)
+			return n;
 	return RET_ERR;
 }
 
@@ -338,9 +347,10 @@ int util_mem_find_entry(void * ptr)
 int util_mem_find_free()
 {
 	for(int n = 0; n < MAX_PTR_INFO; n++)
-		if(ptr_info[n].ptr == NULL) return n;
+		if(ptr_info[n].ptr == NULL)
+			return n;
 	dprintf(2, "\nMEMORY/ERROR: no free slots on ptr_info table\n");
-	exit(100);
+	exit(EXIT_MEM_ERROR);
 }
 
 
@@ -377,7 +387,7 @@ void * newPtr;
 		slot = util_mem_find_entry(oldPtr);
 	if(slot == RET_ERR) {
 		dprintf(2, "\nMEMORY/ERROR: realloc of %ld bytes on unknow pointer %p\n", newSize, oldPtr);
-		exit(100);
+		exit(EXIT_MEM_ERROR);
 	}
 	newPtr = realloc(oldPtr, newSize);
 	if(newSize == 0)
@@ -400,11 +410,12 @@ void * newPtr;
 void util_mem_free(void * ptr, cstr srcFile, int lineNumber)
 {
 int slot;
-	if(ptr == NULL) return;
+	if(ptr == NULL)
+		return;
 	slot = util_mem_find_entry(ptr);
 	if(slot == RET_ERR) {
 		dprintf(2, "\nMEMORY/FREE: free on unknow pointer %p (at %s:%d)\n", ptr, srcFile, lineNumber);
-		exit(100);
+		exit(EXIT_MEM_ERROR);
 	}
 	free(ptr);
 	ptr_info[slot].ptr = NULL;
@@ -416,14 +427,18 @@ void util_mem_debug()
 	dprintf(2, "\n--- BEGIN MEM DEBUG ---\n");
 	for(int n = 0; n < MAX_PTR_INFO; n++)
 	{
-		if(ptr_info[n].ptr == NULL) continue;
+		if(ptr_info[n].ptr == NULL)
+			continue;
 		
 		const char * file;
 		file = strrchr((vstr)ptr_info[n].file, '\\');
-		if(file == NULL) file = strrchr((vstr)ptr_info[n].file, '/');
+		if(file == NULL)
+			file = strrchr((vstr)ptr_info[n].file, '/');
 		
-		if(file != NULL) file++;
-		else             file = ptr_info[n].file;
+		if(file != NULL)
+			file++;
+		else
+			file = ptr_info[n].file;
 		
 		dprintf(2, " %04d 0x%p %08ld %s:%d\n", n, ptr_info[n].ptr, ptr_info[n].size, file, ptr_info[n].line);
 	}

@@ -10,27 +10,27 @@
 #include "Logger.h"
 
 
-int StringBuilder::Length()
+int CStringBuilder::Length()
 {
 	return m_buffer.Length();
 }
 
 
-int StringBuilder::Write(uint8_t c)
+int CStringBuilder::Write(uint8_t c)
 {
 	m_buffer.Write(c);
 	return 1;
 }
 
-int StringBuilder::Write(uint8_t * buffer, int size)
+int CStringBuilder::Write(uint8_t * buffer, int size)
 {
 	m_buffer.Write(buffer, 0, size);
 	return size;
 }
 
-String StringBuilder::GetString()
+CString CStringBuilder::GetString()
 {
-String ret = m_buffer.GetString();
+CString ret = m_buffer.GetString();
 	m_buffer.Clear();
 	return ret;
 }

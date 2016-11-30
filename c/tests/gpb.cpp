@@ -14,19 +14,19 @@ class TesteSubMensagem : public IMessage
 {
 public:
 	int    SubValor;
-	String SubStr1;
+	CString SubStr1;
 	char   SubStr2[128];
 
 	int CalculateSize() const
 	{
 		int ret = 0;
-		ret += CodedOutputStream::CalculateInt32Size(1,  SubValor);
-		ret += CodedOutputStream::CalculateStringSize(2, SubStr1);
-		ret += CodedOutputStream::CalculateStringSize(3, SubStr2);
+		ret += CCodedOutputStream::CalculateInt32Size(1,  SubValor);
+		ret += CCodedOutputStream::CalculateStringSize(2, SubStr1);
+		ret += CCodedOutputStream::CalculateStringSize(3, SubStr2);
 		return ret;
 	}
 	
-	void MergeFrom(CodedInputStream * input)
+	void MergeFrom(CCodedInputStream * input)
 	{
 		while(input->ReadTag())
 		{
@@ -37,7 +37,7 @@ public:
 		}
 	}
 	
-	void WriteTo(CodedOutputStream * output)
+	void WriteTo(CCodedOutputStream * output)
 	{
 		output->WriteString(2, SubStr1);
 		output->WriteString(3, SubStr2);
@@ -53,7 +53,7 @@ class TesteMensagem : public IMessage
 {
 public:
 	int    Valor;
-	String Nome;
+	CString Nome;
 	bool   Flag;
 	int    Valor1;
 	TesteSubMensagem Sub;
@@ -61,15 +61,15 @@ public:
 	int CalculateSize() const
 	{
 		int ret = 0;
-		ret += CodedOutputStream::CalculateInt32Size(1,   Valor);
-		ret += CodedOutputStream::CalculateStringSize(2,  Nome);
-		ret += CodedOutputStream::CalculateBoolSize(3,    Flag);
-		ret += CodedOutputStream::CalculateInt32Size(4,   Valor1);
-		ret += CodedOutputStream::CalculateMessageSize(4, Sub);
+		ret += CCodedOutputStream::CalculateInt32Size(1,   Valor);
+		ret += CCodedOutputStream::CalculateStringSize(2,  Nome);
+		ret += CCodedOutputStream::CalculateBoolSize(3,    Flag);
+		ret += CCodedOutputStream::CalculateInt32Size(4,   Valor1);
+		ret += CCodedOutputStream::CalculateMessageSize(4, Sub);
 		return ret;
 	}
 
-	void MergeFrom(CodedInputStream * input)
+	void MergeFrom(CCodedInputStream * input)
 	{
 		while(input->ReadTag())
 		{
@@ -82,7 +82,7 @@ public:
 		}
 	}
 
-	void WriteTo(CodedOutputStream * output)
+	void WriteTo(CCodedOutputStream * output)
 	{
 		output->WriteMessage(5, Sub);
 		output->WriteInt32(1,   Valor);
@@ -98,9 +98,9 @@ TesteMensagem teste3;
 
 int gpb_main()
 {
-	MemoryStream ms;
-	CodedOutputStream cos = CodedOutputStream(&ms);
-	CodedInputStream cis = CodedInputStream(&ms);
+	CMemoryStream ms;
+	CCodedOutputStream cos = CCodedOutputStream(&ms);
+	CCodedInputStream cis = CCodedInputStream(&ms);
 	
 	TesteMensagem teste1;
 	teste1.Valor = 123456789;
@@ -114,7 +114,7 @@ int gpb_main()
 	
 	teste1.WriteTo(&cos);
 	
-	Debug::HexDump(StdOut, ms.GetReadPtr(), ms.Length());
+	CDebug::HexDump(StdOut, ms.GetReadPtr(), ms.Length());
 	
 	// int bufferSize = ms.Length();
 	// uint8_t buffer[bufferSize];

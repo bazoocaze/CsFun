@@ -29,18 +29,18 @@ enum ConnectionStateEnum {
 const char* ConnectionStateStr(ConnectionStateEnum state);
 
 
-class SockAddr;
+class CSockAddr;
 
 
 /* Represents a network socket descriptor. */
-class Socket : public Fd
+class CSocket : public CFd
 {
 public:
 	// Default constructor for a closed socket.
-	Socket();
+	CSocket();
 	
 	// Constructor for the socket informed.
-	explicit Socket(int fd);
+	explicit CSocket(int fd);
 
 	/* Release the current fd and creates a
 	 * new socket with the family and types informed.
@@ -51,7 +51,7 @@ public:
 	
 	/* Binds the current socket to the address informed.
 	 * Returns true/false if success.*/
-	bool Bind(const SockAddr& sockAddr);
+	bool Bind(const CSockAddr& sockAddr);
 	
 	/* Puts the socket in listening state.
 	 * Returns true/false if success.*/
@@ -66,7 +66,7 @@ public:
 	 * Fills the SockAddr with the addres of the remote point.
 	 * Return the socket fd for the new client,
 	 * or RET_ERR in case of error. */
-	int Accept(SockAddr& address);
+	int Accept(CSockAddr& address);
 	
 	/* Reads the error code from kernel socket state. */
 	int GetSockError() const;

@@ -29,27 +29,27 @@
 
 
 
-TcpClient::TcpClient()
+CTcpClient::CTcpClient()
 {
 	m_state = STATE_NOT_CONNECTED;
 }
 
 
-TcpClient::TcpClient(int clientfd)
+CTcpClient::CTcpClient(int clientfd)
 {
 	m_sock.SetFd(clientfd);
 	m_stream.SetFd(clientfd);
-	Logger::LogMsg(LEVEL_VERBOSE, "Created network client (fd %d)", GetFd());
+	CLogger::LogMsg(LEVEL_VERBOSE, "Created network client (fd %d)", GetFd());
 	m_state = STATE_CONNECTED;
 }
 
 
-bool TcpClient::Connect(const char * hostName, int port)
+bool CTcpClient::Connect(const char * hostName, int port)
 {
-	IPAddressList list = Dns::GetHostAddresses(hostName, true, false);
+	CIPAddressList list = CDns::GetHostAddresses(hostName, true, false);
 	if(list.Count > 0)
 	{
-		IPEndPoint remoteEP = IPEndPoint((IPAddress)list.Items[0], port);
+		CIPEndPoint remoteEP = CIPEndPoint((CIPAddress)list.Items[0], port);
 		return Connect(remoteEP);
 	}
 	else
@@ -60,9 +60,9 @@ bool TcpClient::Connect(const char * hostName, int port)
 }
 
 
-bool TcpClient::Connect(const IPEndPoint& remoteEP)
+bool CTcpClient::Connect(const CIPEndPoint& remoteEP)
 {
-	SockAddr addr = remoteEP.GetSockAddr();
+	CSockAddr addr = remoteEP.GetSockAddr();
 	
 	int ret;
 
@@ -94,7 +94,7 @@ bool TcpClient::Connect(const IPEndPoint& remoteEP)
 			m_state = STATE_CONNECTING;
 		errno = RET_OK;
 		m_sock.LastErr = RET_OK;
-		Logger::LogMsg(LEVEL_VERBOSE, "Connected on %P (fd %d)", &remoteEP, GetFd());
+		CLogger::LogMsg(LEVEL_VERBOSE, "Connected on %P (fd %d)", &remoteEP, GetFd());
 		return true;
 	} else {
 		ret = errno;
@@ -105,16 +105,16 @@ bool TcpClient::Connect(const IPEndPoint& remoteEP)
 }
 
 
-void TcpClient::Close()
+void CTcpClient::Close()
 {
 	InternalClose(STATE_NOT_CONNECTED, RET_OK);
 }
 
 
-void TcpClient::InternalClose(ConnectionStateEnum newState, int errorCode)
+void CTcpClient::InternalClose(ConnectionStateEnum newState, int errorCode)
 {
 	if(!m_sock.IsClosed())	{
-		Logger::LogMsg(LEVEL_VERBOSE, "Closing TCP client (fd %d)", GetFd());
+		CLogger::LogMsg(LEVEL_VERBOSE, "Closing TCP client (fd %d)", GetFd());
 		m_sock.Close();
 	}
 	m_sock.LastErr = errorCode;
@@ -122,7 +122,7 @@ void TcpClient::InternalClose(ConnectionStateEnum newState, int errorCode)
 }
 
 
-ConnectionStateEnum TcpClient::State()
+ConnectionStateEnum CTcpClient::State()
 {
 	if(m_state == STATE_CONNECTING)
 	{
@@ -161,31 +161,27 @@ ConnectionStateEnum TcpClient::State()
 }
 
 
-int TcpClient::IsConnected()
+bool CTcpClient::IsConnected()
 {
 	int e = State();
-	if(e == STATE_CONNECTED || e == STATE_CONNECTING)
-		return TRUE;
-	return FALSE;
+	return (e == STATE_CONNECTED || e == STATE_CONNECTING);
 }
 
 
-int TcpClient::IsReady()
+bool CTcpClient::IsReady()
 {
 	int e = State();
-	if(e == STATE_CONNECTED)
-		return TRUE;
-	return FALSE;
+	return (e == STATE_CONNECTED);
 }
 
 
-int TcpClient::GetLastErr()
+int CTcpClient::GetLastErr()
 {
 	return m_sock.LastErr;
 }
 
 
-const char * TcpClient::GetLastErrMsg()
+const char * CTcpClient::GetLastErrMsg()
 {
 int e = State();
 	if(e == STATE_DNS_ERROR) return "DNS error";
@@ -193,49 +189,53 @@ int e = State();
 }
 
 
-int TcpClient::GetFd() const
+int CTcpClient::GetFd() const
 {
 	return m_sock.GetFd();
 }
 
 
-int TcpClient::Write(uint8_t c) {
+/*
+int CTcpClient::Write(uint8_t c) {
 	if(State() == STATE_CONNECTED) {
 		if(m_sock.IsWritable())
 			return write(GetFd(), &c, 1);
 	}
 	return 0;
-}
+} */
 
-
-int TcpClient::Write(uint8_t *ptr, int size) {
+/*
+int CTcpClient::Write(uint8_t *ptr, int size) {
 	if(State() == STATE_CONNECTED) {
 		if(m_sock.IsWritable())
 			return write(GetFd(), ptr, size);
 	}
 	return 0;
-}
+} */
 
 
-int TcpClient::Available() {
+/*
+int CTcpClient::Available() {
 	if(State() == STATE_CONNECTED && m_sock.IsReadable())
 		return 1;
 	return 0;
-}
+} */
 
 
-int TcpClient::Read() {
+/*
+int CTcpClient::Read() {
 unsigned char c;
 	if(State() == STATE_CONNECTED) {
 		if(m_sock.IsReadable())
 		{
 			int lido = read(GetFd(), &c, 1);
-			if(lido != 1) return -1;
+			if(lido != 1)
+				return -1;
 			return c;
 		}
 	}
 	return -1;
-}
+} */
 
 /*
 int TcpClient::Peek() {
@@ -253,7 +253,7 @@ int lidos = 1;
 } */
 
 
-void TcpClient::SetFd(int fd)
+void CTcpClient::SetFd(int fd)
 {
 	if(State() == STATE_CONNECTED)
 		return;
@@ -265,8 +265,9 @@ void TcpClient::SetFd(int fd)
 }
 
 
-Stream* TcpClient::GetStream()
+CStream* CTcpClient::GetStream()
 {
-	m_stream.SetFd(m_sock.GetFd());
+	if(m_stream.GetFd() != m_sock.GetFd())
+		m_stream.SetFd(m_sock.GetFd());
 	return &m_stream;
 }

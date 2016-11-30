@@ -21,7 +21,7 @@
 
 
 // Represents a monitor sincronization primitive.
-class Monitor
+class CMonitor
 {
 private:
 	pthread_t current;
@@ -30,7 +30,7 @@ private:
 
 public:
 	// Default constructor.
-	Monitor();
+	CMonitor();
 	
 	/* Enter/lock the context for the current thread.
 	 * If another thread has the context locked, then
@@ -47,7 +47,7 @@ public:
  * Inherit from this class and implement the ExecuteThread method
  * to make a custom thread class.
  * Call Start() to start a new thread. */
-class Thread
+class CThread
 {
 protected:
 #if defined HAVE_THREAD_pthreads
@@ -65,7 +65,7 @@ public:
 	pthread_t Id;
 
 	/* Default constructor for a standard thread. */
-	Thread();
+	CThread();
 
 	/* Starts a new thread and run the *ExecuteThread()* entry point.
 	 * Updates the field *Id* with the thread identifier. */

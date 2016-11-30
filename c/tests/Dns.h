@@ -13,23 +13,23 @@
 
 
 // Dns service tools.
-class Dns
+class CDns
 {
 protected:
 	static void LogErr(cstr msg, cstr extra);
 
 public:
 	// Last dns error code.
-	static int  LastErr;
+	static int LastErr;
 	
 	// String message for the last error code.
 	static cstr GetLastErrMsg();
 
 	/* Return a list of resolved IP addresses for the *hostName*, 
 	 * including IPv4 and IPv6 addresses.*/
-	static IPAddressList GetHostAddresses(const char * hostName);
+	static CIPAddressList GetHostAddresses(const char * hostName);
 	
 	/* Return a list of resolved IP addresses for the *hostName*.
 	 * You can select if you want IPv4 and/or IPv6 addresses on the response.*/
-	static IPAddressList GetHostAddresses(const char * hostName, bool ipv4, bool ipv6);
+	static CIPAddressList GetHostAddresses(const char * hostName, bool ipv4, bool ipv6);
 };

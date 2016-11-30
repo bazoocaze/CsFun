@@ -24,15 +24,15 @@ class IMessage;
 /* Represents a read-only buffer.
  * The data can come from a stream or a
  * memory block. */
-class ByteString {
+class CByteString {
 protected:
 
 	/* Data memory pointer */
-	MemPtr m_mem;
+	CMemPtr m_mem;
 	const uint8_t * m_ptr;
 
 	/* Base stream */
-	Stream * m_stream;
+	CStream * m_stream;
 	
 public:
 	int ReadPos;
@@ -40,17 +40,17 @@ public:
 	int Size;
 
 	/* Default constructor for an empty buffer. */
-	ByteString();
+	CByteString();
 
 	/* Constructor for a stream based buffer. */
-	explicit ByteString(Stream *stream);
+	explicit CByteString(CStream *stream);
 
 	/* Constructor for a memory block based buffer. */
-	ByteString(const void * ptr, int offset, int size);
+	CByteString(const void * ptr, int offset, int size);
 
 	/* Constructor for a memory block based buffer.
 	 * The pointer permits auto-management of the memory block. */
-	ByteString(MemPtr memPtr, const void * ptr, int offset, int size);
+	CByteString(CMemPtr memPtr, const void * ptr, int offset, int size);
 
 	/* Returns a pointer to the read position. */
 	const uint8_t* GetPtr();
@@ -61,7 +61,7 @@ public:
 
 	/* Read a block of data from the buffer.
 	 * Remember to verify the returned block size. */
-	ByteString ReadBlock(int size);
+	CByteString ReadBlock(int size);
 
 	/* Discards *size* bytes from the buffer.
 	 * Returns the number of bytes sucessfully discarded. */
@@ -71,10 +71,10 @@ public:
 
 /* Represents a Protobuf encoder that writes data to
  * a destination stream. */
-class CodedOutputStream {
+class CCodedOutputStream {
 protected:
 	/* Base stream */
-	Stream * m_output;
+	CStream * m_output;
 
 	/* Calculates the size in bytes of the varint32 value. */
 	static int CalculateVarint32Size(int32_t val);
@@ -114,17 +114,17 @@ public:
 	static int CalculateBoolSize   (int fieldNumber, bool val);
 
 	static int CalculateStringSize (int fieldNumber, const char * val);
-	static int CalculateStringSize (int fieldNumber, const String& val);
+	static int CalculateStringSize (int fieldNumber, const CString& val);
 	static int CalculateBytesSize  (int fieldNumber, int size);
 	static int CalculateMessageSize(int fieldNumber, const IMessage& val);
 
 	/* Default constructor for a Null encoder that
 	 * discards the encoded data. */
-	CodedOutputStream();
+	CCodedOutputStream();
 
 	/* Constructor for a encoder that writes the
 	 * encoded data to the output Stream. */
-	explicit CodedOutputStream(Stream* output);
+	explicit CCodedOutputStream(CStream* output);
 
 	void WriteInt8   (int fieldNumber, int8_t val);
 	void WriteInt16  (int fieldNumber, int16_t val);
@@ -141,7 +141,7 @@ public:
 	void WriteBool   (int fieldNumber, bool val);
 
 	void WriteString (int fieldNumber, const char * val);
-	void WriteString (int fieldNumber, const String& val);
+	void WriteString (int fieldNumber, const CString& val);
 	void WriteBytes  (int fieldNumber, const void * val, int size);
 	void WriteMessage(int fieldNumber, IMessage& val);
 };
@@ -149,9 +149,9 @@ public:
 
 /* Represents a Protobuf decoder that reads the
  * encoded data from a ByteString. */
-class CodedInputStream {
+class CCodedInputStream {
 protected:
-	ByteString m_input;
+	CByteString m_input;
 
 	int  CurrentTag;
 	int  CurrentFieldNumber;
@@ -179,9 +179,9 @@ protected:
 	bool SourceDiscardBytes(int size);
 
 public:
-	CodedInputStream();	
-	explicit CodedInputStream(const ByteString& input);
-	explicit CodedInputStream(Stream*     input);
+	CCodedInputStream();
+	explicit CCodedInputStream(const CByteString& input);
+	explicit CCodedInputStream(CStream*     input);
 
 	/* Read the tag for the next field.
 	 * Returns true/false on success. */
@@ -205,8 +205,8 @@ public:
 	bool   ReadDouble  (int fieldNumber, double & val);
 
 	bool   ReadString  (int fieldNumber, char * val, int maxSize);
-	bool   ReadString  (int fieldNumber, String & val);
-	bool   ReadString  (int fieldNumber, String & val, int maxSize);
+	bool   ReadString  (int fieldNumber, CString & val);
+	bool   ReadString  (int fieldNumber, CString & val, int maxSize);
 	bool   ReadMessage (int fieldNumber, IMessage & val);
 	
 	bool   ReadBytes   (int fieldNumber, void ** val);
@@ -222,8 +222,8 @@ public:
 	virtual int  CalculateSize() const = 0;
 	
 	/* Merge the content of the message reading new data from *input*. */
-	virtual void MergeFrom(CodedInputStream * input) = 0;
+	virtual void MergeFrom(CCodedInputStream * input) = 0;
 	
 	/* Write the contents of the message to *output*. */
-	virtual void WriteTo(CodedOutputStream * output) = 0;
+	virtual void WriteTo(CCodedOutputStream * output) = 0;
 };

@@ -19,14 +19,14 @@
 
 
 
-class NullStream;
-class Printable;
-class ByteBuffer;
+class CNullStream;
+class CPrintable;
+class CByteBuffer;
 
 
 
 // Byte stream abstraction
-class Stream
+class CStream
 {
 public:
 	// Close the stream
@@ -34,20 +34,25 @@ public:
 
 	/* Write a byte to the stream.
 	 * Return the number of bytes written, or RET_ERR on error. */
-	virtual int Write(const uint8_t c) = 0; // { return RET_ERR; }
+	virtual int Write(const uint8_t c) = 0;
 	
 	/* Write bytes to the stream.
 	 * Return the number of bytes written, or RET_ERR on error. */
-	virtual int Write(const void * c, int size) = 0; // { return RET_ERR; } 
+	virtual int Write(const void * c, int size) = 0;
 
 	/* Read a byte from stream.
 	 * Returns the byte read, or INT_EOF on EOF or INT_ERR on error. */
-	virtual int ReadByte() = 0; // { return INT_ERR; }
+	virtual int ReadByte() = 0;
 
 	/* Read bytes from stream.
 	 * Returns the number of read bytes, including 0 on EOF.
 	 * Returns RET_ERR on error. */
-	virtual int Read(void * buffer, int size) = 0; //  { return RET_ERR; }
+	virtual int Read(void * buffer, int size) = 0;
+
+	/* Try to read a complete block of bytes from stream.
+	 * Returns the number of read bytes, including 0 on EOF.
+	 * Returns RET_ERR on error. */
+	virtual int ReadBlock(void * buffer, int size);
 	
 	/* Discard from the input the total amount of bytes.
 	 * Returns the number of bytes discarded, or RET_ERR on error. */
@@ -64,12 +69,12 @@ public:
 	virtual const char * GetLastErrMsg() = 0;
 
 	/* Null stream (EOF on read and null store on write). */
-	static NullStream Null;
+	static CNullStream Null;
 };
 
 
 // Null stream abstraction
-class NullStream : public Stream
+class CNullStream : public CStream
 {
 public:
 	void Close()                             { }
@@ -86,7 +91,7 @@ public:
 
 
 // File descriptor stream abstraction
-class FdStream : public Stream
+class CFdStream : public CStream
 {
 protected:
 	// file descriptor, or CLOSED_FD if closed
@@ -98,10 +103,10 @@ protected:
 
 public:
 	// Constructs a closed fd stream
-	FdStream();
+	CFdStream();
 
 	// Constructs a stream on fd
-	explicit FdStream(int fd);
+	explicit CFdStream(int fd);
 
 	// Sets file descriptor to fd
 	virtual void SetFd(int fd);

@@ -32,21 +32,21 @@ const char* ConnectionStateStr(ConnectionStateEnum state) {
 
 
 
-Socket::Socket()
+CSocket::CSocket()
 {
 	m_fd = CLOSED_FD;
 	LastErr = RET_OK;
 }
 
 
-Socket::Socket(int fd)
+CSocket::CSocket(int fd)
 {
 	m_fd = fd;
 	LastErr = RET_OK;
 }
 
 
-bool Socket::Create(int family, int type)
+bool CSocket::Create(int family, int type)
 {
 int ret;
 	m_fd = CLOSED_FD;
@@ -61,59 +61,64 @@ int ret;
 }
 
 
-bool Socket::Bind(const SockAddr& sockAddr)
+bool CSocket::Bind(const CSockAddr& sockAddr)
 {
 int ret = bind(m_fd, sockAddr.GetSockAddr(), sockAddr.GetSize());
-	if(ret != RET_ERROR) return true;
+	if(ret != RET_ERROR)
+		return true;
 	LastErr = errno;
 	return false;
 }
 
 
-bool Socket::Listen(int backlog)
+bool CSocket::Listen(int backlog)
 {
 int ret = listen(m_fd, backlog);
-	if(ret != RET_ERROR) return true;
+	if(ret != RET_ERROR)
+		return true;
 	LastErr = errno;
 	return false;
 }
 
 
-int Socket::Accept()
+int CSocket::Accept()
 {
 int ret = accept(m_fd, NULL, NULL);
-	if(ret == RET_ERROR) LastErr = errno;
+	if(ret == RET_ERROR)
+		LastErr = errno;
 	return ret;
 }
 
 
-int Socket::Accept(SockAddr& address)
+int CSocket::Accept(CSockAddr& address)
 {
 	socklen_t addrSize = address.GetMaxSize();
 	int ret = accept(m_fd, address.GetSockAddr(), &addrSize);
-	if(ret == RET_ERROR) LastErr = errno;
+	if(ret == RET_ERROR)
+		LastErr = errno;
 	address.SetSize(addrSize);
 	return ret;
 }
 
 
-int Socket::GetSockError() const
+int CSocket::GetSockError() const
 {
-	return Socket::GetSockError(m_fd);
+	return CSocket::GetSockError(m_fd);
 }
 
 
-int Socket::SetBroadcast(int enabled)
+int CSocket::SetBroadcast(int enabled)
 {
 	return setsockopt(m_fd, SOL_SOCKET, SO_BROADCAST, &enabled, sizeof(enabled));
 }
 
 
-int Socket::GetSockError(int sockfd)
+int CSocket::GetSockError(int sockfd)
 {
 int retval = 0;
 socklen_t len = sizeof(retval);
 	int ret = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &retval, &len);
-	if (ret == RET_OK) return retval;
+	if (ret == RET_OK)
+		return retval;
 	return EFAULT;
 }

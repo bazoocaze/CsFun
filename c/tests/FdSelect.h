@@ -33,7 +33,7 @@ typedef struct {
 /* Represents a file descriptor selector
  * that can select/wait/update the status
  * of multiple fds at once. */
-class FdSelect
+class CFdSelect
 {
 protected:
 	static const int MAX_FD_LIST = 64;
@@ -52,7 +52,7 @@ protected:
 public:
 
 	/* Default constructor for an empty file descriptor selector. */
-	FdSelect();
+	CFdSelect();
 
 	/* Returns the string message for the last error code. */
 	const char * GetLastErrMsg() const;

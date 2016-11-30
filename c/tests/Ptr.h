@@ -20,7 +20,7 @@ typedef struct FdPtr_s FdPtr_t;
 
 /* Automatic management of dynamic memory (malloc/realloc) pointers using reference counting.
  * The data is automatic freed via free() call when needed. */ 
-class MemPtr
+class CMemPtr
 {
 private:
 	// Pointer to the internal data pointer and reference counter.
@@ -36,19 +36,19 @@ protected:
 
 public:
 	// Default empty constructor
-	MemPtr();
+	CMemPtr();
 
 	// Constructor for automatic management of the dynamic data pointer *data*.
-	explicit MemPtr(void * data);
+	explicit CMemPtr(void * data);
 
 	// Copy constructor. Copy and increments the reference.
-	MemPtr(const MemPtr& other);
+	CMemPtr(const CMemPtr& other);
 
 	// Copy assignment. Release, copy and increments the reference.
-	MemPtr& operator=(const MemPtr& other);
+	CMemPtr& operator=(const CMemPtr& other);
 
 	// Default destructor. Release the reference.
-	~MemPtr();
+	~CMemPtr();
 
 	/* Clear/release the managed data.
 	 * Free the buffer if the reference count reaches 0 */
@@ -76,7 +76,7 @@ public:
 
 /* Automatic management of integer file descriptor (FD) by reference counting.
    The descriptor is automatic closed (via close() call) when needed. */ 
-class FdPtr
+class CFdPtr
 {
 private:
 	FdPtr_t * ref;
@@ -90,22 +90,22 @@ public:
 	int  Fd;
 
 	// Default empty constructor.
-	FdPtr();
+	CFdPtr();
 	
 	// Constructor for automatic management of the fd descriptor.
-	FdPtr(int fd);
+	CFdPtr(int fd);
 	
 	// Copy constructor.
-	FdPtr(const FdPtr& other);
+	CFdPtr(const CFdPtr& other);
 
 	// Copy assignment.
-	FdPtr& operator=(const FdPtr& other);
+	CFdPtr& operator=(const CFdPtr& other);
 
 	// Automatic return Fd on conversion to int.
 	operator int() const { return Fd; }
 
 	// Default destructor.
-	~FdPtr();
+	~CFdPtr();
 
 	// Release the managed fd, closing the fd if the reference count reaches 0.
 	void Close();
@@ -113,6 +113,6 @@ public:
 	// Release the current fd and begin management for the new fd.
 	void Set(int fd);
 
-	void Debug();
+	void CDebug();
 };
 

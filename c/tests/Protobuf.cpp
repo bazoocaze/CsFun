@@ -26,35 +26,35 @@
 
 
 
-CodedOutputStream::CodedOutputStream()
+CCodedOutputStream::CCodedOutputStream()
 {
-	m_output = &Stream::Null;
+	m_output = &CStream::Null;
 }
 
 
-CodedOutputStream::CodedOutputStream(Stream* stream)
+CCodedOutputStream::CCodedOutputStream(CStream* stream)
 {
 	if(stream != NULL)
 		m_output = stream;
 	else
-		m_output = &Stream::Null;
+		m_output = &CStream::Null;
 }
 
 
-void CodedOutputStream::WriteByte(uint8_t c)
+void CCodedOutputStream::WriteByte(uint8_t c)
 {
 	m_output->Write(c);
 }
 
 
-void CodedOutputStream::WriteBytes(const void * data, int offset, int size)
+void CCodedOutputStream::WriteBytes(const void * data, int offset, int size)
 {
 	uint8_t * ptr = (uint8_t *)data;
 	m_output->Write(&ptr[offset], size);
 }
 
 
-int CodedOutputStream::CalculateVarint32Size(int32_t val)
+int CCodedOutputStream::CalculateVarint32Size(int32_t val)
 {
 unsigned int v = val;
 int ret = 0;
@@ -66,7 +66,7 @@ int ret = 0;
 }
 
 
-int CodedOutputStream::CalculateInt32Size(int fieldNumber, int32_t val)
+int CCodedOutputStream::CalculateInt32Size(int fieldNumber, int32_t val)
 {
 int tag = fieldNumber << 3;
 	if(val == 0) return 0;
@@ -74,7 +74,7 @@ int tag = fieldNumber << 3;
 }
 
 
-int CodedOutputStream::CalculateStringSize(int fieldNumber, const char * val)
+int CCodedOutputStream::CalculateStringSize(int fieldNumber, const char * val)
 {
 int tag = fieldNumber << 3;
 int len = 0;
@@ -88,13 +88,13 @@ int ret = 0;
 }
 
 
-int CodedOutputStream::CalculateStringSize(int fieldNumber, const String& val)
+int CCodedOutputStream::CalculateStringSize(int fieldNumber, const CString& val)
 {
 	return CalculateStringSize(fieldNumber, val.c_str);
 }
 
 
-int CodedOutputStream::CalculateBoolSize(int fieldNumber, bool val)
+int CCodedOutputStream::CalculateBoolSize(int fieldNumber, bool val)
 {
 int tag = fieldNumber << 3;
 int ret = 0;
@@ -105,7 +105,7 @@ int ret = 0;
 }
 
 
-int CodedOutputStream::CalculateMessageSize(int fieldNumber, const IMessage& val)
+int CCodedOutputStream::CalculateMessageSize(int fieldNumber, const IMessage& val)
 {
 	int msgSize = val.CalculateSize();
 	if(msgSize == 0) return 0;
@@ -118,7 +118,7 @@ int CodedOutputStream::CalculateMessageSize(int fieldNumber, const IMessage& val
 }
 
 
-void CodedOutputStream::WriteVarint32(int32_t val)
+void CCodedOutputStream::WriteVarint32(int32_t val)
 {
 uint32_t v = val;
 	do
@@ -130,19 +130,19 @@ uint32_t v = val;
 }
 
 
-void CodedOutputStream::WriteInt32(int fieldNumber, int32_t val)
+void CCodedOutputStream::WriteInt32(int fieldNumber, int32_t val)
 {
-int tag = (fieldNumber << 3) | CodedOutputStream::P_INT32_WIRETYPE;
+int tag = (fieldNumber << 3) | CCodedOutputStream::P_INT32_WIRETYPE;
 	if(val == 0) return;
 	WriteVarint32(tag);
 	WriteVarint32(val);
 }
 
 
-void CodedOutputStream::WriteString(int fieldNumber, const char * val)
+void CCodedOutputStream::WriteString(int fieldNumber, const char * val)
 {
 int len;
-int tag = (fieldNumber << 3) | CodedOutputStream::P_STRING_WIRETYPE;
+int tag = (fieldNumber << 3) | CCodedOutputStream::P_STRING_WIRETYPE;
 	if(val == NULL || val[0] == 0) return;
 	WriteVarint32(tag);
 	len = strlen(val);
@@ -151,27 +151,27 @@ int tag = (fieldNumber << 3) | CodedOutputStream::P_STRING_WIRETYPE;
 }
 
 
-void CodedOutputStream::WriteString(int fieldNumber, const String& val)
+void CCodedOutputStream::WriteString(int fieldNumber, const CString& val)
 {
 	WriteString(fieldNumber, val.c_str);
 }
 
 
-void CodedOutputStream::WriteBool(int fieldNumber, bool val)
+void CCodedOutputStream::WriteBool(int fieldNumber, bool val)
 {
-int tag = (fieldNumber << 3) | CodedOutputStream::P_BOOL_WIRETYPE;
+int tag = (fieldNumber << 3) | CCodedOutputStream::P_BOOL_WIRETYPE;
 	if(!val) return;
 	WriteVarint32(tag);
 	WriteVarint32(1);
 }
 
 
-void CodedOutputStream::WriteMessage(int fieldNumber, IMessage& val)
+void CCodedOutputStream::WriteMessage(int fieldNumber, IMessage& val)
 {
 	int msgSize = val.CalculateSize();
 	if(msgSize == 0) return;
 	
-	int tag = (fieldNumber << 3) | CodedOutputStream::P_MESSAGE_WIRETYPE;
+	int tag = (fieldNumber << 3) | CCodedOutputStream::P_MESSAGE_WIRETYPE;
 	WriteVarint32(tag);
 	WriteVarint32(msgSize);
 	val.WriteTo(this);
@@ -184,25 +184,25 @@ void CodedOutputStream::WriteMessage(int fieldNumber, IMessage& val)
 
 
 
-CodedInputStream::CodedInputStream()
+CCodedInputStream::CCodedInputStream()
 {
-	m_input = ByteString();
+	m_input = CByteString();
 	CurrentTag = 0;
 	CurrentFieldNumber = 0;
 	CurrentWireType = 0;
 }
 
 
-CodedInputStream::CodedInputStream(Stream* input)
+CCodedInputStream::CCodedInputStream(CStream* input)
 {
-	m_input = ByteString(input);
+	m_input = CByteString(input);
 	CurrentTag = 0;
 	CurrentFieldNumber = 0;
 	CurrentWireType = 0;
 }
 
 
-CodedInputStream::CodedInputStream(const ByteString& input)
+CCodedInputStream::CCodedInputStream(const CByteString& input)
 {
 	m_input = input;
 	CurrentTag = 0;
@@ -211,31 +211,31 @@ CodedInputStream::CodedInputStream(const ByteString& input)
 }
 
 
-int CodedInputStream::SourceReadByte()
+int CCodedInputStream::SourceReadByte()
 {
 	return m_input.ReadByte();
 }
 
 
-bool CodedInputStream::SourceCopyBytes(void * buffer, int offset, int size)
+bool CCodedInputStream::SourceCopyBytes(void * buffer, int offset, int size)
 {
 	uint8_t* dest = ((uint8_t*)buffer) + offset;
 	
-	ByteString block = m_input.ReadBlock(size);
+	CByteString block = m_input.ReadBlock(size);
 	if(block.Size > 0)
 		memcpy(dest, block.GetPtr(), block.Size);
 	return block.Size == size;
 }
 
 
-bool CodedInputStream::SourceDiscardBytes(int size)
+bool CCodedInputStream::SourceDiscardBytes(int size)
 {
-	ByteString ret = m_input.ReadBlock(size);
+	CByteString ret = m_input.ReadBlock(size);
 	return ret.Size == size;
 }
 
 
-int32_t CodedInputStream::ReadVarint32()
+int32_t CCodedInputStream::ReadVarint32()
 {
 	int ret;
 	if(!ReadVarint32(ret)) return 0;
@@ -243,7 +243,7 @@ int32_t CodedInputStream::ReadVarint32()
 }
 
 
-bool CodedInputStream::ReadVarint32(int32_t & retVal)
+bool CCodedInputStream::ReadVarint32(int32_t & retVal)
 {
 int v;
 int rot = 0;
@@ -260,7 +260,7 @@ uint32_t ret = 0;
 }
 
 
-bool CodedInputStream::ReadTag()
+bool CCodedInputStream::ReadTag()
 {
 	CurrentTag = ReadVarint32();
 	CurrentFieldNumber = CurrentTag >> 3;
@@ -269,17 +269,17 @@ bool CodedInputStream::ReadTag()
 }
 
 
-void CodedInputStream::SkipLastField()
+void CCodedInputStream::SkipLastField()
 {
 	if(CurrentTag == 0) return;
 
-	if(CurrentWireType == CodedOutputStream::P_WIRETYPE_VARINT)
+	if(CurrentWireType == CCodedOutputStream::P_WIRETYPE_VARINT)
 	{
 		ReadVarint32();
 		return;
 	}
 
-	if(CurrentWireType == CodedOutputStream::P_WIRETYPE_DELIMITED)
+	if(CurrentWireType == CCodedOutputStream::P_WIRETYPE_DELIMITED)
 	{
 		int size = ReadVarint32();
 		SourceDiscardBytes(size);
@@ -288,28 +288,28 @@ void CodedInputStream::SkipLastField()
 }
 
 
-bool CodedInputStream::ReadInt32(int fieldNumber, int32_t & val)
+bool CCodedInputStream::ReadInt32(int fieldNumber, int32_t & val)
 {
 	if(	CurrentFieldNumber != fieldNumber ||
-		CurrentWireType != CodedOutputStream::P_WIRETYPE_VARINT) return false;
+		CurrentWireType != CCodedOutputStream::P_WIRETYPE_VARINT) return false;
 	ReadVarint32(val);
 	return true;
 }
 
 
-bool CodedInputStream::ReadBool(int fieldNumber, bool & val)
+bool CCodedInputStream::ReadBool(int fieldNumber, bool & val)
 {
 	if(	CurrentFieldNumber != fieldNumber ||
-		CurrentWireType != CodedOutputStream::P_WIRETYPE_VARINT) return false;
+		CurrentWireType != CCodedOutputStream::P_WIRETYPE_VARINT) return false;
 	val = (ReadVarint32() != 0);
 	return true;
 }
 
 
-bool CodedInputStream::ReadString(int fieldNumber, char * strRet, int maxSize)
+bool CCodedInputStream::ReadString(int fieldNumber, char * strRet, int maxSize)
 {
 	if(	CurrentFieldNumber != fieldNumber ||
-		CurrentWireType != CodedOutputStream::P_WIRETYPE_DELIMITED) return false;
+		CurrentWireType != CCodedOutputStream::P_WIRETYPE_DELIMITED) return false;
 
 	if(strRet == NULL) return false;
 
@@ -332,17 +332,17 @@ bool CodedInputStream::ReadString(int fieldNumber, char * strRet, int maxSize)
 }
 
 
-bool CodedInputStream::ReadString(int fieldNumber, String & val)
+bool CCodedInputStream::ReadString(int fieldNumber, CString & val)
 {
 	return ReadString(fieldNumber, val, P_PROTOBUF_DEF_MAX_STR_SIZE);
 }
 
 
 
-bool CodedInputStream::ReadString(int fieldNumber, String & strRet, int maxSize)
+bool CCodedInputStream::ReadString(int fieldNumber, CString & strRet, int maxSize)
 {
 	if(	CurrentFieldNumber != fieldNumber ||
-		CurrentWireType != CodedOutputStream::P_WIRETYPE_DELIMITED) return false;
+		CurrentWireType != CCodedOutputStream::P_WIRETYPE_DELIMITED) return false;
 	
 	int blockSize = ReadVarint32();
 	
@@ -353,7 +353,7 @@ bool CodedInputStream::ReadString(int fieldNumber, String & strRet, int maxSize)
 	else
 	{
 		int strSize = MIN(blockSize, maxSize - 1);
-		MemPtr strPtr;
+		CMemPtr strPtr;
 		strPtr.Resize(strSize+1);
 		strPtr.Memset(0, strSize+1);
 		SourceCopyBytes(strPtr.Get(), 0, strSize);
@@ -365,10 +365,10 @@ bool CodedInputStream::ReadString(int fieldNumber, String & strRet, int maxSize)
 }
 
 
-bool CodedInputStream::ReadMessage(int fieldNumber, IMessage& val)
+bool CCodedInputStream::ReadMessage(int fieldNumber, IMessage& val)
 {
 	if(	CurrentFieldNumber != fieldNumber ||
-		CurrentWireType != CodedOutputStream::P_WIRETYPE_DELIMITED) return false;
+		CurrentWireType != CCodedOutputStream::P_WIRETYPE_DELIMITED) return false;
 	
 	int msgSize = ReadVarint32();
 	
@@ -376,10 +376,10 @@ bool CodedInputStream::ReadMessage(int fieldNumber, IMessage& val)
 	
 	if(msgSize == 0) return true;
 	
-	ByteString block = m_input.ReadBlock(msgSize);
+	CByteString block = m_input.ReadBlock(msgSize);
 	if(block.Size != msgSize) return true;
 	
-	CodedInputStream cis = CodedInputStream(block);
+	CCodedInputStream cis = CCodedInputStream(block);
 	val.MergeFrom(&cis);
 	
 	return true;
@@ -393,17 +393,17 @@ bool CodedInputStream::ReadMessage(int fieldNumber, IMessage& val)
 
 
 
-ByteString::ByteString()
+CByteString::CByteString()
 {
 	m_ptr    = NULL;
-	m_stream = &Stream::Null;
+	m_stream = &CStream::Null;
 	Offset   = 0;
 	Size     = 0;
 	ReadPos  = 0;
 }
 
 
-ByteString::ByteString(Stream* input)
+CByteString::CByteString(CStream* input)
 {
 	m_ptr    = NULL;
 	m_stream = input;
@@ -413,7 +413,7 @@ ByteString::ByteString(Stream* input)
 }
 
 
-ByteString::ByteString(const void * ptr, int offset, int size)
+CByteString::CByteString(const void * ptr, int offset, int size)
 {
 	m_stream = NULL;
 	m_ptr    = (uint8_t*) ptr;
@@ -423,7 +423,7 @@ ByteString::ByteString(const void * ptr, int offset, int size)
 }
 
 
-ByteString::ByteString(MemPtr memPtr, const void * ptr, int offset, int size)
+CByteString::CByteString(CMemPtr memPtr, const void * ptr, int offset, int size)
 {
 	m_stream = NULL;
 	m_mem    = memPtr;
@@ -434,14 +434,14 @@ ByteString::ByteString(MemPtr memPtr, const void * ptr, int offset, int size)
 }
 
 
-const uint8_t * ByteString::GetPtr()
+const uint8_t * CByteString::GetPtr()
 {
 	if(m_ptr == NULL) return NULL;
 	return &m_ptr[Offset + ReadPos];
 }
 
 
-int ByteString::ReadByte()
+int CByteString::ReadByte()
 {
 	if(m_stream != NULL)
 	{
@@ -459,21 +459,21 @@ int ByteString::ReadByte()
 }
 
 
-ByteString ByteString::ReadBlock(int size)
+CByteString CByteString::ReadBlock(int size)
 {
-	ByteString block;
+	CByteString block;
 	if(size <= 0) return block;
 	
 	if(m_stream != NULL)
 	{
-		MemPtr mem = MemPtr();
+		CMemPtr mem = CMemPtr();
 		if(!mem.Resize(size))
 		{
 			OutOffMemoryHandler("ByteString", "ReadBlock", size, false);
 			return block;
 		}
 		int ret = m_stream->Read(mem.Get(), size);
-		block = ByteString(mem, mem.Get(), 0, ret);
+		block = CByteString(mem, mem.Get(), 0, ret);
 		return block;
 	}
 	
@@ -481,7 +481,7 @@ ByteString ByteString::ReadBlock(int size)
 	{
 		if(Size == 0) return block;
 		if(size > Size) size = Size;
-		block = ByteString(m_mem, m_ptr, Offset + ReadPos, size);
+		block = CByteString(m_mem, m_ptr, Offset + ReadPos, size);
 		Size    -= size;
 		ReadPos += size;
 	}

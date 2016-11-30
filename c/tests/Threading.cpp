@@ -25,7 +25,7 @@
 
 
 
-Monitor::Monitor()
+CMonitor::CMonitor()
 {
 	lockVal = 0;
 	current = 0;
@@ -33,7 +33,7 @@ Monitor::Monitor()
 }
 
 
-void Monitor::Enter()
+void CMonitor::Enter()
 {
 #if defined HAVE_THREAD_pthreads
 
@@ -56,7 +56,7 @@ pthread_t id = pthread_self();
 }
 
 
-void Monitor::Exit()
+void CMonitor::Exit()
 {
 #if defined HAVE_THREAD_pthreads
 	if(--counter == 0)
@@ -72,21 +72,21 @@ void Monitor::Exit()
 
 
 
-Thread::Thread()
+CThread::CThread()
 {
 	Id = 0;
 }
 
 #if defined HAVE_THREAD_pthreads
-void * Thread::ThreadEntry_pthread(void * arg)
+void * CThread::ThreadEntry_pthread(void * arg)
 {
-	Thread * t = (Thread*)arg;
+	CThread * t = (CThread*)arg;
 	t->ExecuteThread();
 	return NULL;
 }
 #endif
 
-bool Thread::Start()
+bool CThread::Start()
 {
 #if defined HAVE_THREAD_pthreads
 	pthread_attr_t attr;
@@ -101,7 +101,7 @@ bool Thread::Start()
 }
 
 
-bool Thread::IsRunning()
+bool CThread::IsRunning()
 {
 #if defined HAVE_THREAD_pthreads
 	int policy;
@@ -113,18 +113,21 @@ bool Thread::IsRunning()
 }
 
 
-void Thread::Join()
+void CThread::Join()
 {
-	while(IsRunning()) { delay(1); }
+	while(IsRunning()) {
+		delay(1);
+	}
 }
 
 
-bool Thread::TryJoin(uint32_t timeoutMillis)
+bool CThread::TryJoin(uint32_t timeoutMillis)
 {
 	uint64_t timeout = millis() + timeoutMillis;
 	while(millis() < timeout)
 	{
-		if(!IsRunning()) { return true; }
+		if(!IsRunning())
+			return true;
 		delay(1);
 	}
 	return false;

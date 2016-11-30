@@ -36,77 +36,77 @@
 
 
 
-Fd::Fd()
+CFd::CFd()
 {
 	m_fd = CLOSED_FD;
 	LastErr = RET_OK;
 }
 
 
-Fd::Fd(int fd)
+CFd::CFd(int fd)
 {
 	m_fd = fd;
 	LastErr = RET_OK;
 }
 
 
-void Fd::SetFd(int fd)
+void CFd::SetFd(int fd)
 {
 	m_fd = fd;
 	LastErr = RET_OK;
 }
 
 
-int Fd::GetFd() const
+int CFd::GetFd() const
 {
 	return m_fd;
 }
 
 
-void Fd::Close()
+void CFd::Close()
 {
 	m_fd = CLOSED_FD;
 }
 
 
-void Fd::Clear()
+void CFd::Clear()
 {
 	Close();
 	LastErr = RET_OK;
 }
 
 
-bool Fd::IsReadable() const
+bool CFd::IsReadable() const
 {
-	return Fd::IsReadable(m_fd);
+	return CFd::IsReadable(m_fd);
 }
 
 
-bool Fd::IsWritable() const
+bool CFd::IsWritable() const
 {
-	return Fd::IsWritable(m_fd);
+	return CFd::IsWritable(m_fd);
 }
 
 
-bool Fd::IsClosed() const
+bool CFd::IsClosed() const
 {
-	return m_fd == CLOSED_FD;
+	return (m_fd == CLOSED_FD);
 }
 
 
-bool Fd::SetNonBlock(int enabled)
+bool CFd::SetNonBlock(int enabled)
 {
-	return Fd::SetNonBlock(m_fd, enabled);
+	return CFd::SetNonBlock(m_fd, enabled);
 }
 
 
-int Fd::BytesAvailable() const
+int CFd::BytesAvailable() const
 {
-	return Fd::BytesAvailable(m_fd);
+	return CFd::BytesAvailable(m_fd);
 }
 
 
-bool Fd::IsReadable(int fd)
+bool CFd::IsReadable(int fd)
 {
 fd_set fdread;
 int ret;
@@ -120,7 +120,7 @@ struct timeval t;
 }
 
 
-bool Fd::IsWritable(int fd)
+bool CFd::IsWritable(int fd)
 {
 fd_set fdwrite;
 int ret;
@@ -134,7 +134,7 @@ struct timeval t;
 }
 
 
-bool Fd::SetNonBlock(int fd, int enable)
+bool CFd::SetNonBlock(int fd, int enable)
 {
 	int fdfl = fcntl(fd, F_GETFL);
 	if(fdfl != RET_ERROR)	{
@@ -150,7 +150,7 @@ bool Fd::SetNonBlock(int fd, int enable)
 
 
 // Get the number of bytes that are immediately available for reading.
-int Fd::BytesAvailable(int fd) {
+int CFd::BytesAvailable(int fd) {
 int ret;
 int bytesAv;
 	ret = ioctl(fd, FIONREAD, &bytesAv);
@@ -160,7 +160,7 @@ int bytesAv;
 }
 
 
-const char * Fd::GetLastErrMsg() const
+const char * CFd::GetLastErrMsg() const
 {
 	return strerror(LastErr);
 }
@@ -171,62 +171,72 @@ const char * Fd::GetLastErrMsg() const
 //////////////////////////////////////////////////////////////////////
 
 
-FdWriter::FdWriter()
+CFdWriter::CFdWriter()
 {
 	m_fd = CLOSED_FD;
 	LastErr = RET_OK;
 }
 
 
-FdWriter::FdWriter(int fd)
+CFdWriter::CFdWriter(int fd)
 {
 	m_fd = fd;
 	LastErr = RET_OK;
 }
 
 
-void FdWriter::SetFd(int fd)
+void CFdWriter::SetFd(int fd)
 {
 	m_fd = fd;
 	LastErr = RET_OK;
 }
 
 
-int FdWriter::Write(uint8_t c)
+int CFdWriter::Write(uint8_t c)
 {
 int ret;
-	if(m_fd == CLOSED_FD) return 0;
+	if(m_fd == CLOSED_FD)
+		return 0;
+
 	ret = write(m_fd, &c, 1);
-	if(ret == RET_ERR) LastErr = errno;
+
+	if(ret == RET_ERR)
+		LastErr = errno;
+
 	return ret;
 }
 
 
-int FdWriter::Write(const uint8_t * buffer, int size)
+int CFdWriter::Write(const void * buffer, int size)
 {
 int ret;
-	if(m_fd == CLOSED_FD) return 0;
+	if(m_fd == CLOSED_FD)
+		return 0;
+
 	ret = write(m_fd, buffer, size);
-	if(ret == RET_ERR) LastErr = errno;
+
+	if(ret == RET_ERR)
+		LastErr = errno;
+
 	return ret;
 }
 
 
-int FdWriter::GetLastErr()
+int CFdWriter::GetLastErr()
 {
 	return LastErr;
 }
 
 
-const char * FdWriter::GetLastErrMsg()
+const char * CFdWriter::GetLastErrMsg()
 {
 	return strerror(LastErr);
 }
 
 
-bool FdWriter::IsError()
+bool CFdWriter::IsError()
 {
-	return LastErr != RET_OK;
+	return (LastErr != RET_OK);
 }
 
 
@@ -235,7 +245,7 @@ bool FdWriter::IsError()
 //////////////////////////////////////////////////////////////////////
 
 
-FdReader::FdReader()
+CFdReader::CFdReader()
 {
 	m_fd = CLOSED_FD;
 	LastErr = RET_OK;
@@ -243,7 +253,7 @@ FdReader::FdReader()
 }
 
 
-FdReader::FdReader(int fd)
+CFdReader::CFdReader(int fd)
 {
 	m_fd = fd;
 	LastErr = RET_OK;
@@ -251,7 +261,7 @@ FdReader::FdReader(int fd)
 }
 
 
-void FdReader::SetFd(int fd)
+void CFdReader::SetFd(int fd)
 {
 	m_fd = fd;
 	LastErr = RET_OK;
@@ -259,36 +269,54 @@ void FdReader::SetFd(int fd)
 }
 
 
-int FdReader::Read()
+int CFdReader::Read()
 {
 int n;
 uint8_t c;
-	if(m_fd == CLOSED_FD) return INT_EOF;
+	if(m_fd == CLOSED_FD)
+		return INT_EOF;
+
 	n = read(m_fd, &c, 1);
-	if(n == RET_ERR) { LastErr = errno; return INT_ERR; } 
-	if(n == 0) { Eof = true; return INT_EOF; }
+
+	if(n == RET_ERR) {
+		LastErr = errno;
+		return INT_ERR;
+	}
+
+	if(n == 0) {
+		Eof = true;
+		return INT_EOF;
+	}
+
 	return c;
 }
 
 
-int FdReader::Read(uint8_t * buffer, int size)
+int CFdReader::Read(void * buffer, int size)
 {
 int ret;
-	if(m_fd == CLOSED_FD) return 0;
+	if(m_fd == CLOSED_FD)
+		return 0;
+
 	ret = read(m_fd, buffer, size);
-	if(ret == RET_ERR) LastErr = errno;
-	if(ret == 0) Eof = true;
+
+	if(ret == RET_ERR)
+		LastErr = errno;
+
+	if(ret == 0)
+		Eof = true;
+
 	return ret;
 }
 
 
-int FdReader::GetLastErr()
+int CFdReader::GetLastErr()
 {
 	return LastErr;
 }
 
 
-const char * FdReader::GetLastErrMsg()
+const char * CFdReader::GetLastErrMsg()
 {
 	return strerror(LastErr);
 }

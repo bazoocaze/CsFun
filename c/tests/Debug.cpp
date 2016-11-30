@@ -9,16 +9,16 @@
 #include "Debug.h"
 #include "Fd.h"
 #include "Text.h"
+#include "IO.h"
 
 
-int Debug::HexDump(const void * ptr, int size)
+int CDebug::HexDump(const void * ptr, int size)
 {
-	FdWriter p = FdWriter(1);
-	return HexDump(p, ptr, size);
+	return HexDump(StdOut, ptr, size);
 }
 
 
-int Debug::HexDump(TextWriter& dest, const void * ptr, int size)
+int CDebug::HexDump(CTextWriter& dest, const void * ptr, int size)
 {
 int ret = 0;
 int desloc = 0;
@@ -32,19 +32,31 @@ uint8_t * dados = (uint8_t *)ptr;
 		{
 			if(i >= size)
 			{
-				if(desloc == 0) break;
+				if(desloc == 0)
+					break;
 				ret += dest.print("  ");
 			}
 			else
+			{
 				ret += dest.printf("%02x", dados[desloc + i]);
-			if(i < (tamLinha-1)) ret += dest.print(' ');
+			}
+
+			if(i < (tamLinha-1))
+				ret += dest.print(' ');
 		}
+
 		ret += dest.print("|");
+
 		for(i=0; i<tamLinha; i++)
 		{
-			if(i >= size) break;
+			if(i >= size)
+				break;
+
 			char c = dados[desloc+i];
-			if(c < 32 || c >= 127) c = '.';
+
+			if(c < 32 || c >= 127)
+				c = '.';
+
 			ret += dest.printf("%c", c);
 		}
 		ret += dest.print("|\n");

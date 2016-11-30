@@ -16,23 +16,23 @@
 
 /* Represents a stream for a file on disk.
  * Auto-manage the fd via FdPtr. */
-class FileStream : public FdStream
+class CFileStream : public CFdStream
 {
 protected:
-	FdPtr m_fdPtr;
+	CFdPtr m_fdPtr;
 
 public:
 	/* Create a file on disk with the name *fileName*.
 	 * Returns true/false if created, and the FileStream on *ret*.
 	 * Returns false in case of error.
 	 * Consult the LastErr field on *ret* for the error reason. */ 
-	static bool Create(const char * fileName, FileStream &ret);
+	static bool Create(const char * fileName, CFileStream &ret);
 
 	// Default constructor for a closed file.
-	FileStream();
+	CFileStream();
 	
 	// Constructor for the file on the informed descriptor.
-	explicit FileStream(int fd);
+	explicit CFileStream(int fd);
 
 	// Sets the current descriptor for the *fd*.
 	void SetFd(int fd);
@@ -44,40 +44,26 @@ public:
 
 #if defined HAVE_CONSOLE
 
-	// Abstraction for the console terminal
-	class CConsole : public FdWriter, public FdReader
-	{
-	public: CConsole() : FdWriter(1), FdReader(0) { }
-	};
-
-	// Console (standard input and output) for the current session.
-	extern CConsole Console;
-
 	// Standard input reader
-	extern FdReader StdIn;
+	extern CFdReader StdIn;
 
 	// Standard output writer
-	extern FdWriter StdOut;
+	extern CFdWriter StdOut;
 
 	// Standard error writer
-	extern FdWriter StdErr;
+	extern CFdWriter StdErr;
 
-	extern CConsole bConsole;
-	extern NullText bStdIn;
+	// extern CConsole bConsole;
 
 #else
 
-	// Dummy console.
-	extern NullText Console;
-
 	// Dummy stdin.
-	extern NullText StdIn;
+	extern CNullText StdIn;
 
 	// Dummy stdout.
-	extern NullText StdOut;
+	extern CNullText StdOut;
 
 	// Dummy stderr.
-	extern NullText StdErr;
+	extern CNullText StdErr;
 
 #endif
-

@@ -24,36 +24,45 @@
 
 
 
-SockAddr::SockAddr()
+CSockAddr::CSockAddr()
 {
 	m_size = 0;
 }
 
-SockAddr::SockAddr(sockaddr *sa, int size)
+CSockAddr::CSockAddr(sockaddr *sa, int size)
 {
 	SetAddress(sa, size);
 }
 
-int SockAddr::GetFamily() const
+int CSockAddr::GetFamily() const
 {
 	return m_addr.sa.sa_family;
 }
 
-void SockAddr::SetAddress(sockaddr *sa, int size)
+void CSockAddr::SetAddress(sockaddr *sa, int size)
 {
 	int f = sa->sa_family;
-	if(size > sizeof(m_addr)) return;
-	if(f != AF_INET && f != AF_INET6) return;
-	if(f == AF_INET && size != sizeof(m_addr.in4)) return;
-	if(f == AF_INET6 && size != sizeof(m_addr.in6)) return;
+
+	if(size > sizeof(m_addr))
+		return;
+
+	if(f != AF_INET && f != AF_INET6)
+		return;
+
+	if(f == AF_INET && size != sizeof(m_addr.in4))
+		return;
+
+	if(f == AF_INET6 && size != sizeof(m_addr.in6))
+		return;
 
 	m_size = size;
 	memcpy(&m_addr, sa, size);
 }
 
-void SockAddr::SetPort(int port)
+void CSockAddr::SetPort(int port)
 {
 	int f = GetFamily();
+
 	if(f == AF_INET)
 	{
 		m_addr.in4.sin_port = htons(port);
@@ -64,42 +73,51 @@ void SockAddr::SetPort(int port)
 	}
 }
 
-int SockAddr::GetPort() const
+int CSockAddr::GetPort() const
 {
 	int f = GetFamily();
+
 	if(f == AF_INET)
 		return ntohs(m_addr.in4.sin_port);
 	else if(f == AF_INET6)
 		return ntohs(m_addr.in6.sin6_port);
+
 	return 0;
 }
 
-sockaddr * SockAddr::GetSockAddr() const
+sockaddr * CSockAddr::GetSockAddr() const
 {
 	return (sockaddr*)&(m_addr.sa);
 }
 
-int SockAddr::GetSize() const
+int CSockAddr::GetSize() const
 {
 	return m_size;
 }
 
-int SockAddr::GetMaxSize() const
+int CSockAddr::GetMaxSize() const
 {
 	return sizeof(m_addr);
 }
 
-void SockAddr::SetSize(int size)
+void CSockAddr::SetSize(int size)
 {
 	m_size = size;
 }
 
-bool SockAddr::IsValid() const
+bool CSockAddr::IsValid() const
 {
 	int f = GetFamily();
-	if(f != AF_INET && f != AF_INET6) return false;
-	if(f == AF_INET  && m_size != sizeof(m_addr.in4)) return false;
-	if(f == AF_INET6 && m_size != sizeof(m_addr.in6)) return false;
+
+	if(f != AF_INET && f != AF_INET6)
+		return false;
+
+	if(f == AF_INET  && m_size != sizeof(m_addr.in4))
+		return false;
+
+	if(f == AF_INET6 && m_size != sizeof(m_addr.in6))
+		return false;
+
 	return true;
 }
 
@@ -109,11 +127,11 @@ bool SockAddr::IsValid() const
 //////////////////////////////////////////////////////////////////////
 
 
-IPAddress::IPAddress()
+CIPAddress::CIPAddress()
 {
 }
 
-IPAddress::IPAddress(in_addr_t addr)
+CIPAddress::CIPAddress(in_addr_t addr)
 {
 	sockaddr_in s;
 	s.sin_family = AF_INET;
@@ -121,12 +139,12 @@ IPAddress::IPAddress(in_addr_t addr)
 	m_sockaddr.SetAddress((sockaddr*)&s, sizeof(s));
 }
 
-IPAddress::IPAddress(const SockAddr& addr)
+CIPAddress::CIPAddress(const CSockAddr& addr)
 {
 	m_sockaddr = addr;
 }
 
-IPAddress::IPAddress(const char *addr)
+CIPAddress::CIPAddress(const char *addr)
 {
 int ret;
 	// ipv4
@@ -142,16 +160,18 @@ int ret;
 	sockaddr_in6 s6;
 	s6.sin6_family = AF_INET6;
 	ret = inet_pton(AF_INET6, addr, &s6.sin6_addr);
-	if(ret == 0) s6.sin6_family = 0;
+	if(ret == 0)
+		s6.sin6_family = 0;
+
 	m_sockaddr.SetAddress((sockaddr*)&s6, sizeof(s6));
 }
 
-const SockAddr IPAddress::GetSockAddr() const
+const CSockAddr CIPAddress::GetSockAddr() const
 {
 	return m_sockaddr;
 }
 
-int IPAddress::printTo(TextWriter &p) const
+int CIPAddress::printTo(CTextWriter &p) const
 {
 int f = m_sockaddr.GetFamily();
 char dst[MAX(INET_ADDRSTRLEN, INET6_ADDRSTRLEN)];
@@ -161,6 +181,7 @@ cstr ret;
 	const sockaddr     * sa = m_sockaddr.GetSockAddr();
 	const sockaddr_in  * in4 = (sockaddr_in *)sa;
 	const sockaddr_in6 * in6 = (sockaddr_in6 *)sa;
+
 	if(f == AF_INET)
 	{
 		ret = inet_ntop(f, &in4->sin_addr, dst, sizeof(dst));
@@ -169,13 +190,16 @@ cstr ret;
 	{
 		ret = inet_ntop(f, &in6->sin6_addr, dst, sizeof(dst));
 	}
-	if(ret == NULL) return p.print("<ip address error>");
+
+	if(ret == NULL)
+		return p.print("<ip address error>");
+
 	return p.print(dst);
 }
 
-IPAddress IPAddress::Any          = IPAddress(htonl(INADDR_ANY));
-IPAddress IPAddress::Loopback     = IPAddress(htonl(INADDR_LOOPBACK));
-IPAddress IPAddress::IPv6Loopback = IPAddress("::1");
+CIPAddress CIPAddress::Any          = CIPAddress(htonl(INADDR_ANY));
+CIPAddress CIPAddress::Loopback     = CIPAddress(htonl(INADDR_LOOPBACK));
+CIPAddress CIPAddress::IPv6Loopback = CIPAddress("::1");
 
 
 
@@ -185,73 +209,80 @@ IPAddress IPAddress::IPv6Loopback = IPAddress("::1");
 
 
 
-IPEndPoint::IPEndPoint()
+CIPEndPoint::CIPEndPoint()
 {
 }
 
-IPEndPoint::IPEndPoint(const SockAddr& addr)
+CIPEndPoint::CIPEndPoint(const CSockAddr& addr)
 {
 	m_sockaddr = addr;
 }
 
-IPEndPoint::IPEndPoint(const IPAddress& address, int port)
+CIPEndPoint::CIPEndPoint(const CIPAddress& address, int port)
 {
 	m_sockaddr = address.GetSockAddr();
 	m_sockaddr.SetPort(port);
 }
 
-IPEndPoint::IPEndPoint(const char *addr, int port)
+CIPEndPoint::CIPEndPoint(const char *addr, int port)
 {
 int ret;
-   sockaddr_in s;
-   s.sin_family = AF_INET;
+	sockaddr_in s;
+	s.sin_family = AF_INET;
 	s.sin_port = htons(port);
-   ret = inet_aton(addr, &s.sin_addr);
-   if(ret==0) s.sin_family = 0;
-   m_sockaddr.SetAddress((sockaddr*)&s, sizeof(s));
+
+	// interprets addr as dotted IPv4
+	ret = inet_aton(addr, &s.sin_addr);
+
+	if(ret==0)
+		s.sin_family = 0;
+
+	m_sockaddr.SetAddress((sockaddr*)&s, sizeof(s));
 }
 
-void IPEndPoint::SetPort(int port)
+void CIPEndPoint::SetPort(int port)
 {
 	m_sockaddr.SetPort(port);
 }
 
-int IPEndPoint::GetPort() const
+int CIPEndPoint::GetPort() const
 {
 	return m_sockaddr.GetPort();
 }
 
-void IPEndPoint::SetAddress(const IPAddress& address)
+void CIPEndPoint::SetAddress(const CIPAddress& address)
 {
 	int port = m_sockaddr.GetPort();
 	m_sockaddr = address.GetSockAddr();
 	m_sockaddr.SetPort(port);
 }
 
-IPAddress IPEndPoint::GetAddress() const
+CIPAddress CIPEndPoint::GetAddress() const
 {
-	return IPAddress(m_sockaddr);
+	return CIPAddress(m_sockaddr);
 }
 
-int IPEndPoint::printTo(TextWriter &p) const
+int CIPEndPoint::printTo(CTextWriter &p) const
 {
 int ret = 0;
-IPAddress ipAddress;
-   if(!m_sockaddr.IsValid())
-      return p.print("<invalid ip endpoint>");
-	ipAddress = IPAddress(m_sockaddr);
+CIPAddress ipAddress;
+
+	if(!m_sockaddr.IsValid())
+		return p.print("<invalid ip endpoint>");
+
+	ipAddress = CIPAddress(m_sockaddr);
 	ret += p.print(ipAddress);
 	ret += p.print(":");
 	ret += p.print(m_sockaddr.GetPort());
 	return ret;
 }
 
-bool IPEndPoint::IsValid() const
+bool CIPEndPoint::IsValid() const
 {
 	return m_sockaddr.IsValid();
 }
 
-SockAddr IPEndPoint::GetSockAddr() const
+CSockAddr CIPEndPoint::GetSockAddr() const
 {
 	return m_sockaddr;
 }
@@ -262,24 +293,28 @@ SockAddr IPEndPoint::GetSockAddr() const
 //////////////////////////////////////////////////////////////////////
 
 
-IPAddressList::IPAddressList()
+CIPAddressList::CIPAddressList()
 {
 	Items = NULL;
 	Count = 0;
 }
 
 
-void IPAddressList::Add(const IPAddress& address)
+void CIPAddressList::Add(const CIPAddress& address)
 {
-	if(Count >= P_DNS_MAX_IPS) return;
+	if(Count >= P_DNS_MAX_IPS)
+		return;
+
 	size_t size;
-	size = (Count + 1)*sizeof(IPAddress);
+	size = (Count + 1)*sizeof(CIPAddress);
+
 	if(!m_Items.Resize(size))
 	{
-		OutOffMemoryHandler("IPAddressList", "realloc", size, false);
+		OutOffMemoryHandler("IPAddressList", "Add", size, true);
 		return;
 	}
-	Items = (IPAddress*)m_Items.Get();
+
+	Items = (CIPAddress*)m_Items.Get();
 	Items[Count] = address;
 	Count++;
 }

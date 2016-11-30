@@ -18,19 +18,19 @@
 
 
 template <class T>
-class List {
+class CList {
 private:
 	void ** m_list;
 	int     m_count;
 
 public:
-	List()
+	CList()
 	{
 		m_list = NULL;
 		m_count = 0;
 	}
 
-	~List() { Clear(); }
+	~CList() { Clear(); }
 
 	T& operator[](const int index)
 	{

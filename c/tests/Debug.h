@@ -8,16 +8,16 @@
 #pragma once
 
 
-class TextWriter;
+class CTextWriter;
 
 
 // Debug tools.
-class Debug
+class CDebug
 {
 public:
 	// Hexdump the block of data to StdOut.
 	static int HexDump(const void * ptr, int size);
 	
 	// Hexdump the block of data to the destination writer.
-	static int HexDump(TextWriter& dest, const void * ptr, int size);
+	static int HexDump(CTextWriter& dest, const void * ptr, int size);
 };

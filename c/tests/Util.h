@@ -59,15 +59,15 @@ typedef const char * cstr;
 typedef char *       vstr;
 
 
-class TextWriter;
+class CTextWriter;
 
 
 uint64_t millis();
 uint32_t uptime();
 
 void delay(uint32_t milliseconds);
-void do_events();
-void do_events(uint32_t milliseconds);
+void doevents();
+void doevents(uint32_t milliseconds);
 
 uint16_t simple_hash(cstr text);
 
@@ -85,8 +85,8 @@ void * util_mem_realloc(void * ptr, size_t size, cstr srcName, int srcLine);
 void   util_mem_free(void * ptr, cstr srcName, int srcLine);
 void   util_mem_debug();
 
-int util_printf(TextWriter *writer, const char* fmt, ...);
-int util_printf(TextWriter *writer, const char* fmt, va_list ap);
+int util_printf(CTextWriter *writer, const char* fmt, ...);
+int util_printf(CTextWriter *writer, const char* fmt, va_list ap);
 
 #define WEAK_ATTR __attribute__((weak))
 

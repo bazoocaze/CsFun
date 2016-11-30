@@ -31,10 +31,10 @@
 
 
 
-class MyThread : public Thread
+class MyThread : public CThread
 {
 protected:
-	TcpListener listener;
+	CTcpListener listener;
 
 public:
 	bool CancelRequested;
@@ -47,18 +47,18 @@ public:
 
 		while(listener.IsListening() && !CancelRequested)
 		{
-			TcpClient client;
+			CTcpClient client;
 			StdOut.println("[ServidorThread:Accept");
-			if(listener.Accept(client, 1000))
+			if(listener.TryAccept(client, 1000))
 			{
 				StdOut.println("[ServidorThread:client accepted");
-				StreamWriter sw = StreamWriter(client.GetStream());
-				StreamReader sr = StreamReader(client.GetStream());
+				CStreamWriter sw = CStreamWriter(client.GetStream());
+				CStreamReader sr = CStreamReader(client.GetStream());
 				sw.println("Bem vindo");
 				while(!(sr.IsEof() || sr.IsError()))
 				{
 					sw.println("Digite um comando: ");
-					String ret;
+					CString ret;
 					if(sr.ReadLine(ret, 1024))
 					{
 						StdOut.printf("Comando digitado:[%r]", &ret);

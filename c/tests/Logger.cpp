@@ -15,6 +15,7 @@
 #include "Util.h"
 #include "Text.h"
 #include "IO.h"
+#include "Threading.h"
 
 
 const char* LogLevelStr(LogLevelEnum level) {
@@ -41,25 +42,34 @@ const char* LogLevelDesc(LogLevelEnum level) {
 }
 
 
-TextWriter*  Logger::Default  = &StdErr;
-LogLevelEnum Logger::LogLevel = P_DEFAULT_LOG_LEVEL;
+CTextWriter*  CLogger::Default  = &StdErr;
+LogLevelEnum CLogger::LogLevel = P_DEFAULT_LOG_LEVEL;
+CMonitor SendLoggerMessageLock;
 
 
-void Logger::LogMsg(LogLevelEnum level, const char * fmt, ...)
+void CLogger::LogMsg(LogLevelEnum level, const char * fmt, ...)
 {
 	va_list ap;
 
-	if(Default == NULL) return;
+	if(Default == NULL)
+		return;
 
 	va_start(ap, fmt);
 
-	if(level < LEVEL_VERBOSE) level = LEVEL_INFO;
-	if(level > LEVEL_FATAL) level = LEVEL_INFO;
+	if(level < LEVEL_VERBOSE)
+		level = LEVEL_INFO;
+
+	if(level > LEVEL_FATAL)
+		level = LEVEL_INFO;
 
 	if(level >= LogLevel) {
+		SendLoggerMessageLock.Enter();
+
 		Default->printf("[%s] ", LogLevelDesc(level));
 		Default->printf(fmt, ap);
 		Default->println();
+
+		SendLoggerMessageLock.Exit();
 	}
 
 	va_end(ap);

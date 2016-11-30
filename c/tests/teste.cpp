@@ -5,162 +5,119 @@
 
 #include "Ptr.h"
 #include "Protobuf.h"
-#include "TcpClient.h"
+#include "TcpListener.h"
 #include "Stream.h"
 #include "Binary.h"
+#include "Threading.h"
+#include "Logger.h"
+#include "IO.h"
 
-/*
 
-class RpcPacket : public IMessage
+
+
+class CServerThread : public CThread
 {
 public:
-	String Name;
-	int    Id;
-	int    Options;
-	int    PayloadSize;
-	void * Payload;
+	bool StopServer;
+	CTcpListener listener;
 
-	int CalculateSize() const
+	void ExecuteThread()
 	{
-		int ret = 0;
-		ret += CodedOutputStream::CalculateStringSize(1, Name);
-		ret += CodedOutputStream::CalculateInt32Size( 2, Id);
-		ret += CodedOutputStream::CalculateInt32Size( 3, Options);
-		ret += CodedOutputStream::CalculateInt32Size( 4, PayloadSize);
-		// ret += CodedOutputStream::CalculateBytesSize( 5, PayloadSize);
-		return ret;
-	}
+		StopServer = false;
 
-	void WriteTo(CodedOutputStream * output) 
-	{
-		output->WriteString(1, Name);
-		output->WriteInt32( 2, Id);
-		output->WriteInt32( 3, Options);
-		output->WriteInt32( 4, PayloadSize);
-		// output->WriteBytes( 5, Payload, PayloadSize);
-	}
+		if(!listener.Start(12345))
+			return;
 
-	void MergeFrom(CodedInputStream * input)
-	{
-		while(input->ReadTag())
+		CLogger::LogMsg(LEVEL_INFO, "Server: iniciado");
+
+		while(listener.IsListening() && !StopServer)
 		{
-			if(input->ReadString(1, Name)) continue;
-			if(input->ReadInt32( 2, Id)) continue;
-			if(input->ReadInt32( 3, Options)) continue;
-			if(input->ReadInt32( 4, PayloadSize)) continue;
-			// if(input->ReadBytes( 5, Payload, PayloadSize)) continue;
-			input->SkipLastField();
+			CTcpClient client;
+			if(listener.TryAccept(client, 50000))
+			{
+				CLogger::LogMsg(LEVEL_INFO, "Server: conexao recebida");
+				ClientConnectedCallback(client);
+			}
 		}
+
+		listener.Stop();
+
+		CLogger::LogMsg(LEVEL_INFO, "Server: finalizado");
+	}
+
+	void ClientConnectedCallback(CTcpClient & client)
+	{
+		CStream * stream = client.GetStream();
+		CBinaryReader br = CBinaryReader(stream);
+		int req = br.ReadInt32();
+		CLogger::LogMsg(LEVEL_INFO, "Server: received req=%d", req);
+		CBinaryWriter bw = CBinaryWriter(stream);
+		bw.WriteInt32(req * 2);
+		client.Close();
+	}
+
+	void Stop()
+	{
+		StopServer = true;
+		// CTcpClient dummy;
+		// dummy.Connect("127.0.0.1", 12345);
+		// dummy.Close();
+		listener.Stop();
 	}
 };
 
 
-class MyServer
+CServerThread server;
+
+
+void teste_client()
 {
-	void Start();
-	void Stop();
-};
-
-
-class PbClient
-{
-protected:
-	TcpClient m_client;
-public:
-	bool Connect(const IPAddress & address, int port)
+	CTcpClient client;
+	if(!client.Connect("127.0.0.1", 12345))
 	{
-		m_client.Close();
-	}
-
-	void Close()
-	{
-		m_client.Close();
-	}
-
-	const char * GetLastErrorMsg()
-	{
-	}
-
-	RpcPacket WaitResponse(int id)
-	{
-		int fd = m_client.GetFd();
-		ByteBuffer buffer;
-		RpcPacket ret;
-		while(true)
-		{
-			BytePtr tmp = buffer.LockWrite(128);
-			int lidos = read(fd, tmp.Ptr, tmp.Size);
-			if(lidos < 0)
-			{
-				// error
-				return ret;
-			}
-			if(lidos == 0)
-			{
-				// eos
-				return ret;
-			}
-			buffer.ConfirmWrite(lidos);
-		}	
-	}
-
-	RpcPacket SendRequest(RpcPacket& request)
-	{
-		int fd = m_client.GetFd();
-		FdStream stream = FdStream(fd);
-		BinaryWriter bw = BinaryWriter(&stream);
-		CodedOutputStream cos = CodedOutputStream();
-		bw.WriteInt32(request.CalculateSize());
-		request.WriteTo(&cos);
-		RpcPacket resp = WaitResponse(request.Id);
-	}
-};
-
-
-class MyClient
-{
-protected:
-	PbClient m_client;
-public:
-	bool Connect(const IPAddress & address, int port)
-	{
-		m_client.Close();
-		if(!m_client.Connect(address, port)) return false;
-		return true;
-	}
-	void Close()
-	{
-		m_client.Close();
-	}
-	const char * GetLastErrorMsg()
-	{
-		return m_client.GetLastErrorMsg();
-	}
-	void FillFrameBuffer(int fbId, int color)
-	{
-	}
-};
-
-
-
-void TestarCliente()
-{
-	MyClient client;
-	if(!client.Connect(IPAddress::Loopback, 12345))
-	{
-		printf("[Cliente: falha de conexão: %s\n", client.GetLastErrorMsg());
+		CLogger::LogMsg(LEVEL_INFO, "Client: failed to connect to server");
 		return;
 	}
-	client.FillFrameBuffer(0, 0xFF000000);
-	client.Close();
+	CBinaryWriter bw = CBinaryWriter(client.GetStream());
+	CBinaryReader br = CBinaryReader(client.GetStream());
+	bw.WriteInt32(42);
+	int lido1;
+	int lido2;
+	bool b;
+	// lido1 = br.ReadInt32();
+	b = br.TryReadInt32(&lido2);
+	CLogger::LogMsg(LEVEL_INFO, "Client: recebido lido1=%d lido2=%d b=%d", lido1, lido2, b);
 }
 
 
- * */
+void teste_server()
+{
+	server.Start();
+	delay(1000);
+	teste_client();
+	delay(3000);
+	server.Stop();
+	server.Join();
+}
+
+
+void teste_stdin()
+{
+	while(!(StdIn.IsEof() || StdIn.IsError()))
+	{
+		char buffer[256];
+		int lidos = StdIn.Read(buffer, sizeof(buffer));
+		if(lidos >= 0) buffer[lidos] = 0;
+		StdOut.printf("lidos = %d, buffer = [%s]\n", lidos, buffer);
+	}
+}
+
 
 void teste_main()
 {
-	printf("[BEGIN]\n");
-	// TestarCliente();
-	printf("[END]\n");
+	CLogger::LogMsg(LEVEL_INFO, "TESTE:BEGIN");
+
+	teste_server();
+
+	CLogger::LogMsg(LEVEL_INFO, "TESTE:END");
 }

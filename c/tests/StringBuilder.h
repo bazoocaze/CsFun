@@ -16,11 +16,11 @@
 /* String builder helper writer.
  * Use the GetString() method to convert the builder to a String.
  * (the content of the builder is empty after the call). */
-class StringBuilder : public TextWriter
+class CStringBuilder : public CTextWriter
 {
 private:
 	// Internal buffer
-	ByteBuffer m_buffer;
+	CByteBuffer m_buffer;
 
 public:
 	// Length of the data in the builder
@@ -36,5 +36,5 @@ public:
 	/* Zero-terminate and return the string built.
 	 * This operation drains the buffer to the
 	 * empty state. */
-	String GetString();
+	CString GetString();
 };

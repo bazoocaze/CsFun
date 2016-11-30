@@ -15,17 +15,17 @@
 
 #if defined HAVE_CONSOLE
 
-	CConsole Console;
-	FdReader StdIn(0);
-	FdWriter StdOut(1);
-	FdWriter StdErr(2);
+	// CConsole Console;
+	CFdReader StdIn(0);
+	CFdWriter StdOut(1);
+	CFdWriter StdErr(2);
 
 #else
 
-	NullText Console;
-	NullText StdIn;
-	NullText StdOut;
-	NullText StdErr;
+	// NullText Console;
+	CNullText StdIn;
+	CNullText StdOut;
+	CNullText StdErr;
 
 #endif
 
@@ -37,7 +37,7 @@
 
 
 
-bool FileStream::Create(const char * fileName, FileStream &ret)
+bool CFileStream::Create(const char * fileName, CFileStream &ret)
 {
 int fd;
 	fd = creat(fileName, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
@@ -49,22 +49,22 @@ int fd;
 	return true;
 }
 
-FileStream::FileStream() : FdStream()
+CFileStream::CFileStream() : CFdStream()
 {
 }
 
-FileStream::FileStream(int fd) : FdStream(fd)
+CFileStream::CFileStream(int fd) : CFdStream(fd)
 {
 	m_fdPtr.Set(fd);
 }
 
-void FileStream::SetFd(int fd)
+void CFileStream::SetFd(int fd)
 {
-	FdStream::SetFd(fd);
+	CFdStream::SetFd(fd);
 	m_fdPtr.Set(fd);
 }
 
-void FileStream::Close()
+void CFileStream::Close()
 {
 	m_fdPtr.Set(CLOSED_FD);
 	m_fd = CLOSED_FD;

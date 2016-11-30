@@ -14,15 +14,15 @@
 #include "Ptr.h"
 
 
-class String;
+class CString;
 
 
 // Represents a pointer reference to data or memory buffer.
-class BytePtr
+class CBytePtr
 {
 private:
 	// Internal memory pointer for dynamic memory.
-	MemPtr m_ptr;
+	CMemPtr m_ptr;
 
 public:
 	// Cached read-only data pointer.
@@ -32,32 +32,32 @@ public:
 	int       Size;
 
 	// Default constructor to and empty data buffer.
-	BytePtr();
+	CBytePtr();
 	
 	// Constructor to reference the *ptr* and *size* buffer.
-	BytePtr(uint8_t * ptr, int size);
+	CBytePtr(uint8_t * ptr, int size);
 	
 	// Constructor to reference the *ptr*, *offset* and *size* buffer.
-	BytePtr(uint8_t * ptr, int offset, int size);
+	CBytePtr(uint8_t * ptr, int offset, int size);
 	
 	// Constructor to reference dynamic memory.
-	BytePtr(MemPtr memPtr, int offset, int size);
+	CBytePtr(CMemPtr memPtr, int offset, int size);
 	
 	// Constructor to reference dynamic memory using *ptr* and *size* for the buffer data.
-	BytePtr(MemPtr memPtr, uint8_t * ptr, int size);
+	CBytePtr(CMemPtr memPtr, uint8_t * ptr, int size);
 	
 	// Constructor to reference dynamic memory using *ptr*, *offset* and *size* for the buffer data.
-	BytePtr(MemPtr memPtr, uint8_t * ptr, int offset, int size);
+	CBytePtr(CMemPtr memPtr, uint8_t * ptr, int offset, int size);
 };
 
 
 /* Represents a dynamic growing writable/readable byte buffer.
  * The allocated memory is automatic released on destruction. */
-class ByteBuffer
+class CByteBuffer
 {
 private:
 	/* Internal memory pointer for the dynamic buffer memory */
-	MemPtr m_ptr;
+	CMemPtr m_ptr;
 	
 	// Size of the data on the buffer
 	int    m_Length;
@@ -80,7 +80,7 @@ private:
 public:
 
 	// Default constructor for an empty buffer.
-	ByteBuffer();
+	CByteBuffer();
 
 	/* Returns the size of the readable data on the buffer. */
 	int Length() const;
@@ -99,7 +99,7 @@ public:
 	 * Uses zero-copy referencing to construct the String.
 	 * The String contents are valid until the next change to the buffer.
 	 * Do Clear() the buffer to make the String content permanent. */
-	String GetString();
+	CString GetString();
 
 	/* Clear the buffer, discarding the stored data and releasing the memory. */
 	void Clear();
@@ -118,7 +118,7 @@ public:
 	/* Lock an area of the buffer for writting.
 	 * Returns pointer to the locked area.
 	 * The area is valid until the next change on the buffer. */
-	BytePtr LockWrite(int size);
+	CBytePtr LockWrite(int size);
 	
 	// Updates the write cursor to reflect a lock write of *confirmBytes* bytes.
 	void ConfirmWrite(int confirmBytes);
@@ -133,14 +133,14 @@ public:
 
 	/* Read a block of bytes from the buffer.
 	 * Returns the pointer to the read data (ptr and size). */
-	BytePtr ReadBlock(int size);
+	CBytePtr ReadBlock(int size);
 
 	/* Lock an area of the buffer for reading.
 	 * Returns the pointer to the locked data (ptr and size).
 	 * Returns a valid pointer even if size is zero.
 	 * Use ConfirmRead() to confirm the number of bytes read.
 	 * The area is valid until the next change on the buffer (read or write). */
-	BytePtr LockRead(int size);
+	CBytePtr LockRead(int size);
 	
 	/* Lock an area of the buffer for reading, with maximum of *size* bytes.
 	 * Returns the number of bytes locked for reading.

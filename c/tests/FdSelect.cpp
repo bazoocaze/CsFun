@@ -12,16 +12,17 @@
 #include "FdSelect.h"
 #include "Util.h"
 #include "IO.h"
+#include "Logger.h"
 
 
 
 /* Default constructor for an empty file descriptor selector. */
-FdSelect::FdSelect()
+CFdSelect::CFdSelect()
 {
 	Clear();
 }
 
-int FdSelect::FindFreeSlot(int fd)
+int CFdSelect::FindFreeSlot(int fd)
 {
 	// Find same fd
 	for(int n = 0; n < MAX_FD_LIST; n++)
@@ -37,7 +38,7 @@ int FdSelect::FindFreeSlot(int fd)
 	return RET_ERR;
 }
 
-int FdSelect::FindFd(int fd)
+int CFdSelect::FindFd(int fd)
 {
 	// Find the fd
 	for(int n = 0; n < MAX_FD_LIST; n++)
@@ -48,17 +49,24 @@ int FdSelect::FindFd(int fd)
 }
 
 /* Extract the updated state of a single fd from the fd sets. */
-int FdSelect::GetStatus(int fd, int iflags, fd_set* prfds, fd_set* pwfds, fd_set* pefds)
+int CFdSelect::GetStatus(int fd, int iflags, fd_set* prfds, fd_set* pwfds, fd_set* pefds)
 {
 	int oflags = 0;
-	if(HAS_FLAG(iflags, SEL_READ)  && FD_ISSET(fd, prfds)) oflags |= SEL_READ;
-	if(HAS_FLAG(iflags, SEL_WRITE) && FD_ISSET(fd, pwfds)) oflags |= SEL_WRITE;
-	if(HAS_FLAG(iflags, SEL_ERROR) && FD_ISSET(fd, pefds)) oflags |= SEL_ERROR;
+
+	if(HAS_FLAG(iflags, SEL_READ)  && FD_ISSET(fd, prfds))
+		oflags |= SEL_READ;
+
+	if(HAS_FLAG(iflags, SEL_WRITE) && FD_ISSET(fd, pwfds))
+		oflags |= SEL_WRITE;
+
+	if(HAS_FLAG(iflags, SEL_ERROR) && FD_ISSET(fd, pefds))
+		oflags |= SEL_ERROR;
+
 	return oflags;
 }
 
 /* Returns the string message for the last error code. */
-const char * FdSelect::GetLastErrMsg() const
+const char * CFdSelect::GetLastErrMsg() const
 {
 	if(LastErr == RET_OK)
 		return "";
@@ -67,7 +75,7 @@ const char * FdSelect::GetLastErrMsg() const
 }
 
 /* Clear the list of prepared file descriptors. */
-void FdSelect::Clear()
+void CFdSelect::Clear()
 {
 	LastErr = RET_OK;
 	for(int n = 0; n < MAX_FD_LIST; n++)
@@ -84,33 +92,43 @@ void FdSelect::Clear()
  * fd slots (see the MAX_FD_LIST constant).
  * Update fd status using Wait(), and read updated
  * status using GetStatus(). */
-bool FdSelect::Add(int fd, int flags)
+bool CFdSelect::Add(int fd, int flags)
 {
 	int slot = FindFreeSlot(fd);
-	if(slot == RET_ERR) return false;
+
+	if(slot == RET_ERR)
+		return false;
+
 	fd_list[slot].fd = fd;
 	fd_list[slot].flags = flags;
+
 	return true;
 }
 
 /* Removes a file descriptor from the list
  * of prepared fds. */
-bool FdSelect::Remove(int fd)
+bool CFdSelect::Remove(int fd)
 {
 	int slot = FindFd(fd);
+
 	if(slot != RET_ERR)
 		fd_list[slot].flags = 0;
+
 	return (slot != RET_ERR);
 }
 
 /* Read the result status of the prepared fd.
  * Returns the status, or 0 if the fd was
  * not selected/updated on Wait(). */
-int FdSelect::GetStatus(int fd)
+int CFdSelect::GetStatus(int fd)
 {
 	int slot = FindFd(fd);
-	if(slot == RET_ERR) return 0;
+
+	if(slot == RET_ERR)
+		return 0;
+
 	int iflags = fd_list[slot].flags;
+
 	return GetStatus(fd, iflags, &rfds, &wfds, &efds);
 }
 
@@ -119,7 +137,7 @@ int FdSelect::GetStatus(int fd)
  * fds to the list of prepared fds.
  * Returns the number of selected fds,
  * 0 on no fd/timeout or RET_ERR on error. */
-int FdSelect::WaitAll(int timeoutMillis)
+int CFdSelect::WaitAll(int timeoutMillis)
 {
 	int retval;
 	int maxFd   = -1;
@@ -141,6 +159,7 @@ int FdSelect::WaitAll(int timeoutMillis)
 			int fd = fd_list[n].fd;
 			int flags = fd_list[n].flags;
 			maxFd = MAX(fd, maxFd);
+
 			if(HAS_FLAG(flags, SEL_READ))  { numRfds++; FD_SET(fd, &rfds); }
 			if(HAS_FLAG(flags, SEL_WRITE)) { numWfds++; FD_SET(fd, &wfds); }
 			if(HAS_FLAG(flags, SEL_ERROR)) { numEfds++; FD_SET(fd, &efds); }
@@ -163,12 +182,14 @@ int FdSelect::WaitAll(int timeoutMillis)
 	// reset last error
 	LastErr = RET_OK;
 
-	StdErr.printf("\nselect(%d, %p, %p, %p, %ds%dus)\n",
+	CLogger::LogMsg(LEVEL_VERBOSE, "select(%d, %p, %p, %p, %ds%dµs)",
 		maxFd + 1, prfds, pwfds, pefds, tv.tv_sec, tv.tv_usec);
 
 	// select the descriptors
 	retval = select(
 		maxFd + 1, prfds, pwfds, pefds, &tv);
+
+	CLogger::LogMsg(LEVEL_VERBOSE, "select:ret=%d", retval);
 
 	// update LastErr on error
 	if(retval == RET_ERR)
@@ -180,7 +201,7 @@ int FdSelect::WaitAll(int timeoutMillis)
 /* Wait/select state for a single file descriptor.
  * Returns the the state of the descriptor on success.
  * Returns 0 on timeout or RET_ERR on error. */
-int FdSelect::Wait(int fd, int flags, int timeoutMillis)
+int CFdSelect::Wait(int fd, int flags, int timeoutMillis)
 {
 	int retval;
 	fd_set rfds;
@@ -206,18 +227,18 @@ int FdSelect::Wait(int fd, int flags, int timeoutMillis)
 	tv.tv_usec = (timeoutMillis % 1000) * 1000;
 	tv.tv_sec = (timeoutMillis / 1000);
 
-	StdErr.printf("\nselect(%d, %p, %p, %p, %ds%dus)\n",
+	CLogger::LogMsg(LEVEL_VERBOSE, "select(%d, %p, %p, %p, %ds%dµs)",
 		fd + 1, prfds, pwfds, pefds, tv.tv_sec, tv.tv_usec);
 
 	// select the file descriptor
 	retval = select(fd + 1, prfds, pwfds, pefds, &tv);
 
+	CLogger::LogMsg(LEVEL_VERBOSE, "select:ret=%d", retval);
+
 	// return status on success
 	if(retval > 0) {
 		retval = GetStatus(fd, flags, prfds, pwfds, pefds);
 	}
-
-	StdErr.printf("\nselect: result=%d\n", retval);
 
 	return retval;
 }

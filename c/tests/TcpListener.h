@@ -15,26 +15,29 @@
 
 
 /* Represents a TCP connection server. */
-class TcpListener
+class CTcpListener
 {
 private:
 	void LogErr(const char *msg);
-	bool InternalAccept(TcpClient &cliente);
+	bool InternalAccept(CTcpClient &cliente);
 	
 protected:
+	// Listener was stopped.
+	bool m_stopped;
+
 	// Listener socket.
-	Socket m_sock;
+	CSocket m_sock;
 	
 	// Listening endpoint.
-	IPEndPoint m_endpoint;
+	CIPEndPoint m_endpoint;
 	
 public:
 	// Default constructor.
-	TcpListener();
+	CTcpListener();
 	
 	/* Default destructor.
 	 * Closes the listener on destruction. */
-	~TcpListener();
+	~CTcpListener();
 
 	/* Returns the socket fd for the listener. */
 	int  GetFd() const;
@@ -45,11 +48,11 @@ public:
 	
 	/* Bind on the IP address and TCP port and starts listening for connections.
 	 * Return true/false on success.*/
-	bool Start(const IPAddress & addr, int port);
+	bool Start(const CIPAddress & addr, int port);
 	
 	/* Bind on the endpoint and starts listening for connections.
 	 * Return true/false on success.*/
-	bool Start(const IPEndPoint & localEP);
+	bool Start(const CIPEndPoint & localEP);
 
 	/* Stop the listener. */
 	void Stop();
@@ -68,20 +71,20 @@ public:
 	 * Puts the accepted connection on the TcpClient.
 	 * If no connection is pending, then awaits for a new connection and accepts it.
 	 * Returns true/false on success accepting. */
-	bool Accept(TcpClient & client);
+	bool Accept(CTcpClient & client);
 
-	/* Accepts a pending connection.
+	/* Try to accept a pending connection.
 	 * Puts the accepted connection on the TcpClient.
 	 * If no connection is pending, then awaits the timeout
-	 * for a new connection and accepts it.
+	 * periodo for a new connection and accepts it.
 	 * Returns true/false on success accepting. */
-	bool Accept(TcpClient & client, int timeoutMillis);
+	bool TryAccept(CTcpClient & client, int timeoutMillis);
 	
 	/* Accepts a pending connection.
 	 * Puts the accepted connection on the TcpClient.
 	 * If no connection is pending, return immediately.
 	 * Returns true/false on success accepting. */
-	bool AcceptNonBlock(TcpClient & client);
+	bool AcceptNonBlock(CTcpClient & client);
 
 	/* Last error code, or RET_OK if no error. */
 	int GetLastErr() const;

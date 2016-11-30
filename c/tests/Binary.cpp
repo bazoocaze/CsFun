@@ -23,37 +23,39 @@
 
 
 
-BinaryWriter::BinaryWriter()
+CBinaryWriter::CBinaryWriter()
 {
-	m_stream = &Stream::Null;
+	m_stream = &CStream::Null;
 }
 
 
-BinaryWriter::BinaryWriter(Stream * stream)
+CBinaryWriter::CBinaryWriter(CStream * stream)
 {
 	m_stream = stream;
 }
 
 
-void BinaryWriter::Close()
+void CBinaryWriter::Close()
 {
 	m_stream->Close();
 }
 
 
-int BinaryWriter::WriteUInt8(uint8_t val)
+int CBinaryWriter::WriteUInt8(uint8_t val)
 {
-	m_stream->Write(val); return 1;
+	m_stream->Write(val);
+	return 1;
 }
 
 
-int BinaryWriter::WriteInt8(int8_t val)
+int CBinaryWriter::WriteInt8(int8_t val)
 {
-	m_stream->Write((uint8_t)val); return 1;
+	m_stream->Write((uint8_t)val);
+	return 1;
 }
 
 
-int BinaryWriter::WriteInt16(int16_t val)
+int CBinaryWriter::WriteInt16(int16_t val)
 {
 uint16_t v = val;
 	m_stream->Write(v >> 0 & 0xFF);
@@ -62,7 +64,7 @@ uint16_t v = val;
 }
 
 
-int BinaryWriter::WriteInt32(int32_t val)
+int CBinaryWriter::WriteInt32(int32_t val)
 {
 uint32_t v = val;
 	m_stream->Write(v >> 0  & 0xFF);
@@ -73,7 +75,7 @@ uint32_t v = val;
 }
 
 
-int BinaryWriter::WriteInt64(int64_t val)
+int CBinaryWriter::WriteInt64(int64_t val)
 {
 uint64_t v = val;
 	for(int n = 0; n < 8; n++)
@@ -85,38 +87,47 @@ uint64_t v = val;
 }
 
 
-int BinaryWriter::WriteFloat(float val)
+int CBinaryWriter::WriteFloat(float val)
 {
 	return WriteBytes((uint8_t*)&val, 4);
 }
 
 
-int BinaryWriter::WriteDouble(double val)
+int CBinaryWriter::WriteDouble(double val)
 {
 	return WriteBytes((uint8_t*)&val, 8);
 }
 
 
-int BinaryWriter::WriteString(const char * str, int maxSize)
+int CBinaryWriter::WriteString(const char * str, int maxSize)
 {
 int len = 0;
 int ret;
-	if(str != NULL)   len=strlen(str);
-	if(len > maxSize) len=maxSize;
-	if(len < 0)       len=0;
+	if(str != NULL)
+		len=strlen(str);
+
+	if(len > maxSize)
+		len=maxSize;
+
+	if(len < 0)
+		len=0;
+
 	ret = WriteInt32(len);
-	if(len > 0) m_stream->Write((uint8_t*)str, len);
+
+	if(len > 0)
+		m_stream->Write((uint8_t*)str, len);
+
 	return ret + len;
 }
 
 
-int BinaryWriter::WriteString(const String& c, int maxSize)
+int CBinaryWriter::WriteString(const CString& c, int maxSize)
 {
 	return WriteString(c.c_str, maxSize);
 }
 
 
-int BinaryWriter::WriteBytes(const uint8_t * ptr, int size)
+int CBinaryWriter::WriteBytes(const void * ptr, int size)
 {
 	m_stream->Write(ptr, size);
 	return size;
@@ -130,15 +141,15 @@ int BinaryWriter::WriteBytes(const uint8_t * ptr, int size)
 
 
 
-BinaryReader::BinaryReader()
+CBinaryReader::CBinaryReader()
 {
-	m_stream = &Stream::Null;
+	m_stream = &CStream::Null;
 	Error = false;
 	Eof = false;
 }
 
 
-BinaryReader::BinaryReader(Stream * stream)
+CBinaryReader::CBinaryReader(CStream * stream)
 {
 	m_stream = stream;
 	Error = false;
@@ -146,7 +157,7 @@ BinaryReader::BinaryReader(Stream * stream)
 }
 
 
-void BinaryReader::SetStream(Stream * stream)
+void CBinaryReader::SetStream(CStream * stream)
 {
 	m_stream = stream;
 	Error = false;
@@ -154,75 +165,102 @@ void BinaryReader::SetStream(Stream * stream)
 }
 
 
-bool BinaryReader::TryReadBytes(uint8_t * buffer, int size)
+bool CBinaryReader::TryReadBytes(void * buffer, int size)
 {
-int ret;
-	if(Error || Eof) return false;
-	ret=m_stream->Read(buffer, size);
+	if(Error || Eof)
+		return false;
+
+	int ret=m_stream->ReadBlock(buffer, size);
+
 	if(ret != size)
 	{
-		Eof = (ret != RET_ERR);
+		Eof =   (ret != RET_ERR);
 		Error = (ret == RET_ERR);
 		return false;
 	}
+
 	return true;
 } 
 
 
-bool BinaryReader::TryDiscardBytes(int size)
+bool CBinaryReader::TryDiscardBytes(int size)
 {
 int len;
 uint8_t buffer[128];
-	if(Error || Eof) return false;
-	if(size == 0) return true;
-	if(size <  0) { Error = true; return false; }
+
+	if(Error || Eof)
+		return false;
+
+	if(size == 0)
+		return true;
+
+	if(size <  0)
+		{ Error = true; return false; }
+
 	while(size > 0)
 	{
 		if(size > sizeof(buffer))
 			len = sizeof(buffer);
 		else
 			len = size;
-		if(!TryReadBytes(buffer, len)) return false;
+
+		if(!TryReadBytes(buffer, len))
+			return false;
+
 		size -= len;
 	}
+
 	return true;
 }
 
 
-bool BinaryReader::TryReadInt8(int8_t *val)
+bool CBinaryReader::TryReadInt8(int8_t *val)
 {
 int ret;
-	if(Error || Eof) return false;
+
+	if(Error || Eof)
+		return false;
+
 	ret=m_stream->ReadByte();
+
 	if(ret < 0)
 	{
 		Eof = (ret == INT_EOF);
 		Error = (ret != INT_EOF);
 		return false;
 	}
+
 	*val = (int8_t)ret;
 	return true;
 }
 
 
-bool BinaryReader::TryReadInt32(int32_t *val)
+bool CBinaryReader::TryReadInt32(int32_t *val)
 {
 uint8_t buffer[4];
-	if(!TryReadBytes(buffer, 4)) return false;
+
+	if(!TryReadBytes(buffer, 4))
+		return false;
+
 	*val = (buffer[0] << 0) |
           (buffer[1] << 8) |
           (buffer[2] << 16) |
           (buffer[3] << 24); 
+
 	return true;
 }
 
 
-bool BinaryReader::TryReadString(String& c, int maxSize)
+bool CBinaryReader::TryReadString(CString& c, int maxSize)
 {
 int blockSize;
 int strSize;
-	if(!TryReadInt32(&blockSize)) return false;
-	if(blockSize < 0)             return false;
+
+	if(!TryReadInt32(&blockSize))
+		return false;
+
+	if(blockSize < 0)
+		return false;
 
 	if(blockSize > maxSize)
 		strSize = maxSize;
@@ -247,7 +285,7 @@ int strSize;
 }
 
 
-int32_t BinaryReader::ReadInt32()
+int32_t CBinaryReader::ReadInt32()
 {
 int ret = 0;
 	TryReadInt32(&ret);
@@ -255,9 +293,9 @@ int ret = 0;
 }
 
 
-String BinaryReader::ReadString(int maxSize)
+CString CBinaryReader::ReadString(int maxSize)
 {
-String ret;
+CString ret;
 	TryReadString(ret, maxSize);
 	return ret;
 }

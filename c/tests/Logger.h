@@ -32,11 +32,11 @@ const char * LogLevelDesc(LogLevelEnum level);
 
 
 // Message logging facilitie
-class Logger
+class CLogger
 {
 public:
 	// Default logger writer
-	static TextWriter*   Default;
+	static CTextWriter*   Default;
 	
 	/* Minimum message severity for logging.
 	 * Message below this severity level are discarded. */

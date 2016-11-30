@@ -16,7 +16,7 @@
 
 
 /* Represents a TCP network client connection. */
-class TcpClient 
+class CTcpClient
 {
 private:
 	/* Finalize the current connection setting the new state and errorCode. */
@@ -26,10 +26,10 @@ private:
 	
 protected:
 	// Data stream
-	FdStream m_stream;
+	CFdStream m_stream;
 	
 	// Connection socket fd
-	Socket   m_sock;
+	CSocket   m_sock;
 	
 	// Connection state
 	ConnectionStateEnum m_state;
@@ -39,10 +39,10 @@ public:
 	ConnectionStateEnum State();
 
 	// Default constructor for a closed connection.
-	TcpClient();
+	CTcpClient();
 	
 	// Constructor for an open connection on the fd.
-	explicit TcpClient(int clientfd);
+	explicit CTcpClient(int clientfd);
 	
 	/* Sets the connection fd. */
 	void SetFd(int fd);
@@ -60,13 +60,13 @@ public:
 	
 	/* Try to connect to the endpoint.
 	 * Returns true/false if connected. */
-	bool Connect(const IPEndPoint& remoteEP);
+	bool Connect(const CIPEndPoint& remoteEP);
 
 	/* Returns true/false if the socket is connected or connecting. */
-	int  IsConnected();
+	bool IsConnected();
 	
 	/* Returns true/false if the socket is connected to the remote endpoint. */
-	int  IsReady();
+	bool IsReady();
 	
 	/* Last error code, or RET_OK if no error. */
 	int  GetLastErr();
@@ -74,12 +74,12 @@ public:
 	/* String message for the last error code. */
 	cstr GetLastErrMsg();
 	
-	int  Write(uint8_t c);
-	int  Write(uint8_t *ptr, int size);
-	int  Available();
-	int  Read();
-	int  Peek();
+	// int  Write(uint8_t c);
+	// int  Write(uint8_t *ptr, int size);
+	// int  Available();
+	// int  Read();
+	// int  Peek();
 	// void Flush();
 
-	Stream* GetStream();
+	CStream* GetStream();
 };

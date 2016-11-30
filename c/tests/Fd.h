@@ -17,11 +17,11 @@
  * The fd has automic reference count management,
  * closing the descriptor when the last reference
  * is released. */
-class Fd
+class CFd
 {
 protected:
 	// Internal file descriptor.
-	FdPtr m_fd;
+	CFdPtr m_fd;
 	
 public:
 	// Last error code, or RET_OK in case of no errors.
@@ -31,10 +31,10 @@ public:
 	const char * GetLastErrMsg() const;
 
 	// Default constructor for a closed file descriptor.
-	Fd();
+	CFd();
 	
 	// Constructor for the *fd* informed.
-	explicit Fd(int fd);
+	explicit CFd(int fd);
 	
 	/* Release the current fd and
 	 * sets the new fd for the instance. */
@@ -86,7 +86,7 @@ public:
 
 
 // Representes a file descriptor text writer
-class FdWriter : public TextWriter
+class CFdWriter : public CTextWriter
 {
 protected:
 	int m_fd;
@@ -96,10 +96,10 @@ public:
 	int LastErr;
 
 	// Default constructor for a NULL writer
-	FdWriter();
+	CFdWriter();
 	
 	// Constructor that writes on the *fd* informed.
-	explicit FdWriter(int fd);
+	explicit CFdWriter(int fd);
 	
 	// Sets the target fd to the fd informed.
 	void SetFd(int fd);
@@ -115,12 +115,12 @@ public:
 	virtual bool IsError();
 
 	int Write(uint8_t c);
-	int Write(const uint8_t * buffer, int size);
+	int Write(const void * buffer, int size);
 };
 
 
 // Representes a file descriptor text reader
-class FdReader : public TextReader
+class CFdReader : public CTextReader
 {
 protected:
 	int m_fd;
@@ -133,10 +133,10 @@ public:
 	bool Eof;
 
 	// Default constructor that reads from an empty file.
-	FdReader();
+	CFdReader();
 	
 	// Constructor for reading the fd informed.
-	explicit FdReader(int fd);
+	explicit CFdReader(int fd);
 	
 	// Sets the base fd to the fd informed.
 	void SetFd(int fd);
@@ -153,5 +153,5 @@ public:
 	virtual const char * GetLastErrMsg();
 
 	int Read();
-	int Read(uint8_t * buffer, int size);
+	int Read(void * buffer, int size);
 };

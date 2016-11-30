@@ -14,23 +14,23 @@
 
 
 // Writes binary data to a stream.
-class BinaryWriter
+class CBinaryWriter
 {
 protected:
-	Stream * m_stream;
+	CStream * m_stream;
 
 public:
 	// Default constructor that writes the a NULL stream.
-	BinaryWriter();
+	CBinaryWriter();
 	
 	// Constructor that writes data to the target stream.
-	explicit BinaryWriter(Stream * stream);
+	explicit CBinaryWriter(CStream * stream);
 	
 	// Closes the writer. Does not close the base stream.
 	void Close();
 	
 	// Sets the base stream to the *stream*.
-	void SetStream(Stream * stream);
+	void SetStream(CStream * stream);
 
 	int  WriteInt8 (int8_t val);
 	int  WriteInt16(int16_t val);
@@ -46,18 +46,18 @@ public:
 	int  WriteFloat (float val);
 	int  WriteDouble(double val);
 
-	int  WriteBytes(const uint8_t * data, int size);
+	int  WriteBytes(const void * data, int size);
 
 	int  WriteString(const char * c, int maxSize);
-	int  WriteString(const String& c, int maxSize);
+	int  WriteString(const CString& c, int maxSize);
 };
 
 
 // Reads binary data from a stream.
-class BinaryReader
+class CBinaryReader
 {
 protected:
-	Stream * m_stream;
+	CStream * m_stream;
 
 public:
 	// True/false indicating an EndOfStream condition
@@ -67,10 +67,10 @@ public:
 	bool Error;
 
 	// Default constructor that reads from an empty stream
-	BinaryReader();
+	CBinaryReader();
 	
 	// Constructor that reads from the source streeam.
-	explicit BinaryReader(Stream * stream);
+	explicit CBinaryReader(CStream * stream);
 	
 	// Return the last error code, or RET_OK if no error found.
 	int GetLastErr();
@@ -82,7 +82,7 @@ public:
 	void Close();
 	
 	// Sets the base stream to the *stream*.
-	void SetStream(Stream * stream);
+	void SetStream(CStream * stream);
 
 	bool TryReadInt8 (int8_t    *val);
 	bool TryReadInt16(int16_t   *val);
@@ -99,8 +99,8 @@ public:
 	bool TryReadDouble(double *val);
 
 	bool TryReadString(char * c, int maxSize);
-	bool TryReadString(String& c, int maxSize);
-	bool TryReadBytes(uint8_t * buffer, int size);
+	bool TryReadString(CString& c, int maxSize);
+	bool TryReadBytes(void * buffer, int size);
 	bool TryDiscardBytes(int size);
 
 	int8_t  ReadInt8();
@@ -117,8 +117,8 @@ public:
 	float  ReadFloat();
 	double ReadDouble();
 
-	String ReadString(int maxSize);
-	void   ReadString(char * str, int maxSize);
-	int    ReadBytes(uint8_t * buffer, int size);
-	void   DiscardBytes(int size);
+	CString ReadString(int maxSize);
+	void ReadString(char * str, int maxSize);
+	int  ReadBytes(void * buffer, int size);
+	void DiscardBytes(int size);
 };

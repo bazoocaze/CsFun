@@ -16,19 +16,19 @@
 
 
 
-int Dns::LastErr = RET_OK;
+int CDns::LastErr = RET_OK;
 
 
 
-cstr Dns::GetLastErrMsg()
+cstr CDns::GetLastErrMsg()
 {
-	return gai_strerror(Dns::LastErr);
+	return gai_strerror(CDns::LastErr);
 }
 
 
-void Dns::LogErr(cstr msg, cstr extra)
+void CDns::LogErr(cstr msg, cstr extra)
 {
-	Logger::LogMsg(
+	CLogger::LogMsg(
 		LEVEL_WARN, 
 		"Dns: %s-%s / Error [0x%x]:%s\n",
 		msg,
@@ -38,19 +38,20 @@ void Dns::LogErr(cstr msg, cstr extra)
 }
 
 
-IPAddressList Dns::GetHostAddresses(cstr hostName)
+CIPAddressList CDns::GetHostAddresses(cstr hostName)
 {
 	return GetHostAddresses(hostName, true, true);
 }
 
 
-IPAddressList Dns::GetHostAddresses(cstr hostName, bool ipv4, bool ipv6)
+CIPAddressList CDns::GetHostAddresses(cstr hostName, bool ipv4, bool ipv6)
 {
 int ret;
 
-	IPAddressList retList;
+	CIPAddressList retList;
 
-	if(!(ipv4 || ipv6)) return retList;
+	if(!(ipv4 || ipv6))
+		return retList;
 
 #if defined HAVE_DNS_getaddrinfo
 
@@ -70,33 +71,33 @@ int ret;
 
 	ret = getaddrinfo(hostName, NULL, &hints, &dnsResult);
 	if (ret != RET_OK) {
-		Dns::LastErr = ret;
+		CDns::LastErr = ret;
 		return retList;
 	}
 
 	/* For each ip/dns found */
 	for (rp = dnsResult; rp != NULL; rp = rp->ai_next) {
-		SockAddr sockAddr = SockAddr(rp->ai_addr, rp->ai_addrlen);
-		IPAddress addr = IPAddress(sockAddr);
+		CSockAddr sockAddr = CSockAddr(rp->ai_addr, rp->ai_addrlen);
+		CIPAddress addr = CIPAddress(sockAddr);
 		retList.Add(addr);
 	}
 
-	Dns::LastErr = RET_OK;
+	CDns::LastErr = RET_OK;
 
 	/* Free the DNS search resources */
 	freeaddrinfo(dnsResult);
 
 #else
 
-	IPAddress addr = IPAddress(hostName);
+	CIPAddress addr = CIPAddress(hostName);
 	if(addr.GetSockAddr().IsValid())
 	{
 		retList.Add(addr);
-		Dns::LastErr = RET_OK;
+		CDns::LastErr = RET_OK;
 	}
 	else
 	{
-		Dns::LastErr = -1;
+		CDns::LastErr = -1;
 	}
 
 #endif

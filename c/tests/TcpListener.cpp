@@ -29,38 +29,38 @@
 #include "FdSelect.h"
 
 
-TcpListener::TcpListener()
+CTcpListener::CTcpListener()
 {
 }
 
 
-TcpListener::~TcpListener()
+CTcpListener::~CTcpListener()
 {
 	Stop();
 }
 
-int TcpListener::GetFd() const
+int CTcpListener::GetFd() const
 {
 	return m_sock.GetFd();
 }
 
-bool TcpListener::Start(int port)
+bool CTcpListener::Start(int port)
 {
-	IPEndPoint localEP = IPEndPoint(IPAddress::Any, port);
+	CIPEndPoint localEP = CIPEndPoint(CIPAddress::Any, port);
 	return Start(localEP);
 }
 
 
-bool TcpListener::Start(const IPAddress& addr, int port)
+bool CTcpListener::Start(const CIPAddress& addr, int port)
 {
-	IPEndPoint localEP = IPEndPoint(addr, port);
+	CIPEndPoint localEP = CIPEndPoint(addr, port);
 	return Start(localEP);
 }
 
 
-bool TcpListener::Start(const IPEndPoint& localEP)
+bool CTcpListener::Start(const CIPEndPoint& localEP)
 {
-	SockAddr addr = localEP.GetSockAddr();
+	CSockAddr addr = localEP.GetSockAddr();
 	m_endpoint = localEP;
 
 	m_sock.Close();
@@ -96,36 +96,44 @@ bool TcpListener::Start(const IPEndPoint& localEP)
 		return false;
 	}
 
-	Logger::LogMsg(
+	CLogger::LogMsg(
 			LEVEL_DEBUG,
 			"TCP listener started on %P (fd %d)",
 			&m_endpoint,
 			m_sock.GetFd());
+
+	m_stopped = false;
 	
 	return true;
 }
 
 
-bool TcpListener::Available() const {
-	if(m_sock.IsClosed()) return false;
+bool CTcpListener::Available() const {
+	if(m_sock.IsClosed())
+		return false;
 	return m_sock.IsReadable();
 }
 
 
-bool TcpListener::WaitAvailable(int timeoutMillis) const {
-	if(m_sock.IsClosed()) return false;
-	int status = FdSelect::Wait(m_sock.GetFd(), SEL_READ | SEL_ERROR, timeoutMillis);
+bool CTcpListener::WaitAvailable(int timeoutMillis) const {
+	if(m_sock.IsClosed())
+		return false;
+	int status = CFdSelect::Wait(m_sock.GetFd(), SEL_READ | SEL_ERROR, timeoutMillis);
 	return (HAS_FLAG(status, SEL_READ));
 }
 
 
-bool TcpListener::InternalAccept(TcpClient& cliente)
+bool CTcpListener::InternalAccept(CTcpClient& cliente)
 {
 int clientfd;
-SockAddr addr;
+CSockAddr addr;
+
+	if(!IsListening())
+		return false;
+
 	clientfd = m_sock.Accept(addr);
 	if(clientfd == RET_ERROR) {
-		Logger::LogMsg(
+		CLogger::LogMsg(
 				LEVEL_ERROR,
 				"TcpListener: error accepting client on %P: %d-%s",
 				&m_endpoint,
@@ -133,81 +141,103 @@ SockAddr addr;
 				m_sock.GetLastErrMsg());
 		return false;
 	}
-	IPEndPoint remoteEP = IPEndPoint(addr);
-	Logger::LogMsg(
+
+	CIPEndPoint remoteEP = CIPEndPoint(addr);
+	CLogger::LogMsg(
 			LEVEL_DEBUG,
 			"TCP client %P accepted on %P (fd %d)",
 			&remoteEP,
 			&m_endpoint,
 			clientfd);
 	cliente.SetFd(clientfd);
+
 	return true;
 }
 
 
-bool TcpListener::Accept(TcpClient &cliente) {
-	if(!IsListening()) return false;
+bool CTcpListener::Accept(CTcpClient &cliente) {
+	if(!IsListening())
+		return false;
 	m_sock.SetNonBlock(false);
 	return InternalAccept(cliente);
 }
 
 
-bool TcpListener::Accept(TcpClient &cliente, int timeoutMillis)
+bool CTcpListener::TryAccept(CTcpClient &cliente, int timeoutMillis)
 {
-	if(!IsListening()) return false;
-	int status = FdSelect::Wait(m_sock.GetFd(), SEL_READ | SEL_ERROR, timeoutMillis);
+	if(!IsListening())
+		return false;
+
+	int status = CFdSelect::Wait(m_sock.GetFd(), SEL_READ | SEL_ERROR, timeoutMillis);
+
+	if(!IsListening())
+		return false;
+
 	if(!HAS_FLAG(status, SEL_READ))
 		return false;
+
 	return InternalAccept(cliente);
 }
 
 
-bool TcpListener::AcceptNonBlock(TcpClient &cliente) {
-	if(!IsListening()) return false;
+bool CTcpListener::AcceptNonBlock(CTcpClient &cliente) {
+	if(!IsListening())
+		return false;
 	m_sock.SetNonBlock(true);
 	return InternalAccept(cliente);
 }
 
 
-void TcpListener::Stop()
+void CTcpListener::Stop()
 {
-	if(IsListening())	{
-		Logger::LogMsg(
-			LEVEL_DEBUG,
-			"Shutdown TCP listener on %P (fd %d)",
-			&m_endpoint,
-			m_sock.GetFd());
-		m_sock.Close();
+	CLogger::LogMsg(LEVEL_DEBUG, "Listener.Stop: BEGIN");
+
+	if(!m_stopped) {
+		m_stopped = true;
+
+		CLogger::LogMsg(LEVEL_DEBUG, "Listener.Stop: ENTER");
+
+		if(!m_sock.IsClosed())
+		{
+			// connect on self listener to weak the listener thread
+			CTcpClient dummy;
+			CIPEndPoint selfEP = CIPEndPoint(CIPAddress::Loopback, m_endpoint.GetPort());
+			dummy.Connect(selfEP);
+			dummy.Close();
+
+			CLogger::LogMsg(
+				LEVEL_DEBUG,
+				"Shutdown TCP listener on %P (fd %d)",
+				&m_endpoint,
+				m_sock.GetFd());
+
+			m_sock.Close();
+		}
 	}
 }
 
 
-bool TcpListener::IsListening() const
+bool CTcpListener::IsListening() const
 {
-	return (!m_sock.IsClosed());
+	return (!(m_stopped || m_sock.IsClosed()));
 }
 
 
-// const char * TcpListener::GetLastErrMsg() const
-// {
-// 	return strerror(LastErr);
-// }
-
-int TcpListener::GetLastErr() const
+int CTcpListener::GetLastErr() const
 {
 	return m_sock.LastErr;
 }
 
 
-const char * TcpListener::GetLastErrMsg() const
+const char * CTcpListener::GetLastErrMsg() const
 {
 	return m_sock.GetLastErrMsg();
 }
 
 
-void TcpListener::LogErr(const char* msg)
+void CTcpListener::LogErr(const char* msg)
 {
-	Logger::LogMsg(
+	CLogger::LogMsg(
 		LEVEL_ERROR,
 		"TCP listener (on %P, fd %d): %s - err %d-%s",
 		&m_endpoint,
@@ -216,4 +246,3 @@ void TcpListener::LogErr(const char* msg)
 		m_sock.LastErr,
 		m_sock.GetLastErrMsg());
 }
-

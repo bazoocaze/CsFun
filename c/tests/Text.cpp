@@ -19,8 +19,8 @@
 //////////////////////////////////////////////////////////////////////
 
 
-NullText TextReader::Null = NullText();
-NullText TextWriter::Null = NullText();
+CNullText CTextReader::Null = CNullText();
+CNullText CTextWriter::Null = CNullText();
 
 
 //////////////////////////////////////////////////////////////////////
@@ -29,9 +29,9 @@ NullText TextWriter::Null = NullText();
 
 
 
-String Printable::ToString() const
+CString CPrintable::ToString() const
 {
-	StringBuilder sb;
+	CStringBuilder sb;
 	printTo(sb);
 	return sb.GetString();
 }
@@ -44,21 +44,21 @@ String Printable::ToString() const
 
 
 
-String::String()
+CString::CString()
 {
 	c_str = NULL;
 	m_aloc.Set(NULL);
 }
 
 
-String::String(const char * c)
+CString::CString(const char * c)
 {
 	c_str = c;
 	m_aloc.Set(NULL);
 }
 
 
-String::String(char * c, bool dynamic)
+CString::CString(char * c, bool dynamic)
 {
 	c_str = c;
 	if(dynamic)
@@ -68,35 +68,28 @@ String::String(char * c, bool dynamic)
 }
 
 
-String::String(MemPtr mem)
+CString::CString(CMemPtr mem)
 {
 	m_aloc = mem;
 	c_str  = (cstr)mem.Get();
 }
 
 
-String::String(MemPtr mem, char * c)
+CString::CString(CMemPtr mem, char * c)
 {
 	m_aloc = mem;
 	c_str = c;
 }
 
 
-void String::Set(void * c)
+void CString::Set(const char * c)
 {
-	c_str = (char *)c;
-	m_aloc.Set(c);
-}
-
-
-void String::Set(const char * c)
-{
-	c_str = c;
 	m_aloc.Clear();
+	c_str = c;
 }
 
 
-void String::Set(char * c, bool dynamic)
+void CString::Set(char * c, bool dynamic)
 {
 	c_str = c;
 	if(dynamic)
@@ -106,42 +99,43 @@ void String::Set(char * c, bool dynamic)
 }
 
 
-void String::Set(const String& c)
+void CString::Set(const CString& c)
 {
 	this->m_aloc = c.m_aloc;
 	this->c_str  = c.c_str;
 }
 
 
-void String::Set(const MemPtr& mem)
+void CString::Set(const CMemPtr& mem)
 {
 	this->m_aloc = mem;
 	this->c_str  = (cstr)mem.Get();
 }
 
 
-void String::Set(const MemPtr& mem, vstr c)
+void CString::Set(const CMemPtr& mem, vstr c)
 {
 	this->m_aloc = mem;
 	this->c_str  = c;
 }
 
 
-void String::Clear()
+void CString::Clear()
 {
 	m_aloc.Set(NULL);
 	c_str = NULL;
 }
 
 
-int String::printTo(TextWriter& p) const
+int CString::printTo(CTextWriter& p) const
 {
-	if(c_str == NULL) return 0;
+	if(c_str == NULL || c_str[0] == 0)
+		return 0;
 	return p.print(c_str);
 }
 
 
-void String::Debug()
+void CString::CDebug()
 {
 	printf("[String: c_str=[%p:%s] aloc=[%p]]\n", c_str, c_str, m_aloc.Get());
 }
@@ -154,21 +148,23 @@ void String::Debug()
 
 
 
-int TextWriter::Write(const uint8_t* c, int size)
+int CTextWriter::Write(const void* c, int size)
 {
-	for(int n = 0; n < size; n++) Write(c[n]);
+	uint8_t* ptr = (uint8_t*)c;
+	for(int n = 0; n < size; n++)
+		Write(ptr[n]);
 	return size;
 }
 
 
-int TextWriter::println()
+int CTextWriter::println()
 {
 	Write(10);
 	return 1;
 }
 
 
-int TextWriter::printf(const char * fmt, ...)
+int CTextWriter::printf(const char * fmt, ...)
 {
 	va_list ap;
 	int ret;
@@ -179,24 +175,25 @@ int TextWriter::printf(const char * fmt, ...)
 }
 
 
-int TextWriter::printf(const char * fmt, va_list va)
+int CTextWriter::printf(const char * fmt, va_list va)
 {
 	return util_printf(this, fmt, va);
 }
 
 
-int TextWriter::print(const char str[])
+int CTextWriter::print(const char str[])
 {
 	int len = strlen(str);
 	return Write((const uint8_t*)str, len);
 }
 
 
-int TextWriter::print(long n, int base)
+int CTextWriter::print(long n, int base)
 {
 	int t=0;
 
-	if(base < 2) base=10;
+	if(base < 2)
+		base=10;
 
 	if (base == 10 && n < 0) {
 		t = print('-');
@@ -206,99 +203,99 @@ int TextWriter::print(long n, int base)
 	return printNumber(n, base) + t;
 }
 
-int TextWriter::print(char c)
+int CTextWriter::print(char c)
 {
 	return Write(c);
 }
 
-int TextWriter::print(unsigned char b, int base)
+int CTextWriter::print(unsigned char b, int base)
 {
 	return print((unsigned long) b, base);
 }
 
-int TextWriter::print(int n, int base)
+int CTextWriter::print(int n, int base)
 {
 	return print((long) n, base);
 }
 
-int TextWriter::print(unsigned int n, int base)
+int CTextWriter::print(unsigned int n, int base)
 {
 	return print((unsigned long) n, base);
 }
 
-int TextWriter::print(unsigned long n, int base)
+int CTextWriter::print(unsigned long n, int base)
 {
 	return printNumber(n, base);
 }
 
-int TextWriter::print(double n, int digits)
+int CTextWriter::print(double n, int digits)
 {
 	return printFloat(n, digits);
 }
 
-int TextWriter::print(float n, int digits)
+int CTextWriter::print(float n, int digits)
 {
 	return printFloat(n, digits);
 }
 
-int TextWriter::print(const Printable& x)
+int CTextWriter::print(const CPrintable& x)
 {
 	return x.printTo(*this);
 }
 
-int TextWriter::println(const char c[])
+int CTextWriter::println(const char c[])
 {
 	return print(c) + println();
 }
 
-int TextWriter::println(char c)
+int CTextWriter::println(char c)
 {
 	return print(c) + println();
 }
 
-int TextWriter::println(unsigned char b, int base)
+int CTextWriter::println(unsigned char b, int base)
 {
 	return print(b, base) + println();
 }
 
-int TextWriter::println(int num, int base)
+int CTextWriter::println(int num, int base)
 {
 	return print(num, base) + println();
 }
 
-int TextWriter::println(unsigned int num, int base)
+int CTextWriter::println(unsigned int num, int base)
 {
 	return print(num, base) + println();
 }
 
-int TextWriter::println(long num, int base)
+int CTextWriter::println(long num, int base)
 {
 	return print(num, base) + println();
 }
 
-int TextWriter::println(unsigned long num, int base)
+int CTextWriter::println(unsigned long num, int base)
 {
 	return print(num, base) + println();
 }
 
-int TextWriter::println(double num, int digits)
+int CTextWriter::println(double num, int digits)
 {
 	return print(num, digits) + println();
 }
 
-int TextWriter::println(float num, int digits)
+int CTextWriter::println(float num, int digits)
 {
 	return print(num, digits) + println();
 }
 
-int TextWriter::println(const Printable& x)
+int CTextWriter::println(const CPrintable& x)
 {
 	return print(x) + println();
 }
 
 // Private Methods /////////////////////////////////////////////////////////////
 
-int TextWriter::printNumber(unsigned long n, int base)
+int CTextWriter::printNumber(unsigned long n, int base)
 {
 	char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
 	char *str = &buf[sizeof(buf) - 1];
@@ -318,7 +315,7 @@ int TextWriter::printNumber(unsigned long n, int base)
 	return print(str);
 }
 
-int TextWriter::printFloat(double number, int digits)
+int CTextWriter::printFloat(double number, int digits)
 {
 	int n = 0;
 
@@ -356,7 +353,7 @@ int TextWriter::printFloat(double number, int digits)
 	return n;
 }
 
-int TextWriter::printFloat(float number, int digits)
+int CTextWriter::printFloat(float number, int digits)
 {
 	int n = 0;
 
@@ -402,38 +399,34 @@ int TextWriter::printFloat(float number, int digits)
 
 
 
-int TextReader::Read(uint8_t * buffer, int size)
+int CTextReader::Read(void * buffer, int size)
 {
+	uint8_t* ptr = (uint8_t*)buffer;
 	int pos = 0;
 	while(pos < size) {
 		int c = Read();
-		if(c < 0) return (pos > 0) ? pos : c;
-		buffer[pos] = (uint8_t)c;
+		if(c < 0)
+			return (pos > 0) ? pos : c;
+		ptr[pos] = (uint8_t)c;
 		pos++;
 	}
 	return pos;
 }
 
 
-int TextReader::ReadLine(char * buffer, int size)
+int CTextReader::ReadLine(char * buffer, int size)
 {
 	int pos = 0;
 	while(pos < (size - 1)) {
 		int c = Read();
 		if(c < 0) {
-			// printf("[TextReader:c==%d]", c);
 			buffer[pos] = 10;
 			return (pos > 0) ? pos : c;
 		}
-		if(c == 13) {
-			// printf("[TR:CR]");
+		if(c == 13)
 			continue;
-		}
-		if(c == 10) {
-			// printf("[TR:LF]");
+		if(c == 10)
 			break;
-		}
-		// printf("[%c]", c);
 		buffer[pos] = c;
 		pos++;
 	}
@@ -442,25 +435,22 @@ int TextReader::ReadLine(char * buffer, int size)
 }
 
 
-bool TextReader::ReadLine(String& ret, int maxSize)
+bool CTextReader::ReadLine(CString& ret, int maxSize)
 {
-	ByteBuffer buffer;
-	if(maxSize <= 1) return false;
+	CByteBuffer buffer;
+	if(maxSize <= 1)
+		return false;
 	while(buffer.Length() < maxSize) {
 		int c = Read();
-		// printf("[C=%d,%c]", c, c);
 		if(c < 0) {
-			if(buffer.Length() == 0) {
+			if(buffer.Length() == 0)
 				return false;
-			}
 			break;
 		}
-		if(c == 13) {
+		if(c == 13)
 			continue;
-		}
-		if(c == 10) {
+		if(c == 10)
 			break;
-		}
 		buffer.Write((char)c);
 	}
 	buffer.Write((char)0);
@@ -476,44 +466,42 @@ bool TextReader::ReadLine(String& ret, int maxSize)
 
 
 
-StreamWriter::StreamWriter()
+CStreamWriter::CStreamWriter()
 {
-	m_stream = &Stream::Null;
+	m_stream = &CStream::Null;
 }
 
-StreamWriter::StreamWriter(Stream * stream)
+CStreamWriter::CStreamWriter(CStream * stream)
 {
 	m_stream = stream;
 }
 
-void StreamWriter::Close()
+void CStreamWriter::Close()
 {
 	m_stream->Close();
 }
 
-int StreamWriter::GetLastErr()
+int CStreamWriter::GetLastErr()
 {
 	return m_stream->GetLastErr();
 }
 
-const char * StreamWriter::GetLastErrMsg()
+const char * CStreamWriter::GetLastErrMsg()
 {
 	return m_stream->GetLastErrMsg();
 }
 
-
-bool StreamWriter::IsError()
+bool CStreamWriter::IsError()
 {
 	return m_stream->IsError();
 }
 
-
-int StreamWriter::Write(const uint8_t c)
+int CStreamWriter::Write(const uint8_t c)
 {
 	return m_stream->Write(c);
 }
 
-int StreamWriter::Write(const uint8_t * c, int size)
+int CStreamWriter::Write(const void * c, int size)
 {
 	return m_stream->Write(c, size);
 }
@@ -526,49 +514,47 @@ int StreamWriter::Write(const uint8_t * c, int size)
 
 
 
-StreamReader::StreamReader()
+CStreamReader::CStreamReader()
 {
-	m_stream = &Stream::Null;
+	m_stream = &CStream::Null;
 }
 
-StreamReader::StreamReader(Stream * stream)
+CStreamReader::CStreamReader(CStream * stream)
 {
 	m_stream = stream;
 }
 
-void StreamReader::Close()
+void CStreamReader::Close()
 {
 	m_stream->Close();
 }
 
-bool StreamReader::IsEof()
+bool CStreamReader::IsEof()
 {
 	return m_stream->IsEof();
 }
 
-bool StreamReader::IsError()
+bool CStreamReader::IsError()
 {
 	return m_stream->IsError();
 }
 
-int StreamReader::GetLastErr()
+int CStreamReader::GetLastErr()
 {
 	return m_stream->GetLastErr();
 }
 
-const char * StreamReader::GetLastErrMsg()
+const char * CStreamReader::GetLastErrMsg()
 {
 	return m_stream->GetLastErrMsg();
 }
 
-int StreamReader::Read()
+int CStreamReader::Read()
 {
 	return m_stream->ReadByte();
 }
 
-int StreamReader::Read(uint8_t * c, int size)
+int CStreamReader::Read(void * c, int size)
 {
 	return m_stream->Read(c, size);
 }
-
-

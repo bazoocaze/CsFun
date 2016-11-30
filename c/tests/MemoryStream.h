@@ -14,15 +14,15 @@
 
 
 // Represents a dynamic memory stream buffer.
-class MemoryStream : public Stream
+class CMemoryStream : public CStream
 {
 protected:
 	// Internal buffer for the data
-	ByteBuffer m_buffer;
+	CByteBuffer m_buffer;
 
 public:
 	// Default constructor for an empty read/write memory buffer.
-	MemoryStream();
+	CMemoryStream();
 	
 	/* Returns the pointer for the read/input data.
 	 * The pointer is valid until the next change in the stream. */

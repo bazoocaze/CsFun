@@ -13,6 +13,7 @@
 #include "Ptr.h"
 #include "Util.h"
 #include "IO.h"
+#include "Logger.h"
 
 
 struct MemPtr_s {
@@ -33,50 +34,55 @@ struct FdPtr_s {
 
 
 
-MemPtr::MemPtr() {
+CMemPtr::CMemPtr() {
 	this->ref = NULL;
 }
 
 
-MemPtr::MemPtr(void * data) {
+CMemPtr::CMemPtr(void * data) {
 	this->ref = NULL;
 	Set(data);
 }
 
 
-MemPtr::MemPtr(const MemPtr& other) {
+CMemPtr::CMemPtr(const CMemPtr& other) {
 	this->ref  = other.ref;
 	AddRef();
 }
 
 
-MemPtr& MemPtr::operator=(const MemPtr& other)
+CMemPtr& CMemPtr::operator=(const CMemPtr& other)
 {
 	if(other.ref == this->ref) 
 		return *this;
+
 	ReleaseRef();
 	this->ref = other.ref;
 	AddRef();
+
 	return *this;
 }
 
 
-MemPtr::~MemPtr()
+CMemPtr::~CMemPtr()
 {
 	Clear();
 }
 
 
-void MemPtr::Clear()
+void CMemPtr::Clear()
 {
 	Set(NULL);
 }
 
 
-void MemPtr::Set(void * data)
+void CMemPtr::Set(void * data)
 {
-	if(data == Get()) return;
+	if(data == Get())
+		return;
+
 	ReleaseRef();
+
 	if(data == NULL) {
 		this->ref = NULL;
 	} else {
@@ -87,31 +93,38 @@ void MemPtr::Set(void * data)
 }
 
 
-void * MemPtr::Get() const
+void * CMemPtr::Get() const
 {
-	if(ref) return ref->data;
+	if(ref)
+		return ref->data;
+
 	return NULL;
 }
 
 
-bool MemPtr::Resize(int newSize)
+bool CMemPtr::Resize(int newSize)
 {
 	void * curPtr = Get();
 	void * newPtr = UTIL_MEM_REALLOC(curPtr, newSize);
-	if(newPtr == NULL) return false;
+
+	if(newPtr == NULL)
+		return false;
+
 	ChangeTo(newPtr);
 	return true;
 }
 
 
-void MemPtr::Memset(uint8_t val, int size)
+void CMemPtr::Memset(uint8_t val, int size)
 {
-	if(ref == NULL || ref->data == NULL || size < 0) return;
+	if(ref == NULL || ref->data == NULL || size < 0)
+		return;
+
 	memset(ref->data, val, size);
 }
 
 
-void MemPtr::ChangeTo(void * newPtr)
+void CMemPtr::ChangeTo(void * newPtr)
 {
 	if(ref == NULL)
 		Set(newPtr);
@@ -120,19 +133,26 @@ void MemPtr::ChangeTo(void * newPtr)
 }
 
 
-void MemPtr::AddRef()
+void CMemPtr::AddRef()
 {
-	if(ref != NULL) ref->count++;
+	if(ref != NULL)
+		ref->count++;
 }
 
 
-void MemPtr::ReleaseRef()
+void CMemPtr::ReleaseRef()
 {
-	if(ref == NULL) return;
-	ref->count--;
-	if(ref->count > 0) return;
+	if(ref == NULL)
+		return;
 
-	if(ref->data) UTIL_MEM_FREE(ref->data);
+	ref->count--;
+
+	if(ref->count > 0)
+		return;
+
+	if(ref->data)
+		UTIL_MEM_FREE(ref->data);
+
 	ref->data = NULL;
 	UTIL_MEM_FREE(ref);
 	ref = NULL;
@@ -146,48 +166,53 @@ void MemPtr::ReleaseRef()
 
 
 
-FdPtr::FdPtr() {
+CFdPtr::CFdPtr() {
    this->ref = NULL;
    this->Fd  = CLOSED_FD;
 }
 
-FdPtr::FdPtr(int fd) {
+CFdPtr::CFdPtr(int fd) {
    this->ref = NULL;
    Set(fd);
 }
 
-FdPtr::FdPtr(const FdPtr& other) {
+CFdPtr::CFdPtr(const CFdPtr& other) {
    this->ref = other.ref;
    this->Fd  = other.Fd;
    AddRef();
 }
 
-FdPtr& FdPtr::operator=(const FdPtr& other)
+CFdPtr& CFdPtr::operator=(const CFdPtr& other)
 {
    if(other.ref == this->ref)
       return *this;
+
    ReleaseRef();
    this->ref = other.ref;
    this->Fd  = other.Fd;
    AddRef();
+
    return *this;
 }
 
-FdPtr::~FdPtr()
+CFdPtr::~CFdPtr()
 {
    Close();
 }
 
-void FdPtr::Close()
+void CFdPtr::Close()
 {
    Set(CLOSED_FD);
 }
 
-void FdPtr::Set(int fd)
+void CFdPtr::Set(int fd)
 {
-	if(Fd == fd) return;
+	if(Fd == fd)
+		return;
+
 	ReleaseRef();
 	this->Fd = fd;
+
 	if(fd == CLOSED_FD) {
 		this->ref = NULL;
 	} else {
@@ -196,26 +221,34 @@ void FdPtr::Set(int fd)
 	}
 }
 
-void FdPtr::AddRef()
+void CFdPtr::AddRef()
 {
-   if(ref != NULL) ref->count++;
+   if(ref != NULL)
+	   ref->count++;
 }
 
-void FdPtr::ReleaseRef()
+void CFdPtr::ReleaseRef()
 {
-   if(ref == NULL) return;
+   if(ref == NULL)
+	   return;
+
    ref->count--;
-   if(ref->count > 0) return;
+   if(ref->count > 0)
+	   return;
 
-   StdErr.printf("[FdPtr:close(%d)]", Fd);
+   CLogger::LogMsg(LEVEL_VERBOSE, "FdPtr:close fd %d", Fd);
 
-   if(Fd != CLOSED_FD) close(Fd);
-   if(ref)             UTIL_MEM_FREE(ref);
+   if(Fd != CLOSED_FD)
+	   close(Fd);
+
+   if(ref)
+	   UTIL_MEM_FREE(ref);
+
    ref = NULL;
    Fd  = CLOSED_FD;
 }
 
-void FdPtr::Debug()
+void CFdPtr::CDebug()
 {
 	StdErr.printf("[FdPtr:fd=%d,c=%d,ref=%p]", Fd, (ref != NULL) ? ref->count : 0, ref);
 }

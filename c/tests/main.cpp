@@ -28,12 +28,12 @@ class Item
 };
 
 
-List<Item> m_items;
+CList<Item> m_items;
 
 
 int OutOffMemoryHandler(const char *modulo, const char *assunto, int tamanho)
 {
-	Logger::LogMsg(
+	CLogger::LogMsg(
 		LEVEL_FATAL,
 		"Memory allocation failure in %s/%s for %d bytes", 
 		modulo, assunto, tamanho);
@@ -46,17 +46,17 @@ int lastId = 0;
 
 void TesteDnsForHost(const char * hostname)
 {
-	IPAddressList list;
-	list = Dns::GetHostAddresses(hostname);
+	CIPAddressList list;
+	list = CDns::GetHostAddresses(hostname);
 	printf("Dns result for %s\n", hostname);
 	if(list.Count == 0)
 	{
-		printf(" Error: %d-%s\n", Dns::LastErr, Dns::GetLastErrMsg());
+		printf(" Error: %d-%s\n", CDns::LastErr, CDns::GetLastErrMsg());
 	}
 	for(int n = 0; n < list.Count; n++)
 	{
 		printf(" IP[%d]: ", n);
-		StdOut.print((IPAddress)list.Items[n]);
+		StdOut.print((CIPAddress)list.Items[n]);
 		printf("\n");
 	}
 }
@@ -74,12 +74,12 @@ void TesteDns()
 }
 
 
-IPAddressList GetList()
+CIPAddressList GetList()
 {
-	IPAddressList list;
-	list.Add(IPAddress::Any);
-	list.Add(IPAddress::Loopback);
-	list.Add(IPAddress("192.1.1.50"));
+	CIPAddressList list;
+	list.Add(CIPAddress::Any);
+	list.Add(CIPAddress::Loopback);
+	list.Add(CIPAddress("192.1.1.50"));
 	return list;
 }
 
@@ -87,15 +87,15 @@ IPAddressList GetList()
 void TesteIPAddress()
 {
 	printf("Teste:begin()\n");
-	IPAddressList list;
-	list.Add(IPAddress::Any);
-	list.Add(IPAddress::Loopback);
-	list.Add(IPAddress("192.1.1.50"));
+	CIPAddressList list;
+	list.Add(CIPAddress::Any);
+	list.Add(CIPAddress::Loopback);
+	list.Add(CIPAddress("192.1.1.50"));
 	printf("add ok: Items=%p\n\n", list.Items);
 	for(int n = 0; n < list.Count; n++)
 	{
 		printf("Item[%d]: ", n);
-		StdOut.print((IPAddress)list.Items[n]);
+		StdOut.print((CIPAddress)list.Items[n]);
 		printf("\n");
 	}
 	printf("Teste:end()\n");
@@ -106,8 +106,8 @@ void TesteListener()
 {
 int count = 3;
 	StdOut.println("TesteListener:BEGIN");
-	TcpListener listener;
-	listener.Start(IPAddress::Any, 12345);
+	CTcpListener listener;
+	listener.Start(CIPAddress::Any, 12345);
 	if(!listener.IsListening())
 	{
 		return;
@@ -116,16 +116,16 @@ int count = 3;
 	{
 		// if(listener.Available())
 		// {
-			TcpClient client;
+			CTcpClient client;
 			StdOut.println("Waiting for client...");
-			if(listener.Accept(client, 10000))
+			if(listener.TryAccept(client, 10000))
 			{
 				StdOut.println("Client connected...");
 
-				FdWriter wr(client.GetFd());
-				FdReader rd(client.GetFd());
+				CFdWriter wr(client.GetFd());
+				CFdReader rd(client.GetFd());
 
-				String linha;
+				CString linha;
 
 				while(!(rd.IsEof() || rd.IsError()))
 				{
@@ -149,21 +149,21 @@ int count = 3;
 
 void TesteCliente()
 {
-	TcpClient client;
+	CTcpClient client;
 	client.Connect("www.olvebra.com.br", 80);
 	delay(1000);
 	if(client.IsReady())
 	{
 		printf("Connected\n");
-		Stream * s = client.GetStream();
-		StreamWriter sw = StreamWriter(s);
-		StreamReader sr = StreamReader(s);
+		CStream * s = client.GetStream();
+		CStreamWriter sw = CStreamWriter(s);
+		CStreamReader sr = CStreamReader(s);
 		sw.println("GET /index.html HTTP/1.0");
 		sw.println("");
 		delay(100);
 		while(!(sr.IsEof() || sr.IsError()))
 		{
-			String linha;
+			CString linha;
 			sr.ReadLine(linha, 1024);
 			StdOut.printf("[Lido:%P]", &linha);
 		}
@@ -178,10 +178,10 @@ void TesteCliente()
 
 void TesteSb()
 {
-	IPEndPoint localEP = IPEndPoint("192.1.1.60", 12345);
-	StringBuilder sb;
+	CIPEndPoint localEP = CIPEndPoint("192.1.1.60", 12345);
+	CStringBuilder sb;
 	sb.print(localEP);
-	String s = sb.GetString();
+	CString s = sb.GetString();
 	printf("sb=[%s]\n", s.c_str);
 }
 
@@ -189,48 +189,48 @@ void TesteSb()
 void TesteHexDump()
 {
 char msg[] = "the quick brown for jumps over the lazy dog";
-	Debug::HexDump(StdOut, msg, sizeof(msg));
+	CDebug::HexDump(StdOut, msg, sizeof(msg));
 }
 
 
 void TesteBinary()
 {
-MemoryStream stream;
-BinaryWriter writer(&stream);
-BinaryReader reader(&stream);
+CMemoryStream stream;
+CBinaryWriter writer(&stream);
+CBinaryReader reader(&stream);
 	writer.WriteInt32(42);
 	writer.WriteString("olvebra industrial sa", 128);
 	writer.WriteInt32(12345);
 
 int val1;
-String val2;
+CString val2;
 int val3;
 	reader.TryReadInt32(&val1);
 	reader.TryReadString(val2, 16);
 	reader.TryReadInt32(&val3);
 	reader.TryReadInt32(&val3);
 
-	Console.printf("\nval1=[%d], val2=[%P], val3=[%d], eof=%d, error=%d\n", val1, &val2, val3, reader.Eof, reader.Error);
+	StdOut.printf("\nval1=[%d], val2=[%P], val3=[%d], eof=%d, error=%d\n", val1, &val2, val3, reader.Eof, reader.Error);
 }
 
 
 void TesteFileStream()
 {
-FileStream fs;
-StreamWriter sw;
+CFileStream fs;
+CStreamWriter sw;
 
-	if(!FileStream::Create("/etc/teste.txt", fs))
+	if(!CFileStream::Create("/etc/teste.txt", fs))
 	{
-		Logger::LogMsg(LEVEL_ERROR, "Falha criando o arquivo: %s", fs.GetLastErrMsg());
+		CLogger::LogMsg(LEVEL_ERROR, "Falha criando o arquivo: %s", fs.GetLastErrMsg());
 		return;
 	}
 
-	sw = StreamWriter(&fs);
+	sw = CStreamWriter(&fs);
 	
 
 	sw.println("Teste");
 	
-	Logger::LogMsg(LEVEL_INFO, "sw.LastErr:%d-%P", sw.GetLastErr(), sw.GetLastErrMsg());
+	CLogger::LogMsg(LEVEL_INFO, "sw.LastErr:%d-%P", sw.GetLastErr(), sw.GetLastErrMsg());
 }
 
 
@@ -251,23 +251,23 @@ class StringDucker
 {
 public:
 	int    Valor;
-	String Nome;
+	CString Nome;
 	bool   Flag;
 };
 
 
-String m_MeuNome;
-String m_MeuSobrenome;
+CString m_MeuNome;
+CString m_MeuSobrenome;
 
 
 void TesteString()
 {
 	StringDucker sd;
 	sd.Valor = 12345;
-	sd.Nome  = String(UTIL_MEM_STRDUP("teste"), true);
+	sd.Nome  = CString(UTIL_MEM_STRDUP("teste"), true);
 	sd.Flag  = true;
 	
-	sd.Nome.Debug();
+	sd.Nome.CDebug();
 }
 
 
@@ -282,7 +282,7 @@ int ReturnReadByte()
 void main_main()
 {
 	printf("Main/inicio\n");	
-	Logger::LogLevel = LEVEL_VERBOSE;
+	CLogger::LogLevel = LEVEL_VERBOSE;
 
 	// TesteIPAddress();
 	// TesteDns();
@@ -304,9 +304,9 @@ extern void gpb_main();
 int main(int argc, char **argv)
 {
 	// main_main();
-	// teste_main();
+	teste_main();
 	// gpb_main();
-	outro_main();
+	// outro_main();
 	
 	util_mem_debug();
 }
