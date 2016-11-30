@@ -129,7 +129,7 @@ void TestePrintf()
 	uint64_t vul1 = 12345;
 	uint64_t vul2 = -1;
 	uint64_t vul3 = 2012345678000000;
-	uint64_t vul4 = 4012345678000000;
+	uint64_t vul4 = 0xF0FFFFFFFFFFFFF0;
 
 	printf("p vsl1 = %ld\n", vsl1);
 	printf("p vsl2 = %ld\n", vsl2);
@@ -150,6 +150,9 @@ void TestePrintf()
 	StdOut.printf("s vul2 = %lu\n", vul2);
 	StdOut.printf("s vul3 = %lu\n", vul3);
 	StdOut.printf("s vul4 = %lu\n\n", vul4);
+
+	int ret = StdOut.printf("%lb", vul4);
+	StdOut.printf("\nret = %d\n", ret);
 
 }
 

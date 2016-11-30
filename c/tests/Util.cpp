@@ -72,47 +72,74 @@ uint32_t uptime() {
 }
 
 
+void do_events()
+{
+	IdleHandler();
+}
+
+
+void do_events(uint32_t milliseconds)
+{
+	uint64_t timeout = millis() + milliseconds;
+	while(millis() < timeout)
+	{
+		IdleHandler();
+	}
+}
+
+
 // ----------------------------------------
 
 
-int util_itoa(TextWriter *dest, uint64_t valor, int basen, int padsize, int zeropad, int lalign, bool negative)
+int util_itoa(TextWriter *dest, uint64_t input, int basen, int padsize, bool zeropad, bool leftalign, bool negative)
 {
-char stack[64 + padsize];
+char stack[(sizeof(input) * 8) + padsize + 1];
 char * sp = stack;
 int size = 0;
-	if(lalign) zeropad=0;
+int signalSize = (negative ? 1 : 0);
+int ret = 0;
+
+	if(leftalign) zeropad = false;
 
 	char fillchar = (zeropad ? '0' : ' ');
 
+	if(basen < 2 || basen > 16)  basen = 10;
+
+	// push the number onto the stack
 	do {
-		int rem = valor % basen;
+		int rem = input % basen;
 		if(rem < 10)
 			rem += '0';
 		else
 			rem += 'a' - 10;
 		*sp++ = rem;
-		valor = valor / basen;
+		input = input / basen;
 		size++;
-	} while (valor);
+	} while (input);
 
+	// push the negative signal if not zeropadded
 	if(negative && !zeropad) *sp++ = '-';
 
-	if(!lalign) {
-		for(int n=0; n < (padsize - size - negative); n++)
+	// left pad the number
+	if(!leftalign) {
+		for(int n=0; n < (padsize - size - signalSize); n++)
 			*sp++ = fillchar;
 	}
 
+	// push the negative signal if zeropadded
 	if(negative && zeropad) *sp++ = '-';
 
+	// write stack contents to output
 	do {
-		dest->Write(*--sp);
+		ret += dest->Write(*--sp);
 	} while (sp != stack);
 
-	if(lalign)
-		for(int n=0; n < (padsize - size - negative); n++)
-			dest->Write(fillchar);
+	// right pad the number
+	if(leftalign)
+		for(int n=0; n < (padsize - size - signalSize); n++)
+			ret += dest->Write(fillchar);
 
-	return 0;
+	return ret;
 }
 
 
@@ -126,22 +153,6 @@ int ret;
 }
 
 
-int util_printfln(TextWriter *print, const char* fmt, ...) {
-va_list ap;
-int ret;
-	va_start(ap, fmt);
-	ret = util_printf(print, fmt, ap);
-	ret += print->println();
-	va_end(ap);
-	return ret;
-}
-
-
-int util_printfln(TextWriter *dest, const char* fmt, va_list ap) {
-	return util_printf(dest, fmt, ap) + dest->println();
-}
-
-
 int util_printf(TextWriter *writer, const char* fmt, va_list ap) {
 int size = 0;
 int state = 0;
@@ -149,16 +160,17 @@ int argZero;
 int argSize;
 int argLAlign;
 int argIntLen;
-int negative;
-int64_t  valor;
+bool negative;
+int64_t  sval;
 uint64_t uval;
 const char *str;
 char charVal;
 int argDecs;
-void *vptr;
+
 #if PRINTF_SUPPORTS_PRINTABLE
 Printable *pz;
 #endif
+
 #if PRINTF_SUPPORTS_FLOAT
 double valorf;
 #endif
@@ -213,69 +225,73 @@ double valorf;
 				argIntLen = 64;
 				continue;
 			case 'c':
-				// HACK: va_arg nao funcionando para (char)
+				// HACK: va_arg does not work with (char)
 				charVal = (char)va_arg(ap, int);
 				size += writer->Write((char)charVal);
 				break;
 			case 'd':
-				if(argIntLen == 64) valor = va_arg(ap, int64_t);
-				else                valor = va_arg(ap, int32_t);
-				negative = (valor < 0);
-				if(negative) valor = -valor;
-				size += util_itoa(writer, valor, 10, argSize, argZero, argLAlign, negative);
-				break;
-			case 'o':
-				if(argIntLen == 64) uval = va_arg(ap, uint64_t);
-				else                uval = va_arg(ap, uint32_t);
-				size += util_itoa(writer, uval, 8, argSize, argZero, argLAlign, false);
+				if(argIntLen == 64) sval = va_arg(ap, int64_t);
+				else                sval = va_arg(ap, int32_t);
+				negative = (sval < 0);
+				if(negative) sval = -sval;
+				size += util_itoa(writer, sval, 10, argSize, argZero, argLAlign, negative);
 				break;
 			case 'b':
 				if(argIntLen == 64) uval = va_arg(ap, uint64_t);
 				else                uval = va_arg(ap, uint32_t);
 				size += util_itoa(writer, uval, 2, argSize, argZero, argLAlign, false);
 				break;
+			case 'o':
+				if(argIntLen == 64) uval = va_arg(ap, uint64_t);
+				else                uval = va_arg(ap, uint32_t);
+				size += util_itoa(writer, uval, 8, argSize, argZero, argLAlign, false);
+				break;
 			case 'u':
 				if(argIntLen == 64) uval = va_arg(ap, uint64_t);
 				else                uval = va_arg(ap, uint32_t);
 				size += util_itoa(writer, uval, 10, argSize, argZero, argLAlign, false);
-				break;
-			case 'p':
-				size += writer->print("0x");
-				uval = (uint64_t)va_arg(ap, void*);
-				size += util_itoa(writer, uval, 16, argSize, argZero, argLAlign, false);
 				break;
 			case 'x':
 				if(argIntLen == 64) uval = va_arg(ap, uint64_t);
 				else                uval = va_arg(ap, uint32_t);
 				size += util_itoa(writer, uval, 16, argSize, argZero, argLAlign, false);
 				break;
+			case 'p':
+				size += writer->print("0x");
+				uval = (uint64_t)va_arg(ap, void*);
+				size += util_itoa(writer, uval, 16, argSize, argZero, argLAlign, false);
+				break;
+
+			case 's':
+				str = va_arg(ap, char *);
+				sval = strlen(str);
+
+				if(!argLAlign)
+					for(int n=0; n < (argSize - sval); n++)
+						size += writer->Write(' ');
+
+				size += writer->Write((uint8_t*)str, sval);
+
+				if(argLAlign)
+					for(int n=0; n < (argSize - sval); n++)
+						size += writer->Write(' ');
+
+				break;
+
 #if PRINTF_SUPPORTS_FLOAT
 			case 'f':
 				valorf = va_arg(ap, double);
 				size += writer->print(valorf, argDecs);
 				break;
 #endif
-			case 's':
-				str = va_arg(ap, char *);
-				valor = strlen(str);
 
-				if(!argLAlign)
-					for(int n=0; n < (argSize - valor); n++)
-						size += writer->Write(' ');
-
-				size += writer->Write((uint8_t*)str, valor);
-
-				if(argLAlign)
-					for(int n=0; n < (argSize - valor); n++)
-						size += writer->Write(' ');
-
-				break;
 #if PRINTF_SUPPORTS_PRINTABLE
-			case 'z':
+			case 'P':
 				pz = va_arg(ap, Printable *);
 				size += pz->printTo(*writer);
 				break;
 #endif
+
 			default:
 				size += writer->Write(c);
 			}
@@ -286,7 +302,7 @@ double valorf;
 }
 
 
-void WEAK_ATTR OutOffMemoryHandler(const char *module, const char *subject, int size, int isFatal)
+void WEAK_ATTR OutOffMemoryHandler(const char *module, const char *subject, int size, bool isFatal)
 {
 	Logger::LogMsg(
 		LEVEL_FATAL,

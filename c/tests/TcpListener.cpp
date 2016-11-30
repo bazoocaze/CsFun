@@ -98,7 +98,7 @@ bool TcpListener::Start(const IPEndPoint& localEP)
 
 	Logger::LogMsg(
 			LEVEL_DEBUG,
-			"TCP listener started on %z (fd %d)",
+			"TCP listener started on %P (fd %d)",
 			&m_endpoint,
 			m_sock.GetFd());
 	
@@ -127,7 +127,7 @@ SockAddr addr;
 	if(clientfd == RET_ERROR) {
 		Logger::LogMsg(
 				LEVEL_ERROR,
-				"TcpListener: error accepting client on %z: %d-%s",
+				"TcpListener: error accepting client on %P: %d-%s",
 				&m_endpoint,
 				m_sock.LastErr,
 				m_sock.GetLastErrMsg());
@@ -136,7 +136,7 @@ SockAddr addr;
 	IPEndPoint remoteEP = IPEndPoint(addr);
 	Logger::LogMsg(
 			LEVEL_DEBUG,
-			"TCP client %z accepted on %z (fd %d)",
+			"TCP client %P accepted on %P (fd %d)",
 			&remoteEP,
 			&m_endpoint,
 			clientfd);
@@ -174,7 +174,7 @@ void TcpListener::Stop()
 	if(IsListening())	{
 		Logger::LogMsg(
 			LEVEL_DEBUG,
-			"Shutdown TCP listener on %z (fd %d)",
+			"Shutdown TCP listener on %P (fd %d)",
 			&m_endpoint,
 			m_sock.GetFd());
 		m_sock.Close();
@@ -209,7 +209,7 @@ void TcpListener::LogErr(const char* msg)
 {
 	Logger::LogMsg(
 		LEVEL_ERROR,
-		"TCP listener (on %z, fd %d): %s - err %d-%s",
+		"TCP listener (on %P, fd %d): %s - err %d-%s",
 		&m_endpoint,
 		m_sock.GetFd(),
 		msg,

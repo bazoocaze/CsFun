@@ -131,7 +131,7 @@ int count = 3;
 				{
 					wr.println("Alfa");
 					rd.ReadLine(linha, sizeof(linha));
-					StdOut.printf("[Lido:%z]", &linha);
+					StdOut.printf("[Lido:%P]", &linha);
 				}
 
 				client.Close();
@@ -165,7 +165,7 @@ void TesteCliente()
 		{
 			String linha;
 			sr.ReadLine(linha, 1024);
-			StdOut.printf("[Lido:%z]", &linha);
+			StdOut.printf("[Lido:%P]", &linha);
 		}
 	}
 	else
@@ -210,7 +210,7 @@ int val3;
 	reader.TryReadInt32(&val3);
 	reader.TryReadInt32(&val3);
 
-	Console.printf("\nval1=[%d], val2=[%z], val3=[%d], eof=%d, error=%d\n", val1, &val2, val3, reader.Eof, reader.Error);
+	Console.printf("\nval1=[%d], val2=[%P], val3=[%d], eof=%d, error=%d\n", val1, &val2, val3, reader.Eof, reader.Error);
 }
 
 
@@ -230,7 +230,7 @@ StreamWriter sw;
 
 	sw.println("Teste");
 	
-	Logger::LogMsg(LEVEL_INFO, "sw.LastErr:%d-%z", sw.GetLastErr(), sw.GetLastErrMsg());
+	Logger::LogMsg(LEVEL_INFO, "sw.LastErr:%d-%P", sw.GetLastErr(), sw.GetLastErrMsg());
 }
 
 

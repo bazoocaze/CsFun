@@ -94,7 +94,7 @@ bool TcpClient::Connect(const IPEndPoint& remoteEP)
 			m_state = STATE_CONNECTING;
 		errno = RET_OK;
 		m_sock.LastErr = RET_OK;
-		Logger::LogMsg(LEVEL_VERBOSE, "Connected on %z (fd %d)", &remoteEP, GetFd());
+		Logger::LogMsg(LEVEL_VERBOSE, "Connected on %P (fd %d)", &remoteEP, GetFd());
 		return true;
 	} else {
 		ret = errno;
