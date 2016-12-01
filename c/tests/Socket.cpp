@@ -7,10 +7,12 @@
  
  
 #include <errno.h>
+#include <string.h>
 
 #include "TcpClient.h"
 #include "Config.h"
 #include "Logger.h"
+#include "FdSelect.h"
 
 
 const char* ConnectionStateStr(ConnectionStateEnum state) {
@@ -121,4 +123,111 @@ socklen_t len = sizeof(retval);
 	if (ret == RET_OK)
 		return retval;
 	return EFAULT;
+}
+
+
+const char * CSocket::GetLastErrMsg() const
+{
+	return strerror(LastErr);
+}
+
+
+void CSocket::SetFd(int fd)
+{
+	m_fd = fd;
+	LastErr = RET_OK;
+}
+
+
+int CSocket::GetFd() const
+{
+	return m_fd;
+}
+
+
+void CSocket::Close()
+{
+	m_fd = CLOSED_FD;
+}
+
+
+bool CSocket::IsClosed() const
+{
+	return (m_fd == CLOSED_FD);
+}
+
+
+bool CSocket::IsReadable() const
+{
+	int ret = CFdSelect::Wait(m_fd, SEL_READ | SEL_ERROR, 0);
+	return (ret > 0) && (HAS_FLAG(ret, SEL_READ));
+}
+
+
+bool CSocket::IsWritable() const
+{
+	int ret = CFdSelect::Wait(m_fd, SEL_WRITE | SEL_ERROR, 0);
+	return (ret > 0) && (HAS_FLAG(ret, SEL_WRITE));
+}
+
+
+bool CSocket::SetNonBlock(int enabled)
+{
+	return CFd::SetNonBlock(m_fd, enabled);
+}
+
+
+int CSocket::BytesAvailable() const
+{
+	return CFd::BytesAvailable(m_fd);
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// SocketPtr
+//////////////////////////////////////////////////////////////////////
+
+
+CSocketPtr::CSocketPtr()
+{
+	this->Fd  = CLOSED_FD;
+	Set(CLOSED_FD);
+}
+
+CSocketPtr::CSocketPtr(int fd)
+{
+	this->Fd  = CLOSED_FD;
+	Set(fd);
+}
+
+CSocketPtr::~CSocketPtr()
+{
+	Close();
+}
+
+void CSocketPtr::Close()
+{
+	Set(CLOSED_FD);
+}
+
+void CSocketPtr::Set(int fd)
+{
+	if(fd == Fd) return;
+	this->Fd = fd;
+	intptr_t p = (intptr_t)(fd + 1);
+	SetDataPtr((void*)p);
+}
+
+void CSocketPtr::Debug()
+{
+	CRefPtr::Debug();
+}
+
+void CSocketPtr::ReleaseData(void * data)
+{
+	intptr_t val = ((intptr_t)data) - 1;
+	int fd = val;
+
+	CLogger::LogMsg(LEVEL_VERBOSE, "CFdPtr: close(%d)", fd);
+	// close(fd);
 }

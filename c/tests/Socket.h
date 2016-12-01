@@ -32,10 +32,53 @@ const char* ConnectionStateStr(ConnectionStateEnum state);
 class CSockAddr;
 
 
-/* Represents a network socket descriptor. */
-class CSocket : public CFd
+/* Automatic management of integer file descriptor (FD) by reference counting.
+   The descriptor is automatic closed (via close() call) when needed. */
+class CSocketPtr : CRefPtr
 {
+private:
+	virtual void ReleaseData(void *);
+
 public:
+	// Cached read-only copy of the managed file descriptor.
+	int  Fd;
+
+	// Default empty constructor.
+	CSocketPtr();
+
+	// Constructor for automatic management of the fd descriptor.
+	CSocketPtr(int fd);
+
+	// Automatic return Fd on conversion to int.
+	operator int() const { return Fd; }
+
+	// Default destructor. Releases the fd.
+	~CSocketPtr();
+
+	// Release the managed fd, closing the fd if the reference count reaches 0.
+	void Close();
+
+	// Release the current fd and begin management for the new fd.
+	void Set(int fd);
+
+	void Debug();
+};
+
+
+/* Represents a network socket descriptor. */
+class CSocket
+{
+protected:
+	// Internal file descriptor.
+	CSocketPtr m_fd;
+
+public:
+	// Last error code, or RET_OK in case of no errors.
+	int LastErr;
+
+	// String message for the last error code.
+	const char * GetLastErrMsg() const;
+
 	// Default constructor for a closed socket.
 	CSocket();
 	
@@ -76,5 +119,38 @@ public:
 	int  SetBroadcast(int enabled);
 
 	/* Reads the error code from kernel socket state. */
- 	static int  GetSockError(int sockdfd);
+ 	static int GetSockError(int sockdfd);
+
+	/* Release the current fd and
+	 * sets the new fd for the instance. */
+	void SetFd(int fd);
+
+	// Returns the current file descriptor.
+	int  GetFd() const;
+
+	/* Release the current open file descriptor.
+	 * Closes it if it's the last reference.
+	 * Keeps LastErr state. */
+	void Close();
+
+	/* Release the current open file descriptor.
+	 * Closes it if it's the last reference.
+	 * Clear LastErr state to RET_OK. */
+	void Clear();
+
+	/* Returns true/false if the fd is readable (i.e. can read data without blocking). */
+	bool IsReadable() const;
+
+	/* Returns true/false if the fd is writeable (i.e. can write data without blocking). */
+	bool IsWritable() const;
+
+	/* Returns true/false if the fd is closed. */
+	bool IsClosed() const;
+
+	/* Returns the number of bytes immediately available for reading. */
+	int  BytesAvailable() const;
+
+	/* Enable/disable non-blocking state for the fd.
+	 * Returns true/false if success in changing state. */
+	bool SetNonBlock(int enabled);
 };
