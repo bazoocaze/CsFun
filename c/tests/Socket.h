@@ -32,28 +32,29 @@ const char* ConnectionStateStr(ConnectionStateEnum state);
 class CSockAddr;
 
 
-/* Automatic management of integer file descriptor (FD) by reference counting.
-   The descriptor is automatic closed (via close() call) when needed. */
-class CSocketPtr : CRefPtr
+/* Provides automatic management of socket file descriptor including reference counting.
+ * The descriptor is automatic closed when needed. */
+class CSocketHandle : CRefPtr
 {
 private:
 	virtual void ReleaseData(void *);
+	void ReleaseFd(int fd);
 
 public:
-	// Cached read-only copy of the managed file descriptor.
+	/* Cached read-only copy of the managed file descriptor. */
 	int  Fd;
 
 	// Default empty constructor.
-	CSocketPtr();
+	CSocketHandle();
 
 	// Constructor for automatic management of the fd descriptor.
-	CSocketPtr(int fd);
+	CSocketHandle(int fd);
 
 	// Automatic return Fd on conversion to int.
 	operator int() const { return Fd; }
 
 	// Default destructor. Releases the fd.
-	~CSocketPtr();
+	~CSocketHandle();
 
 	// Release the managed fd, closing the fd if the reference count reaches 0.
 	void Close();
@@ -70,7 +71,7 @@ class CSocket
 {
 protected:
 	// Internal file descriptor.
-	CSocketPtr m_fd;
+	CSocketHandle m_fd;
 
 public:
 	// Last error code, or RET_OK in case of no errors.
@@ -110,6 +111,8 @@ public:
 	 * Return the socket fd for the new client,
 	 * or RET_ERR in case of error. */
 	int Accept(CSockAddr& address);
+
+	int Connect(const CSockAddr& address);
 	
 	/* Reads the error code from kernel socket state. */
 	int GetSockError() const;
@@ -117,9 +120,6 @@ public:
 	/* Enable/disable UDP broadcast state for the socket.
 	 * Returns true/false if success in changing state. */
 	int  SetBroadcast(int enabled);
-
-	/* Reads the error code from kernel socket state. */
- 	static int GetSockError(int sockdfd);
 
 	/* Release the current fd and
 	 * sets the new fd for the instance. */
@@ -153,4 +153,7 @@ public:
 	/* Enable/disable non-blocking state for the fd.
 	 * Returns true/false if success in changing state. */
 	bool SetNonBlock(int enabled);
+
+	/* Reads the error code from kernel socket state. */
+ 	static int GetSockError(int sockdfd);
 };

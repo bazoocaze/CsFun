@@ -22,9 +22,6 @@ private:
 	bool InternalAccept(CTcpClient &cliente);
 	
 protected:
-	// Listener was stopped.
-	bool m_stopped;
-
 	// Listener socket.
 	CSocket m_sock;
 	
@@ -42,7 +39,8 @@ public:
 	/* Returns the socket fd for the listener. */
 	int  GetFd() const;
 
-	/* Bind on the TCP port and starts listening for connections.
+	/* Bind on the TCP port on all addresses (CIPAddress::Any)
+	 * and starts listening for connections.
 	 * Return true/false on success.*/
 	bool Start(int port);
 	

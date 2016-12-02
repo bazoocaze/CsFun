@@ -12,18 +12,6 @@
 #include <inttypes.h>
 
 
-// struct MemPtr_s;
-// struct FdPtr_s;
-// typedef struct MemPtr_s MemPtr_t;
-// typedef struct FdPtr_s FdPtr_t;
-
-
-
-#define FD_TYPE_NORMAL 0
-#define FD_TYPE_SOCKET 1
-
-
-
 typedef struct {
 	uint32_t count;
 	void *   data;
@@ -32,46 +20,69 @@ typedef struct {
 
 /* This abstract class provides reference count management of a data pointer.
  * You must implement the ReleaseData() member to release the resources
- * associated with the data pointer when the referenc count reaches zero. */
+ * associated with the data pointer when the reference count reaches zero. */
 class CRefPtr
 {
 private:
 	ref_ptr_t * m_ref;
+	void AddRef();
 
 protected:
-	void AddRef();
-	void ReleaseRef();
+
+	/* Release the current reference and set a new reference to the
+	 * data pointer informed. */
 	void SetDataPtr(void * data);
+
+	/* Returns the managed data pointer currently referenced.
+	 * Returns NULL if there is no current reference. */
 	void * GetDataPtr() const;
+
+	/* Change the data pointer reference without affecting
+	 * the reference count. (DANGER) */
+	void ChangeDataPtrTo(void * data);
+
+	/* Release the resources associated with the
+	 * managed data pointer. */
 	virtual void ReleaseData(void *) = 0;
+
+	/* Release the reference to the managed data pointer.
+	 * Releases the associated resources of the data poitner
+	 * if the reference count reaches 0. */
+	void ReleaseRef();
+
+	void Debug();
 
 public:
 
-	// Default empty reference constructor.
+	/* Default constructor for an empty/NULL reference. */
 	CRefPtr();
 
-	// Copy constructor.
+	/* Copy constructor.
+	 * Create a new reference to the managed data pointer
+	 * on the *other* reference. */
 	CRefPtr(const CRefPtr& other);
 
-	// Copy assignment.
+	/* Copy assignment.
+	 * Release the current reference and create a new
+	 * reference to the managed data pointer on the
+	 * *other* reference. */
 	CRefPtr& operator=(const CRefPtr& other);
 
-	// Default destructor.
+	/* Default destructor.
+	 * You must call Close() on the devired class
+	 * destructor to automatically release the
+	 * managed pointer reference. */
 	virtual ~CRefPtr();
-
-	// Release the managed fd, closing the fd if the reference count reaches 0.
-	void Close();
-
-	void Debug();
 };
 
 
-
-/* Automatic management of dynamic memory (malloc/realloc) pointers using reference counting.
+/* Automatic management of dynamic memory (malloc/realloc)
+ * pointers using reference counting.
  * The data is automatic freed via free() call when needed. */ 
 class CMemPtr : CRefPtr
 {
 private:
+	/* Deallocate the dynamic memory for the data pointer. */
 	void ReleaseData(void *);
 
 	/* Changes the current data pointer reference to the new reference,
@@ -79,63 +90,33 @@ private:
 	void ChangeTo(void * data);
 
 public:
-	// Default empty constructor
+	/* Default constructor for an empty data pointer. */
 	CMemPtr();
 
-	// Constructor for automatic management of the dynamic data pointer *data*.
+	/* Constructor for automatic management of the dynamic data pointer *data*. */
 	explicit CMemPtr(void * data);
 
-	// Default destructor. Release the reference.
+	/* Default destructor. Release the reference. */
 	virtual ~CMemPtr();
 
-	/* Clear/release the managed data.
-	 * Free the buffer if the reference count reaches 0 */
+	/* Release the reference to the managed data.
+	 * Free the buffer if the reference count reaches 0. */
 	void Clear();
 
-	// Release the current managed data and begin management for the new data.
+	/* Release the reference to the current managed data
+	 * and create a new managed reference to the *data*. */
 	void Set(void * data);
 
-	// Resize the managed data pointer.
+	/* Resize the buffer.
+	 * Returns true/false on success.
+	 * On failure, the current buffer is not modified. */
 	bool Resize(int newSize);
 
-	// Fill the data buffer.
+	/* Fill the data buffer. */
 	void Memset(uint8_t val, int size);
 
 	/* Return the managed data pointer.
-	 * The pointer is valid until freed or the next resize (Resize). */
+	 * The pointer is valid until freed or the next resize (Resize).
+	 * Return NULL if there is no current data pointer. */
 	void * Get() const;
-};
-
-
-
-/* Automatic management of integer file descriptor (FD) by reference counting.
-   The descriptor is automatic closed (via close() call) when needed. */ 
-class CFdPtr : CRefPtr
-{
-private:
-	virtual void ReleaseData(void *);
-
-public:
-	// Cached read-only copy of the managed file descriptor.
-	int  Fd;
-
-	// Default empty constructor.
-	CFdPtr();
-	
-	// Constructor for automatic management of the fd descriptor.
-	CFdPtr(int fd);
-
-	// Automatic return Fd on conversion to int.
-	operator int() const { return Fd; }
-
-	// Default destructor. Releases the fd.
-	~CFdPtr();
-
-	// Release the managed fd, closing the fd if the reference count reaches 0.
-	void Close();
-
-	// Release the current fd and begin management for the new fd.
-	void Set(int fd);
-
-	void Debug();
 };

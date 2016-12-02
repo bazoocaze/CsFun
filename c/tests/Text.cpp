@@ -141,6 +141,17 @@ void CString::CDebug()
 }
 
 
+CString CString::Format(const char* fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	CStringBuilder sb;
+	sb.printf(fmt, ap);	
+	va_end(ap);
+	return sb.GetString();
+}
+
+
 
 //////////////////////////////////////////////////////////////////////
 // TextWriter

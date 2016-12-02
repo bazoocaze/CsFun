@@ -161,8 +161,8 @@ int ret;
 
 
 int util_printf(CTextWriter *writer, const char* fmt, va_list ap) {
+int state = PRINTF_STATE_NORMAL;
 int size = 0;
-int state = 0;
 int argZero;
 int argSize;
 int argLAlign;
@@ -316,7 +316,23 @@ void WEAK_ATTR OutOffMemoryHandler(const char *module, const char *subject, int 
 		"Memory allocation failure in %s/%s for %d bytes",
 		module, subject, size);
 	if(isFatal)
-		exit(EXIT_MEM_ERROR);
+		EndProgramHandler(EXIT_MEM_ERROR);
+}
+
+
+void WEAK_ATTR EndProgramHandler(int exitCode, const char *reason, const char *module, const char *subject)
+{
+	CLogger::LogMsg(
+		LEVEL_FATAL,
+		"Fatal failure: %s / %s / %s",
+		reason, module, subject);
+	EndProgramHandler(exitCode);
+}
+
+
+void WEAK_ATTR EndProgramHandler(int exitCode)
+{
+	exit(exitCode);
 }
 
 
@@ -349,8 +365,8 @@ int util_mem_find_free()
 	for(int n = 0; n < MAX_PTR_INFO; n++)
 		if(ptr_info[n].ptr == NULL)
 			return n;
-	dprintf(2, "\nMEMORY/ERROR: no free slots on ptr_info table\n");
-	exit(EXIT_MEM_ERROR);
+	EndProgramHandler(EXIT_MEM_ERROR, "MEMORY/ERROR", "util_mem_find_free", "no free slots on ptr_info table");
+	return RET_ERR;
 }
 
 
@@ -386,8 +402,10 @@ void * newPtr;
 	else
 		slot = util_mem_find_entry(oldPtr);
 	if(slot == RET_ERR) {
-		dprintf(2, "\nMEMORY/ERROR: realloc of %ld bytes on unknow pointer %p\n", newSize, oldPtr);
-		exit(EXIT_MEM_ERROR);
+		CLogger::LogMsg(
+			LEVEL_FATAL, "MEMORY/FREE: realloc of %ld bytes on unknow pointer %p (at %s:%d)\n",
+			newSize, oldPtr, srcFile, lineNumber);
+		EndProgramHandler(EXIT_MEM_ERROR);
 	}
 	newPtr = realloc(oldPtr, newSize);
 	if(newSize == 0)
@@ -414,8 +432,10 @@ int slot;
 		return;
 	slot = util_mem_find_entry(ptr);
 	if(slot == RET_ERR) {
-		dprintf(2, "\nMEMORY/FREE: free on unknow pointer %p (at %s:%d)\n", ptr, srcFile, lineNumber);
-		exit(EXIT_MEM_ERROR);
+		CLogger::LogMsg(
+			LEVEL_FATAL, "MEMORY/FREE: free on unknow pointer %p (at %s:%d)\n",
+			ptr, srcFile, lineNumber);
+		EndProgramHandler(EXIT_MEM_ERROR);
 	}
 	free(ptr);
 	ptr_info[slot].ptr = NULL;

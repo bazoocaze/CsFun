@@ -124,10 +124,12 @@ public:
 	int  Write(const void * c, int size);
 
 	// Read a byte from the fd. Returns INT_EOF on EOF or INT_ERR on error.
-	int  ReadByte();
+	int ReadByte();
 
 	// Read a block of bytes from the fd. Returns the number of bytes read, 0 on EOF, or RET_ERR on error.
-	int  Read(void * buffer, int size);
+	int Read(void * buffer, int size);
+
+	int ReadBlock(void * buffer, int size);
 	
 	/* Returns true/false if on end of file/stream. */
 	bool IsEof();

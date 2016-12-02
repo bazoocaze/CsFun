@@ -89,4 +89,9 @@ public:
 	 * Returns the the state of the descriptor on success.
 	 * Returns 0 on timeout or RET_ERR on error. */
 	static int Wait(int fd, int flags, int timeoutMillis);
+
+	/* Wait/select state for a single file descriptor.
+	 * Returns the the state of the descriptor on success.
+	 * Returns 0 on timeout or RET_ERR on error. */
+	static int WaitEx(int fd, int flags, int timeoutMillis);
 };

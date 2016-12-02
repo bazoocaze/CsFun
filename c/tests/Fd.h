@@ -13,6 +13,39 @@
 #include "Text.h"
 
 
+/* Automatic management of integer file descriptor (FD) by reference counting.
+   The descriptor is automatic closed (via close() call) when needed. */
+class CFdHandle : CRefPtr
+{
+private:
+	virtual void ReleaseData(void *);
+
+public:
+	// Cached read-only copy of the managed file descriptor.
+	int  Fd;
+
+	// Default empty constructor.
+	CFdHandle();
+
+	// Constructor for automatic management of the fd descriptor.
+	CFdHandle(int fd);
+
+	// Automatic return Fd on conversion to int.
+	operator int() const { return Fd; }
+
+	// Default destructor. Releases the fd.
+	~CFdHandle();
+
+	// Release the managed fd, closing the fd if the reference count reaches 0.
+	void Close();
+
+	// Release the current fd and begin management for the new fd.
+	void Set(int fd);
+
+	void Debug();
+};
+
+
 /* Represents a generic file descriptor.
  * The fd has automic reference count management,
  * closing the descriptor when the last reference
@@ -21,7 +54,7 @@ class CFd
 {
 protected:
 	// Internal file descriptor.
-	CFdPtr m_fd;
+	CFdHandle m_fd;
 	
 public:
 	// Last error code, or RET_OK in case of no errors.

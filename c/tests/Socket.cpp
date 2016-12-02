@@ -103,6 +103,15 @@ int CSocket::Accept(CSockAddr& address)
 }
 
 
+int CSocket::Connect(const CSockAddr& address)
+{
+	int ret = connect(m_fd, address.GetSockAddr(), address.GetSize());
+	if(ret == RET_ERROR)
+		LastErr = errno;
+	return ret;
+}
+
+
 int CSocket::GetSockError() const
 {
 	return CSocket::GetSockError(m_fd);
@@ -184,33 +193,33 @@ int CSocket::BytesAvailable() const
 
 
 //////////////////////////////////////////////////////////////////////
-// SocketPtr
+// CSocketHandle
 //////////////////////////////////////////////////////////////////////
 
 
-CSocketPtr::CSocketPtr()
+CSocketHandle::CSocketHandle()
 {
 	this->Fd  = CLOSED_FD;
 	Set(CLOSED_FD);
 }
 
-CSocketPtr::CSocketPtr(int fd)
+CSocketHandle::CSocketHandle(int fd)
 {
 	this->Fd  = CLOSED_FD;
 	Set(fd);
 }
 
-CSocketPtr::~CSocketPtr()
+CSocketHandle::~CSocketHandle()
 {
 	Close();
 }
 
-void CSocketPtr::Close()
+void CSocketHandle::Close()
 {
 	Set(CLOSED_FD);
 }
 
-void CSocketPtr::Set(int fd)
+void CSocketHandle::Set(int fd)
 {
 	if(fd == Fd) return;
 	this->Fd = fd;
@@ -218,16 +227,19 @@ void CSocketPtr::Set(int fd)
 	SetDataPtr((void*)p);
 }
 
-void CSocketPtr::Debug()
+void CSocketHandle::Debug()
 {
 	CRefPtr::Debug();
 }
 
-void CSocketPtr::ReleaseData(void * data)
+void CSocketHandle::ReleaseData(void * data)
 {
-	intptr_t val = ((intptr_t)data) - 1;
-	int fd = val;
+	intptr_t fd = ((intptr_t)data) - 1;
+	ReleaseFd(fd);
+}
 
+void CSocketHandle::ReleaseFd(int fd)
+{
 	CLogger::LogMsg(LEVEL_VERBOSE, "CFdPtr: close(%d)", fd);
-	// close(fd);
+	close(fd);
 }

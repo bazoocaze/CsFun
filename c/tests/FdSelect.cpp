@@ -15,6 +15,9 @@
 #include "Logger.h"
 
 
+#define SELECT_POLL_TIME 1000
+#define RET_SEL_TIMEOUT  0
+
 
 /* Default constructor for an empty file descriptor selector. */
 CFdSelect::CFdSelect()
@@ -51,6 +54,8 @@ int CFdSelect::FindFd(int fd)
 /* Extract the updated state of a single fd from the fd sets. */
 int CFdSelect::GetStatus(int fd, int iflags, fd_set* prfds, fd_set* pwfds, fd_set* pefds)
 {
+	if(iflags <= 0) return 0;
+
 	int oflags = 0;
 
 	if(HAS_FLAG(iflags, SEL_READ)  && FD_ISSET(fd, prfds))
@@ -139,64 +144,60 @@ int CFdSelect::GetStatus(int fd)
  * 0 on no fd/timeout or RET_ERR on error. */
 int CFdSelect::WaitAll(int timeoutMillis)
 {
-	int retval;
 	int maxFd   = -1;
-	int numRfds = 0;
-	int numWfds = 0;
-	int numEfds = 0;
-	struct timeval tv;
+	fd_set  fds[3];
+	fd_set* pfds[3];
+	int nflags[] = { SEL_READ, SEL_WRITE, SEL_ERROR };
+	uint64_t timeout = millis() + timeoutMillis;
 
-	// clear the FDs
-	FD_ZERO(&rfds);
-	FD_ZERO(&wfds);
-	FD_ZERO(&efds);
-
-	// fill the FDs with the prepared file descriptors
-	for(int n = 0; n < MAX_FD_LIST; n++)
+	do
 	{
-		if(fd_list[n].fd >= 0 && fd_list[n].flags > 0)
+		// Zero the fd sets
+		for(int type = 0; type < 3; type++)
 		{
+			FD_ZERO(&fds[type]);
+			pfds[type] = NULL;
+		}
+
+		// Populate the fd sets
+		for(int n = 0; n < MAX_FD_LIST; n++)
+		{
+			if(fd_list[n].fd < 0 || fd_list[n].flags <= 0) continue;
+
 			int fd = fd_list[n].fd;
 			int flags = fd_list[n].flags;
 			maxFd = MAX(fd, maxFd);
 
-			if(HAS_FLAG(flags, SEL_READ))  { numRfds++; FD_SET(fd, &rfds); }
-			if(HAS_FLAG(flags, SEL_WRITE)) { numWfds++; FD_SET(fd, &wfds); }
-			if(HAS_FLAG(flags, SEL_ERROR)) { numEfds++; FD_SET(fd, &efds); }
+			// Populate the sets according to the flags
+			for(int type = 0; type < 3; type++)
+			{
+				if(HAS_FLAG(flags, nflags[type]))
+				{
+					pfds[type] = &fds[type];
+					FD_SET(fd, pfds[type]);
+				}
+			}
 		}
-	}
 
-	// prepare FDs for select
-	fd_set* prfds = NULL;
-	fd_set* pwfds = NULL;
-	fd_set* pefds = NULL;
-	if(numRfds > 0) prfds = & rfds;
-	if(numWfds > 0) pwfds = & wfds;
-	if(numEfds > 0) pefds = & efds;
+		int selectTime = (timeout - millis());
+		selectTime = CLAMP(selectTime, 0, SELECT_POLL_TIME);
 
-	// prepare timeout
-	if(timeoutMillis < 0) timeoutMillis = 0;
-	tv.tv_usec = (timeoutMillis % 1000) * 1000;
-	tv.tv_sec = (timeoutMillis / 1000);
+		// prepare the timeout
+		struct timeval tv;
+		MILLIS_TO_TIMEVAL(selectTime, tv);
 
-	// reset last error
-	LastErr = RET_OK;
+		// select the file descriptor
+		int retval = select(maxFd + 1, pfds[0], pfds[1], pfds[2], &tv);
 
-	CLogger::LogMsg(LEVEL_VERBOSE, "select(%d, %p, %p, %p, %ds%dµs)",
-		maxFd + 1, prfds, pwfds, pefds, tv.tv_sec, tv.tv_usec);
+		// if not timeout
+		if(retval != RET_SEL_TIMEOUT)
+			return retval;
 
-	// select the descriptors
-	retval = select(
-		maxFd + 1, prfds, pwfds, pefds, &tv);
+	} while(millis() < timeout);
 
-	CLogger::LogMsg(LEVEL_VERBOSE, "select:ret=%d", retval);
-
-	// update LastErr on error
-	if(retval == RET_ERR)
-		LastErr = errno;
-
-	return retval;
+	return RET_SEL_TIMEOUT;
 }
+
 
 /* Wait/select state for a single file descriptor.
  * Returns the the state of the descriptor on success.
@@ -204,41 +205,45 @@ int CFdSelect::WaitAll(int timeoutMillis)
 int CFdSelect::Wait(int fd, int flags, int timeoutMillis)
 {
 	int retval;
-	fd_set rfds;
-	fd_set wfds;
-	fd_set efds;
-	fd_set* prfds = NULL;
-	fd_set* pwfds = NULL;
-	fd_set* pefds = NULL;
-	struct timeval tv;
+	fd_set  fds[3];
+	fd_set* pfds[3];
+	int nflags[] = { SEL_READ, SEL_WRITE, SEL_ERROR };	
+	uint64_t timeout = millis() + timeoutMillis;
 
-	// clear the FDs
-	FD_ZERO(&rfds);
-	FD_ZERO(&wfds);
-	FD_ZERO(&efds);
+	do
+	{
+		for(int n = 0; n < 3; n++)
+		{
+			FD_ZERO(&fds[n]);
+			pfds[n] = NULL;
+			if(HAS_FLAG(flags, nflags[n]))
+			{
+				pfds[n] = &fds[n];
+				FD_SET(fd, pfds[n]);
+			}
+		}
 
-	// fill the FDs
-	if(flags & SEL_READ)  { FD_SET(fd, &rfds); prfds=&rfds; }
-	if(flags & SEL_WRITE) { FD_SET(fd, &wfds); pwfds=&wfds; }
-	if(flags & SEL_ERROR) { FD_SET(fd, &efds); pefds=&efds; }
+		int selectTime = (timeout - millis());
+		selectTime = CLAMP(selectTime, 0, SELECT_POLL_TIME);
 
-	// prepare the timeout
-	if(timeoutMillis < 0) timeoutMillis = 0;
-	tv.tv_usec = (timeoutMillis % 1000) * 1000;
-	tv.tv_sec = (timeoutMillis / 1000);
+		// prepare the timeout
+		struct timeval tv;
+		MILLIS_TO_TIMEVAL(selectTime, tv);
 
-	CLogger::LogMsg(LEVEL_VERBOSE, "select(%d, %p, %p, %p, %ds%dµs)",
-		fd + 1, prfds, pwfds, pefds, tv.tv_sec, tv.tv_usec);
+		// select the file descriptor
+		retval = select(fd + 1, pfds[0], pfds[1], pfds[2], &tv);
 
-	// select the file descriptor
-	retval = select(fd + 1, prfds, pwfds, pefds, &tv);
+		// if not timeout
+		if(retval != RET_SEL_TIMEOUT)
+		{
+			// return fd status on success
+			if(retval != RET_ERR)
+				return GetStatus(fd, flags, pfds[0], pfds[1], pfds[2]);
 
-	CLogger::LogMsg(LEVEL_VERBOSE, "select:ret=%d", retval);
+			return retval;
+		}
 
-	// return status on success
-	if(retval > 0) {
-		retval = GetStatus(fd, flags, prfds, pwfds, pefds);
-	}
+	} while(millis() < timeout);
 
-	return retval;
+	return RET_SEL_TIMEOUT;
 }

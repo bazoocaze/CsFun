@@ -39,8 +39,6 @@ public:
 			}
 		}
 
-		listener.Stop();
-
 		CLogger::LogMsg(LEVEL_INFO, "Server: finalizado");
 	}
 
@@ -58,10 +56,8 @@ public:
 	void Stop()
 	{
 		StopServer = true;
-		// CTcpClient dummy;
-		// dummy.Connect("127.0.0.1", 12345);
-		// dummy.Close();
 		listener.Stop();
+		Join();
 	}
 };
 
@@ -92,9 +88,9 @@ void teste_client()
 void teste_server()
 {
 	server.Start();
-	delay(1000);
-	teste_client();
-	delay(3000);
+	// delay(1000);
+	// teste_client();
+	delay(30000);
 	server.Stop();
 	server.Join();
 }
@@ -159,16 +155,25 @@ void teste_class()
 {
 	CLogger::LogMsg(LEVEL_INFO, "-- TESTE1:BEGIN --");
 
-	TesteSub* teste = new TesteSub();
+	// TesteSub* teste = new TesteSub();
 	// TesteMain* ptr = teste;
 	// delete ptr;
 	// ptr->kill();
 
+	StdOut.print("[ STDOUT P10]");
+	StdErr.print("[ STDERR P10]");
+
 	CLogger::LogMsg(LEVEL_INFO, "-- TESTE1:P10 --");
 
-	TesteSub teste2;
+	StdOut.print("[ STDOUT P20]");
+	StdErr.print("[ STDERR P20]");
+
+	// TesteSub teste2;
 
 	CLogger::LogMsg(LEVEL_INFO, "-- TESTE1:BEGIN --");
+
+	StdOut.print("[ STDOUT P30]");
+	StdErr.print("[ STDERR P30]");
 }
 
 
@@ -176,9 +181,9 @@ void teste_main()
 {
 	CLogger::LogMsg(LEVEL_INFO, "-- TESTE:BEGIN --");
 
-	// teste_server();
+	teste_server();
 	//teste_handle();
-	teste_class();
+	// teste_class();
 
 	CLogger::LogMsg(LEVEL_INFO, "-- TESTE:END --");
 }

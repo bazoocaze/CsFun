@@ -27,7 +27,59 @@
 #include "Fd.h"
 #include "Util.h"
 #include "IO.h"
+#include "Logger.h"
 
+
+
+//////////////////////////////////////////////////////////////////////
+// FdPtr
+//////////////////////////////////////////////////////////////////////
+
+
+
+CFdHandle::CFdHandle()
+{
+	this->Fd  = CLOSED_FD;
+	Set(CLOSED_FD);
+}
+
+CFdHandle::CFdHandle(int fd)
+{
+	this->Fd  = CLOSED_FD;
+	Set(fd);
+}
+
+CFdHandle::~CFdHandle()
+{
+	Close();
+}
+
+void CFdHandle::Close()
+{
+	Set(CLOSED_FD);
+}
+
+void CFdHandle::Set(int fd)
+{
+	if(fd == Fd) return;
+	this->Fd = fd;
+	intptr_t p = (intptr_t)(fd + 1);
+	SetDataPtr((void*)p);
+}
+
+void CFdHandle::Debug()
+{
+	CRefPtr::Debug();
+}
+
+void CFdHandle::ReleaseData(void * data)
+{
+	intptr_t val = ((intptr_t)data) - 1;
+	int fd = val;
+
+	CLogger::LogMsg(LEVEL_VERBOSE, "CFdPtr: close(%d)", fd);
+	// close(fd);
+}
 
 
 //////////////////////////////////////////////////////////////////////

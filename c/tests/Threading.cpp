@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
+#include <signal.h>
 
 
 #include "Threading.h"
@@ -104,9 +105,13 @@ bool CThread::Start()
 bool CThread::IsRunning()
 {
 #if defined HAVE_THREAD_pthreads
+	/*
 	int policy;
 	struct sched_param param;
 	int ret = pthread_getschedparam(Id, &policy, &param);
+	return (ret == RET_OK); */
+	StdOut.print("[pthread_kill]\n");
+	int ret = pthread_kill(Id, 0);
 	return (ret == RET_OK);
 #endif
 	return false;
@@ -115,8 +120,9 @@ bool CThread::IsRunning()
 
 void CThread::Join()
 {
+	delay(10000);
 	while(IsRunning()) {
-		delay(1);
+		delay(1000);
 	}
 }
 

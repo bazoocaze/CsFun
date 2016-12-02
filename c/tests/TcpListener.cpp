@@ -6,22 +6,6 @@
  */
 
 
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <sys/types.h>
-// #include <sys/socket.h>
-// #include <netdb.h>
-// #include <string.h>
-// #include <unistd.h>
-// #include <errno.h>
-// #include <sys/time.h>
-// #include <fcntl.h>
-// #include <sys/ioctl.h>
-// #include <errno.h>
-// #include <arpa/inet.h>
-
-#include <errno.h>
-
 #include "TcpListener.h"
 #include "TcpClient.h"
 #include "Config.h"
@@ -39,10 +23,12 @@ CTcpListener::~CTcpListener()
 	Stop();
 }
 
+
 int CTcpListener::GetFd() const
 {
 	return m_sock.GetFd();
 }
+
 
 bool CTcpListener::Start(int port)
 {
@@ -65,11 +51,9 @@ bool CTcpListener::Start(const CIPEndPoint& localEP)
 
 	m_sock.Close();
 
+	/* Valid endpoint? */
 	if(!addr.IsValid())
-	{
-		/* Invalid endpoint */
 		return false;
-	}
 
 	/* create TCP socket for the family. */
 	if(!m_sock.Create(addr.GetFamily(), SOCK_STREAM))
@@ -81,7 +65,7 @@ bool CTcpListener::Start(const CIPEndPoint& localEP)
 	// /* adjust socket to non-blocking */
 	// m_sock.SetNonBlock(true);
 	
-	/* bind into address_any and port */
+	/* bind into address and port */
 	if(!m_sock.Bind(addr))
 	{
 		m_sock.Close();
@@ -101,8 +85,6 @@ bool CTcpListener::Start(const CIPEndPoint& localEP)
 			"TCP listener started on %P (fd %d)",
 			&m_endpoint,
 			m_sock.GetFd());
-
-	m_stopped = false;
 	
 	return true;
 }
@@ -170,9 +152,6 @@ bool CTcpListener::TryAccept(CTcpClient &cliente, int timeoutMillis)
 
 	int status = CFdSelect::Wait(m_sock.GetFd(), SEL_READ | SEL_ERROR, timeoutMillis);
 
-	if(!IsListening())
-		return false;
-
 	if(!HAS_FLAG(status, SEL_READ))
 		return false;
 
@@ -190,36 +169,31 @@ bool CTcpListener::AcceptNonBlock(CTcpClient &cliente) {
 
 void CTcpListener::Stop()
 {
-	CLogger::LogMsg(LEVEL_DEBUG, "Listener.Stop: BEGIN");
+	if(!m_sock.IsClosed())
+	{
+		/* TODO: include a manner to cancel a pending accept/select
+		 * on the listener socket. */
 
-	if(!m_stopped) {
-		m_stopped = true;
+		// // connect on self listener to weak the listener thread
+		// CTcpClient dummy;
+		// CIPEndPoint selfEP = CIPEndPoint(CIPAddress::Loopback, m_endpoint.GetPort());
+		// dummy.Connect(selfEP);
+		// dummy.Close();
 
-		CLogger::LogMsg(LEVEL_DEBUG, "Listener.Stop: ENTER");
+		CLogger::LogMsg(
+			LEVEL_DEBUG,
+			"Shutdown TCP listener on %P (fd %d)",
+			&m_endpoint,
+			m_sock.GetFd());
 
-		if(!m_sock.IsClosed())
-		{
-			// connect on self listener to weak the listener thread
-			CTcpClient dummy;
-			CIPEndPoint selfEP = CIPEndPoint(CIPAddress::Loopback, m_endpoint.GetPort());
-			dummy.Connect(selfEP);
-			dummy.Close();
-
-			CLogger::LogMsg(
-				LEVEL_DEBUG,
-				"Shutdown TCP listener on %P (fd %d)",
-				&m_endpoint,
-				m_sock.GetFd());
-
-			m_sock.Close();
-		}
+		m_sock.Close();
 	}
 }
 
 
 bool CTcpListener::IsListening() const
 {
-	return (!(m_stopped || m_sock.IsClosed()));
+	return (!m_sock.IsClosed());
 }
 
 

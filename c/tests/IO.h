@@ -19,7 +19,7 @@
 class CFileStream : public CFdStream
 {
 protected:
-	CFdPtr m_fdPtr;
+	CFdHandle m_fdPtr;
 
 public:
 	/* Create a file on disk with the name *fileName*.

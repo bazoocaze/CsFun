@@ -195,64 +195,6 @@ int CTcpClient::GetFd() const
 }
 
 
-/*
-int CTcpClient::Write(uint8_t c) {
-	if(State() == STATE_CONNECTED) {
-		if(m_sock.IsWritable())
-			return write(GetFd(), &c, 1);
-	}
-	return 0;
-} */
-
-/*
-int CTcpClient::Write(uint8_t *ptr, int size) {
-	if(State() == STATE_CONNECTED) {
-		if(m_sock.IsWritable())
-			return write(GetFd(), ptr, size);
-	}
-	return 0;
-} */
-
-
-/*
-int CTcpClient::Available() {
-	if(State() == STATE_CONNECTED && m_sock.IsReadable())
-		return 1;
-	return 0;
-} */
-
-
-/*
-int CTcpClient::Read() {
-unsigned char c;
-	if(State() == STATE_CONNECTED) {
-		if(m_sock.IsReadable())
-		{
-			int lido = read(GetFd(), &c, 1);
-			if(lido != 1)
-				return -1;
-			return c;
-		}
-	}
-	return -1;
-} */
-
-/*
-int TcpClient::Peek() {
-	Logger::LogMsg(LEVEL_ERROR, "TcpClient::Peek() not implemented");
-	return -1;
-} */
-
-/*
-void TcpClient::Flush() {
-char buffer[16];
-int lidos = 1;
-	while(State() == STATE_CONNECTED && m_sock.IsReadable() && lidos) {
-		lidos = read(GetFd(), buffer, sizeof(buffer));
-	}
-} */
-
-
 void CTcpClient::SetFd(int fd)
 {
 	if(State() == STATE_CONNECTED)

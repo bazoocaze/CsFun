@@ -16,17 +16,6 @@
 #include "Logger.h"
 
 
-// struct MemPtr_s {
-// 	void * data;
-// 	int    count;
-// };
-
-
-// struct FdPtr_s {
-// 	int    count;
-// };
-
-
 //////////////////////////////////////////////////////////////////////
 // RefPtr
 //////////////////////////////////////////////////////////////////////
@@ -57,6 +46,18 @@ void CRefPtr::ReleaseRef()
 	m_ref = NULL;
 }
 
+
+void CRefPtr::ChangeDataPtrTo(void * data)
+{
+	if(m_ref == NULL)
+	{
+		m_ref = (ref_ptr_t*)UTIL_MEM_MALLOC(sizeof(ref_ptr_t));
+		m_ref->count = 1;
+	}
+	m_ref->data = data;
+}
+
+
 void CRefPtr::SetDataPtr(void * data)
 {
 	if(m_ref != NULL)
@@ -69,9 +70,7 @@ void CRefPtr::SetDataPtr(void * data)
 	if(data == NULL)
 		return;
 
-	m_ref = (ref_ptr_t*)UTIL_MEM_MALLOC(sizeof(ref_ptr_t));
-	m_ref->count = 1;
-	m_ref->data  = data;
+	ChangeDataPtrTo(data);
 }
 
 void * CRefPtr::GetDataPtr() const
@@ -104,14 +103,8 @@ CRefPtr& CRefPtr::operator=(const CRefPtr& other)
 	return *this;
 }
 
-// Default destructor.
 CRefPtr::~CRefPtr()
 {
-}
-
-void CRefPtr::Close()
-{
-	ReleaseRef();
 }
 
 void CRefPtr::Debug()
@@ -134,19 +127,19 @@ CMemPtr::CMemPtr()
 
 CMemPtr::CMemPtr(void * data)
 {
-	Set(data);
+	SetDataPtr(data);
 }
 
 
 CMemPtr::~CMemPtr()
 {
-	CRefPtr::Close();
+	CRefPtr::ReleaseRef();
 }
 
 
 void CMemPtr::Clear()
 {
-	Set(NULL);
+	CRefPtr::ReleaseRef();
 }
 
 
@@ -170,7 +163,9 @@ bool CMemPtr::Resize(int newSize)
 	if(newPtr == NULL)
 		return false;
 
-	ChangeTo(newPtr);
+	if(curPtr != newPtr)
+		ChangeDataPtrTo(newPtr);
+
 	return true;
 }
 
@@ -185,69 +180,11 @@ void CMemPtr::Memset(uint8_t val, int size)
 }
 
 
-void CMemPtr::ChangeTo(void * newPtr)
-{
-	SetDataPtr(newPtr);
-}
-
-
 void CMemPtr::ReleaseData(void * data)
 {
 	if(data != NULL)
 	{
-		CLogger::LogMsg(LEVEL_VERBOSE, "CMemPtr: free(%p)", data);
+		// CLogger::LogMsg(LEVEL_VERBOSE, "CMemPtr: free(%p)", data);
 		UTIL_MEM_FREE(data);
 	}
-}
-
-
-
-//////////////////////////////////////////////////////////////////////
-// FdPtr
-//////////////////////////////////////////////////////////////////////
-
-
-
-CFdPtr::CFdPtr()
-{
-	this->Fd  = CLOSED_FD;
-	Set(CLOSED_FD);
-}
-
-CFdPtr::CFdPtr(int fd)
-{
-	this->Fd  = CLOSED_FD;
-	Set(fd);
-}
-
-CFdPtr::~CFdPtr()
-{
-	Close();
-}
-
-void CFdPtr::Close()
-{
-	Set(CLOSED_FD);
-}
-
-void CFdPtr::Set(int fd)
-{
-	if(fd == Fd) return;
-	this->Fd = fd;
-	intptr_t p = (intptr_t)(fd + 1);
-	SetDataPtr((void*)p);
-}
-
-void CFdPtr::Debug()
-{
-	CRefPtr::Debug();
-}
-
-void CFdPtr::ReleaseData(void * data)
-{
-	intptr_t val = ((intptr_t)data) - 1;
-	int fd = val;
-
-	CLogger::LogMsg(LEVEL_VERBOSE, "CFdPtr: close(%d)", fd);
-	// close(fd);
 }

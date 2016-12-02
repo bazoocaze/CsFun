@@ -17,6 +17,11 @@
 #include "Stream.h"
 #include "MemoryStream.h"
 #include "Util.h"
+#include "IO.h"
+#include "FdSelect.h"
+
+
+#define READ_BLOCK_TIMEOUT 10000
 
 
 // Null stream implemented as NullStream
@@ -27,7 +32,6 @@ CNullStream CStream::Null = CNullStream();
 // Stream
 //////////////////////////////////////////////////////////////////////
 
-
 int CStream::ReadBlock(void * buffer, int size)
 {
 	uint8_t* ptr = (uint8_t*)buffer;
@@ -36,6 +40,7 @@ int CStream::ReadBlock(void * buffer, int size)
 	while(total < size)
 	{
 		int ret = this->Read(&ptr[total], size - total);
+
 		if(ret <= 0)
 		{
 			if(total > 0)
@@ -126,7 +131,7 @@ bool CFdStream::IsEof()
 
 
 bool CFdStream::IsError()
-{ return m_lastErr == RET_ERR; }
+{ return m_lastErr != RET_OK; }
 
 
 int CFdStream::Write(const uint8_t c)
@@ -189,4 +194,54 @@ int  CFdStream::Read(void * buffer, int size)
 		m_Eof = true;
 
 	return ret;
+}
+
+
+int CFdStream::ReadBlock(void * buffer, int size)
+{
+	uint8_t* ptr = (uint8_t*)buffer;
+	int total = 0;
+	uint64_t timeout = millis() + READ_BLOCK_TIMEOUT;
+
+	while((total < size) && (millis() < timeout))
+	{
+		uint64_t ms = millis();
+		if(ms > timeout) return total;
+		int remaing = timeout - ms;
+
+		int ret;
+
+		ret = CFdSelect::Wait(m_fd, SEL_READ | SEL_ERROR, remaing);
+		if(ret == 0)
+		{
+			m_lastErr = ETIMEDOUT;
+			return RET_ERR;
+		}
+
+		if(ret == RET_ERR)
+		{
+			m_lastErr = errno;
+			if(total > 0)
+				return total;
+			return ret;
+		}
+
+		ret = this->Read(&ptr[total], size - total);
+		if(ret < 0)
+			m_lastErr = errno;
+
+		if(ret == 0)
+			m_Eof = true;
+
+		if(ret <= 0)
+		{
+			if(total > 0)
+				return total;
+			return ret;
+		}
+
+		total += ret;
+	}
+
+	return total;
 }

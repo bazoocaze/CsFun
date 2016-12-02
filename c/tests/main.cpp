@@ -150,11 +150,11 @@ int count = 3;
 void TesteCliente()
 {
 	CTcpClient client;
-	client.Connect("www.olvebra.com.br", 80);
+	client.Connect("sntolvebra", 8080);
 	delay(1000);
 	if(client.IsReady())
 	{
-		printf("Connected\n");
+		StdErr.println("Connected");
 		CStream * s = client.GetStream();
 		CStreamWriter sw = CStreamWriter(s);
 		CStreamReader sr = CStreamReader(s);
@@ -167,10 +167,11 @@ void TesteCliente()
 			sr.ReadLine(linha, 1024);
 			StdOut.printf("[Lido:%P]", &linha);
 		}
+		StdErr.println("Now disconnected");
 	}
 	else
 	{
-		printf("Failed do connect: %s\n", ConnectionStateStr(client.State()));
+		StdErr.printf("Failed do connect: %s\n", ConnectionStateStr(client.State()));
 	}
 	client.Close();
 }
@@ -304,9 +305,12 @@ extern void gpb_main();
 int main(int argc, char **argv)
 {
 	// main_main();
-	teste_main();
+	// teste_main();
 	// gpb_main();
-	// outro_main();
+	outro_main();
 	
 	util_mem_debug();
+
+	char linha[10];
+	StdIn.ReadLine(linha, 1);
 }

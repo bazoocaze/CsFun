@@ -102,6 +102,9 @@ public:
 
 	// Print string debug info to stdout
 	void CDebug();
+
+	// Create a formated string using printf semantics.
+	static CString Format(const char* fmt, ...);
 };
 
 
