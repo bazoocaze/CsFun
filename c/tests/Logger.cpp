@@ -42,7 +42,7 @@ const char* LogLevelDesc(LogLevelEnum level) {
 }
 
 
-CTextWriter*  CLogger::Default  = &StdErr;
+CTextWriter*  CLogger::Default = &StdErr;
 LogLevelEnum CLogger::LogLevel = P_DEFAULT_LOG_LEVEL;
 CMonitor SendLoggerMessageLock;
 
@@ -52,7 +52,9 @@ void CLogger::LogMsg(LogLevelEnum level, const char * fmt, ...)
 	va_list ap;
 
 	if(Default == NULL)
+	{
 		return;
+	}
 
 	va_start(ap, fmt);
 
@@ -75,3 +77,14 @@ void CLogger::LogMsg(LogLevelEnum level, const char * fmt, ...)
 	va_end(ap);
 }
 
+
+CTextWriter* CLogger::Get()
+{
+	return CLogger::Default;
+}
+
+
+void CLogger::Set(CTextWriter* logger)
+{
+	CLogger::Default = logger;
+}

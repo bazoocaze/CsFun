@@ -8,22 +8,25 @@
 #include "FdSelect.h"
 
 
+#define TESTLOCK(l, c) do{ StdErr.print("[BEG]"); c(); StdErr.print("[END]"); }while(false);
+
+
 CMonitor myLock;
 int valor = 0;
 bool m_abort = false;
 
 
-void rotina()
+void rotina2()
 {
-	myLock.Enter();
-	if(valor != 0) {
-		m_abort = true;
-		return;
-	}
-	valor = 1;
-	delay(10);
-	valor = 0;
-	myLock.Exit();
+	LOCK(myLock, []{
+		if(valor != 0) {
+			m_abort = true;
+			return;
+		}
+		valor = 1;
+		delay(10);
+		valor = 0;
+	});
 }
 
 
@@ -38,7 +41,7 @@ protected:
 		for(int n = 0; n < 100; n ++)
 		{
 			if(m_abort) break;
-			// rotina();
+				rotina2();
 		}
 
 		StdOut.print("[Thread end]\n");
@@ -53,8 +56,12 @@ MonTest t4;
 MonTest t5;
 
 
+
+
 void outro_main()
 {
+
+
 	StdOut.print("Iniciado\n");
 
 	t1.Start();
@@ -65,11 +72,13 @@ void outro_main()
 
 	StdOut.print("Begin Join\n");
 
-	StdOut.print("Join t1\n"); t1.Join();
-	StdOut.print("Join t2\n"); t2.Join();
-	StdOut.print("Join t3\n"); t3.Join();
-	StdOut.print("Join t4\n"); t4.Join();
-	StdOut.print("Join t5\n"); t5.Join();
+	t1.Join();
+	t2.Join();
+	t3.Join();
+	t4.Join();
+	t5.Join();
+
+	StdOut.printf("Abort = %d\n", (int)m_abort);
 
 	StdOut.print("\nFinalizado\n");
 }

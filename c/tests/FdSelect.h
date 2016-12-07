@@ -37,11 +37,9 @@ class CFdSelect
 {
 protected:
 	static const int MAX_FD_LIST = 64;
-	select_fd_t fd_list[MAX_FD_LIST];
-	int LastErr;
-	fd_set rfds;
-	fd_set wfds;
-	fd_set efds;
+	select_fd_t m_fd_list[MAX_FD_LIST];
+	int m_LastErr;
+	fd_set m_fds[3];
 
 	int FindFreeSlot(int fd);
 	int FindFd(int fd);

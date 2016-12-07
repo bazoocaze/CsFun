@@ -22,7 +22,7 @@
 #define P_PROTOBUF_DEF_MAX_STR_SIZE       1024
 
 
-#define HAVE_CONSOLE
-#define HAVE_DNS_getaddrinfo
-#define HAVE_THREAD_pthreads
+#define HAVE_CONSOLE                      1
+#define HAVE_DNS_getaddrinfo              1
+#define HAVE_THREAD_pthreads              1
 

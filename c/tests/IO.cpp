@@ -13,21 +13,27 @@
 #include "Config.h"
 
 
-#if defined HAVE_CONSOLE
+#if HAVE_CONSOLE == 1
 
 	// CConsole Console;
-	CFdReader StdIn(0);
-	CFdWriter StdOut(1);
-	CFdWriter StdErr(2);
+	CFdReader DefaultStdIn(0);
+	CFdWriter DefaultStdOut(1);
+	CFdWriter DefaultStdErr(2);
 
 #else
 
 	// NullText Console;
-	CNullText StdIn;
-	CNullText StdOut;
-	CNullText StdErr;
+	CNullText DefaultStdIn;
+	CNullText DefaultStdOut;
+	CNullText DefaultStdErr;
 
 #endif
+
+
+
+DelegateReader StdIn(&DefaultStdIn);
+DelegateWriter StdOut(&DefaultStdOut);
+DelegateWriter StdErr(&DefaultStdErr);
 
 
 
@@ -68,4 +74,92 @@ void CFileStream::Close()
 {
 	m_fdPtr.Set(CLOSED_FD);
 	m_fd = CLOSED_FD;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// DelegateReader
+//////////////////////////////////////////////////////////////////////
+
+
+DelegateReader::DelegateReader(CTextReader* reader)
+	: m_reader(reader)
+{
+}
+
+void DelegateReader::Set(CTextReader* reader)
+{
+	this->m_reader = (reader != NULL) ? reader : &CTextReader::Null;
+}
+
+bool DelegateReader::IsEof()
+{
+	return m_reader->IsEof();
+}
+
+bool DelegateReader::IsError()
+{
+	return m_reader->IsError();
+}
+
+int DelegateReader::GetLastErr()
+{
+	return m_reader->GetLastErr();
+}
+
+const char * DelegateReader::GetLastErrMsg()
+{
+	return m_reader->GetLastErrMsg();
+}
+
+int DelegateReader::Read()
+{
+	return m_reader->Read();
+}
+
+int DelegateReader::Read(void * buffer, int size)
+{
+	return m_reader->Read(buffer, size);
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// DelegateWriter
+//////////////////////////////////////////////////////////////////////
+
+
+DelegateWriter::DelegateWriter(CTextWriter* writer)
+		: m_writer(writer)
+{
+}
+
+void DelegateWriter::Set(CTextWriter* writer)
+{
+	m_writer = (writer != NULL) ? writer : &CTextWriter::Null;
+}
+
+
+bool DelegateWriter::IsError()
+{
+	return m_writer->IsError();
+}
+
+int DelegateWriter::Write(const uint8_t c)
+{
+	return m_writer->Write(c);
+}
+
+int DelegateWriter::Write(const void * buffer, int size)
+{
+	return m_writer->Write(buffer, size);
+}
+
+int DelegateWriter::GetLastErr()
+{
+	return m_writer->GetLastErr();
+}
+
+const char * DelegateWriter::GetLastErrMsg()
+{
+	return m_writer->GetLastErrMsg();
 }

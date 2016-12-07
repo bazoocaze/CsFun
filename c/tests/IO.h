@@ -42,28 +42,41 @@ public:
 };
 
 
-#if defined HAVE_CONSOLE
+class DelegateReader : public CTextReader
+{
+private:
+	CTextReader * m_reader = NULL;
 
-	// Standard input reader
-	extern CFdReader StdIn;
+public:
+	DelegateReader(CTextReader* reader);
+	void Set(CTextReader * reader);
 
-	// Standard output writer
-	extern CFdWriter StdOut;
+	bool IsEof() override;
+	bool IsError() override;
+	int Read() override;
+	int Read(void * buffer, int size) override;
+	int GetLastErr() override;
+	const char * GetLastErrMsg() override;
+};
 
-	// Standard error writer
-	extern CFdWriter StdErr;
 
-	// extern CConsole bConsole;
+class DelegateWriter : public CTextWriter
+{
+private:
+	CTextWriter * m_writer;
 
-#else
+public:
+	DelegateWriter(CTextWriter * writer);
+	void Set(CTextWriter * writer);
 
-	// Dummy stdin.
-	extern CNullText StdIn;
+	bool IsError() override;
+	int Write(const uint8_t c) override;
+	int Write(const void * buffer, int size) override;
+	int GetLastErr() override;
+	const char * GetLastErrMsg() override;
+};
 
-	// Dummy stdout.
-	extern CNullText StdOut;
 
-	// Dummy stderr.
-	extern CNullText StdErr;
-
-#endif
+extern DelegateReader StdIn;
+extern DelegateWriter StdOut;
+extern DelegateWriter StdErr;

@@ -13,20 +13,22 @@
 #include "Config.h"
 
 
-#if defined HAVE_THREAD_pthreads
+#if HAVE_THREAD_pthreads == 1
 	#include <pthread.h>
 #else
 	typedef int pthread_t;
 #endif
 
 
+#define LOCK(monitor, code) do{ monitor.Enter(); code(); monitor.Exit(); }while(false);
+
+
 // Represents a monitor sincronization primitive.
 class CMonitor
 {
 private:
-	pthread_t current;
-	int       lockVal;
-	int       counter;
+	volatile pthread_t current;
+	volatile int       counter;
 
 public:
 	// Default constructor.
@@ -50,7 +52,7 @@ public:
 class CThread
 {
 protected:
-#if defined HAVE_THREAD_pthreads
+#if HAVE_THREAD_pthreads == 1
 	/* Internal entry point for the new thread. */
 	static void * ThreadEntry_pthread(void * arg);
 #endif
@@ -63,6 +65,7 @@ public:
 	/* Thread Id of the created thread.
 	 * This value is updated after a call to Start(). */
 	pthread_t Id;
+	bool Running;
 
 	/* Default constructor for a standard thread. */
 	CThread();

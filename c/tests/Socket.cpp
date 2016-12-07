@@ -112,6 +112,63 @@ int CSocket::Connect(const CSockAddr& address)
 }
 
 
+int CSocket::Write(const void * buffer, int size)
+{
+	int ret = write(m_fd, buffer, size);
+	if(ret == RET_ERROR)
+		LastErr = errno;
+	return ret;
+}
+
+
+int CSocket::Send(const void * buffer, int size, int flags)
+{
+	int ret = send(m_fd, buffer, size, flags);
+	if(ret == RET_ERROR)
+		LastErr = errno;
+	return ret;
+}
+
+
+int CSocket::SendTo(const void * buffer, int size, int flags, const CSockAddr& address)
+{
+	int ret = sendto(m_fd, buffer, size, flags, address.GetSockAddr(), address.GetSize());
+	if(ret == RET_ERROR)
+		LastErr = errno;
+	return ret;
+}
+
+
+int CSocket::Read(void * buffer, int size)
+{
+	int ret = read(m_fd, buffer, size);
+	if(ret == RET_ERROR)
+		LastErr = errno;
+	return ret;
+}
+
+
+int CSocket::Recv(void * buffer, int size, int flags)
+{
+	int ret = recv(m_fd, buffer, size, flags);
+	if(ret == RET_ERROR)
+		LastErr = errno;
+	return ret;
+}
+
+
+
+int CSocket::RecvFrom(void * buffer, int size, int flags, CSockAddr& address)
+{
+	socklen_t addrSize = address.GetMaxSize();
+	int ret = recvfrom(m_fd, buffer, size, flags, address.GetSockAddr(), &addrSize);
+	if(ret == RET_ERROR)
+		LastErr = errno;
+	address.SetSize(addrSize);
+	return ret;
+}
+
+
 int CSocket::GetSockError() const
 {
 	return CSocket::GetSockError(m_fd);
@@ -242,4 +299,94 @@ void CSocketHandle::ReleaseFd(int fd)
 {
 	CLogger::LogMsg(LEVEL_VERBOSE, "CFdPtr: close(%d)", fd);
 	close(fd);
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
+// CNetworkStream
+//////////////////////////////////////////////////////////////////////
+
+
+
+
+NetworkStream::NetworkStream()
+{
+}
+
+NetworkStream::NetworkStream(const CSocket& socket)
+{
+	this->m_socket = socket;
+}
+
+int NetworkStream::Write(uint8_t t)
+{
+	int ret = m_socket.Write(&t, 1);
+	if(ret == RET_ERR)
+		m_Error = true;
+	return ret;
+}
+
+int NetworkStream::Write(const void * buffer, int size)
+{
+	int ret = m_socket.Write(buffer, size);
+	if(ret == RET_ERR)
+		m_Error = true;
+	return ret;
+}
+
+int NetworkStream::ReadByte()
+{
+	if(m_Error)
+		return INT_ERR;
+	if(m_Eof)
+		return INT_EOF;
+
+	uint8_t buffer[1];
+
+	int ret = m_socket.Read(buffer, 1);
+
+	if(ret == 0)
+	{
+		m_Eof = true;
+		return INT_EOF;
+	}
+
+	if(ret == RET_ERR)
+	{
+		m_Error = true;
+		return INT_ERR;
+	}
+
+	return buffer[0];
+}
+
+int NetworkStream::Read(void * buffer, int size)
+{
+	if(m_Error)
+		return RET_ERR;
+	if(m_Eof)
+		return 0;
+
+	return m_socket.Read(buffer, size);
+}
+
+bool NetworkStream::IsEof()
+{
+	return m_Eof;
+}
+
+bool NetworkStream::IsError()
+{
+	return m_Error;
+}
+
+int NetworkStream::GetLastErr()
+{
+	return m_socket.LastErr;
+}
+
+const char * NetworkStream::GetLastErrMsg()
+{
+	return m_socket.GetLastErrMsg();
 }

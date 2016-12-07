@@ -77,15 +77,15 @@ public:
 class CNullStream : public CStream
 {
 public:
-	void Close()                             { }
-	int  Write(const uint8_t c)              { return 1; }
-	int  Write(const void * c, int size)     { return size; }
-	int  ReadByte()                          { return INT_EOF; }
-	int  Read(void * buffer, int size)       { return 0; }
-	bool IsEof()                             { return true; }
-	bool IsError()                           { return false; }
-	int  GetLastErr()                        { return RET_OK; }
-	const char * GetLastErrMsg()             { return ""; }
+	void Close()                        { }
+	int  Write(const uint8_t c)         { static_cast<void>(c); return 1; }
+	int  Write(const void *c, int size) { static_cast<void>(c); static_cast<void>(size); return size; }
+	int  ReadByte()                     { return INT_EOF; }
+	int  Read(void * buffer, int size)  { static_cast<void>(buffer); static_cast<void>(size);return 0; }
+	bool IsEof()                        { return true; }
+	bool IsError()                      { return false; }
+	int  GetLastErr()                   { return RET_OK; }
+	const char * GetLastErrMsg()        { return ""; }
 	
 };
 

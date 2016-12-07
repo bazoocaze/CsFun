@@ -16,6 +16,7 @@
 #include "Config.h"
 #include "Logger.h"
 #include "Stream.h"
+#include "IO.h"
 
 
 #define PRINTF_SUPPORTS_FLOAT      0
@@ -444,7 +445,7 @@ int slot;
 
 void util_mem_debug()
 {
-	dprintf(2, "\n--- BEGIN MEM DEBUG ---\n");
+	StdErr.print("\n--- BEGIN MEM DEBUG ---\n");
 	for(int n = 0; n < MAX_PTR_INFO; n++)
 	{
 		if(ptr_info[n].ptr == NULL)
@@ -460,7 +461,7 @@ void util_mem_debug()
 		else
 			file = ptr_info[n].file;
 		
-		dprintf(2, " %04d 0x%p %08ld %s:%d\n", n, ptr_info[n].ptr, ptr_info[n].size, file, ptr_info[n].line);
+		StdErr.printf(" %04d 0x%p %08ld %s:%d\n", n, ptr_info[n].ptr, ptr_info[n].size, file, ptr_info[n].line);
 	}
-	dprintf(2, "--- END MEM DEBUG ---\n");
+	StdErr.print("--- END MEM DEBUG ---\n");
 }

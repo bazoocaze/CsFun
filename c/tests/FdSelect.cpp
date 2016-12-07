@@ -29,12 +29,12 @@ int CFdSelect::FindFreeSlot(int fd)
 {
 	// Find same fd
 	for(int n = 0; n < MAX_FD_LIST; n++)
-		if(fd_list[n].fd == fd)
+		if(m_fd_list[n].fd == fd)
 			return n;
 
 	// Find another free slot
 	for(int n = 0; n < MAX_FD_LIST; n++)
-		if(fd_list[n].flags == 0)
+		if(m_fd_list[n].flags == 0)
 			return n;
 
 	// Can't find a free slot
@@ -45,7 +45,7 @@ int CFdSelect::FindFd(int fd)
 {
 	// Find the fd
 	for(int n = 0; n < MAX_FD_LIST; n++)
-		if(fd_list[n].fd == fd)
+		if(m_fd_list[n].fd == fd)
 			return n;
 	// Can't find the fd
 	return RET_ERR;
@@ -73,20 +73,20 @@ int CFdSelect::GetStatus(int fd, int iflags, fd_set* prfds, fd_set* pwfds, fd_se
 /* Returns the string message for the last error code. */
 const char * CFdSelect::GetLastErrMsg() const
 {
-	if(LastErr == RET_OK)
+	if(m_LastErr == RET_OK)
 		return "";
 	else
-		return strerror(LastErr);
+		return strerror(m_LastErr);
 }
 
 /* Clear the list of prepared file descriptors. */
 void CFdSelect::Clear()
 {
-	LastErr = RET_OK;
+	m_LastErr = RET_OK;
 	for(int n = 0; n < MAX_FD_LIST; n++)
 	{
-		fd_list[n].fd    = CLOSED_FD;
-		fd_list[n].flags = 0;
+		m_fd_list[n].fd    = CLOSED_FD;
+		m_fd_list[n].flags = 0;
 	}
 }
 
@@ -104,8 +104,8 @@ bool CFdSelect::Add(int fd, int flags)
 	if(slot == RET_ERR)
 		return false;
 
-	fd_list[slot].fd = fd;
-	fd_list[slot].flags = flags;
+	m_fd_list[slot].fd = fd;
+	m_fd_list[slot].flags = flags;
 
 	return true;
 }
@@ -117,7 +117,7 @@ bool CFdSelect::Remove(int fd)
 	int slot = FindFd(fd);
 
 	if(slot != RET_ERR)
-		fd_list[slot].flags = 0;
+		m_fd_list[slot].flags = 0;
 
 	return (slot != RET_ERR);
 }
@@ -132,9 +132,9 @@ int CFdSelect::GetStatus(int fd)
 	if(slot == RET_ERR)
 		return 0;
 
-	int iflags = fd_list[slot].flags;
+	int iflags = m_fd_list[slot].flags;
 
-	return GetStatus(fd, iflags, &rfds, &wfds, &efds);
+	return GetStatus(fd, iflags, &m_fds[0], &m_fds[1], &m_fds[2]);
 }
 
 /* Select/Wait for the list of prepared fds.
@@ -145,7 +145,6 @@ int CFdSelect::GetStatus(int fd)
 int CFdSelect::WaitAll(int timeoutMillis)
 {
 	int maxFd   = -1;
-	fd_set  fds[3];
 	fd_set* pfds[3];
 	int nflags[] = { SEL_READ, SEL_WRITE, SEL_ERROR };
 	uint64_t timeout = millis() + timeoutMillis;
@@ -155,17 +154,18 @@ int CFdSelect::WaitAll(int timeoutMillis)
 		// Zero the fd sets
 		for(int type = 0; type < 3; type++)
 		{
-			FD_ZERO(&fds[type]);
+			FD_ZERO(&m_fds[type]);
 			pfds[type] = NULL;
 		}
 
 		// Populate the fd sets
 		for(int n = 0; n < MAX_FD_LIST; n++)
 		{
-			if(fd_list[n].fd < 0 || fd_list[n].flags <= 0) continue;
+			if(m_fd_list[n].fd < 0 || m_fd_list[n].flags <= 0)
+				continue;
 
-			int fd = fd_list[n].fd;
-			int flags = fd_list[n].flags;
+			int fd = m_fd_list[n].fd;
+			int flags = m_fd_list[n].flags;
 			maxFd = MAX(fd, maxFd);
 
 			// Populate the sets according to the flags
@@ -173,7 +173,7 @@ int CFdSelect::WaitAll(int timeoutMillis)
 			{
 				if(HAS_FLAG(flags, nflags[type]))
 				{
-					pfds[type] = &fds[type];
+					pfds[type] = &m_fds[type];
 					FD_SET(fd, pfds[type]);
 				}
 			}

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 
 #include "Ptr.h"
@@ -12,6 +13,8 @@
 #include "Logger.h"
 #include "IO.h"
 #include "Util.h"
+#include "FdSelect.h"
+#include "Text.h"
 
 
 class CServerThread : public CThread
@@ -76,9 +79,9 @@ void teste_client()
 	CBinaryWriter bw = CBinaryWriter(client.GetStream());
 	CBinaryReader br = CBinaryReader(client.GetStream());
 	bw.WriteInt32(42);
-	int lido1;
-	int lido2;
-	bool b;
+	int lido1 = 0;
+	int lido2 = 0;
+	bool b = false;
 	// lido1 = br.ReadInt32();
 	b = br.TryReadInt32(&lido2);
 	CLogger::LogMsg(LEVEL_INFO, "Client: recebido lido1=%d lido2=%d b=%d", lido1, lido2, b);
@@ -101,7 +104,7 @@ void teste_stdin()
 	while(!(StdIn.IsEof() || StdIn.IsError()))
 	{
 		char buffer[256];
-		int lidos = StdIn.Read(buffer, sizeof(buffer));
+		int lidos = StdIn.Read((void*)buffer, (int)sizeof(buffer));
 		if(lidos >= 0) buffer[lidos] = 0;
 		StdOut.printf("lidos = %d, buffer = [%s]\n", lidos, buffer);
 	}
@@ -177,11 +180,129 @@ void teste_class()
 }
 
 
+void teste_udp()
+{
+	CIPEndPoint localEP = CIPEndPoint(CIPAddress::Any, 12347);
+	CIPEndPoint remoteEP = CIPEndPoint("200.203.44.6", 12346);
+
+	CSocket socket;
+	if(!socket.Create(AF_INET, SOCK_STREAM))
+	{
+		StdErr.printf("socket() error: %d-%s", socket.LastErr, socket.GetLastErrMsg());
+		return;
+	}
+
+	/*
+	if(!socket.Bind(localEP.GetSockAddr()))
+	{
+		StdErr.printf("bind() error: %d-%s", socket.LastErr, socket.GetLastErrMsg());
+		return;
+	} */
+
+	socket.SetNonBlock(true);
+
+	if(socket.Connect(remoteEP.GetSockAddr()) != RET_OK)
+	{
+		StdErr.printf("connect() error: %d-%s", socket.LastErr, socket.GetLastErrMsg());
+		if(socket.LastErr != EINPROGRESS)
+			return;
+	}
+
+	bool connected = false;
+
+	NetworkStream ns(socket);
+	CStreamWriter sw(&ns);
+	CStreamReader sr(&ns);
+
+	while(true)
+	{
+		StdOut.print("[local]Digite:");
+
+		CFdSelect sel;
+		sel.Add(socket.GetFd(), SEL_READ | SEL_ERROR | (!connected ? SEL_WRITE : 0) );
+		sel.Add(0, SEL_READ | SEL_ERROR);
+		int ret = sel.WaitAll(180000);
+
+		if(ret > 0)
+		{
+			int localStatus = sel.GetStatus(0);
+			int remoteStatus = sel.GetStatus(socket.GetFd());
+
+			if(HAS_FLAG(remoteStatus, SEL_WRITE))
+			{
+				connected = true;
+				StdOut.println("[Connected]\n");
+			}
+
+			if(HAS_FLAG(localStatus, SEL_READ))
+			{
+				CString linha;
+				if(!StdIn.ReadLine(linha, 1024)) break;
+				if(linha.c_str[0] == 0) break;
+				sw.println(linha);
+
+				if(sw.IsError())
+				{
+					StdErr.printf("Write error: %d-%s\n", sw.GetLastErr(), sw.GetLastErrMsg());
+				}
+			}
+
+			if(HAS_FLAG(remoteStatus, SEL_ERROR))
+			{
+				StdErr.printf("Remote error: %d-%s\n", sw.GetLastErr(), sw.GetLastErrMsg());
+				break;
+			}
+
+			if(HAS_FLAG(remoteStatus, SEL_READ))
+			{
+				char buffer[1024];
+				int lidos = sr.Read(buffer, sizeof(buffer)-1);
+				if(lidos >= 0)
+				{
+					buffer[lidos] = 0;
+					StdOut.printf("\n[remoto][%s]\n", buffer);
+				}
+				if(lidos <= 0)
+				{
+					if(lidos == 0)
+						StdOut.printf("\n[remoto EOS]\n");
+					else
+						StdOut.printf("\n[remoto error %d-%s]\n", sr.GetLastErr(), sr.GetLastErrMsg());
+
+					break;
+				}
+			}
+
+		}
+
+		if(ret == 0)
+		{
+			StdOut.print("[select timeout]\n");
+			break;
+		}
+
+		if(ret < 0)
+		{
+			StdOut.print("[select error]\n");
+			break;
+		}
+	}
+
+	// ret = socket.Write("ducker\n", 7);
+	// if(ret == RET_ERR)
+	// {
+	// 	StdErr.printf("send() error: %d-%s", socket.LastErr, socket.GetLastErrMsg());
+	// 	return;
+	// }
+}
+
+
 void teste_main()
 {
 	CLogger::LogMsg(LEVEL_INFO, "-- TESTE:BEGIN --");
 
-	teste_server();
+	teste_udp();
+	// teste_server();
 	//teste_handle();
 	// teste_class();
 

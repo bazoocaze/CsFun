@@ -37,7 +37,13 @@ class CPrintable
 public:
 	// Print the current instance to the writer
 	virtual int printTo(CTextWriter& p) const {
+		static_cast<void>(p);
 		return 0;
+	}
+
+	// Print the current instance to the writer
+	virtual int printTo(CTextWriter* p) const {
+		return printTo(*p);
 	}
 
 	// Returns the string representation of the current instance
@@ -273,7 +279,7 @@ public:
 	int GetLastErr()             { return RET_OK; }
 	const char* GetLastErrMsg()  { return ""; }
 	int Read()                   { return INT_EOF; }
-	int Write(const uint8_t c)   { return 1; }
+	int Write(const uint8_t c)   { static_cast<void>(c); return 1; }
 };
 
 
@@ -285,7 +291,7 @@ public:
 	int  GetLastErr()    { return RET_OK; }
 	cstr GetLastErrMsg() { return ""; }
 	int Read()           { return INT_EOF; }
-	int Read(void * c, int size) { return 0; }
+	int Read(void * c, int size) { static_cast<void>(c); static_cast<void>(size); return 0; }
 };
 
 
@@ -296,6 +302,6 @@ public:
 	bool IsError()       { return false; }
 	int  GetLastErr()    { return RET_OK; }
 	cstr GetLastErrMsg() { return ""; }
-	int Write(const uint8_t c)             { return 1; }
-	int Write(const void * c, int size) { return size; }
+	int Write(const uint8_t c) { static_cast<void>(c); return 1; }
+	int Write(const void * c, int size) { static_cast<void>(c); static_cast<void>(size); return size; }
 };

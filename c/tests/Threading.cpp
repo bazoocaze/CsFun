@@ -17,6 +17,7 @@
 #include "Threading.h"
 #include "Util.h"
 #include "IO.h"
+#include "Config.h"
 
 
 
@@ -28,7 +29,6 @@
 
 CMonitor::CMonitor()
 {
-	lockVal = 0;
 	current = 0;
 	counter = 0;
 }
@@ -36,21 +36,21 @@ CMonitor::CMonitor()
 
 void CMonitor::Enter()
 {
-#if defined HAVE_THREAD_pthreads
+#if HAVE_THREAD_pthreads == 1
 
-pthread_t id = pthread_self();
+	pthread_t id = pthread_self();
 
-	if(id == current) {
+	if(pthread_equal(id, current))
+	{
 		counter++;
 		return;
 	}
 
-	while(!__sync_bool_compare_and_swap(&lockVal, 0, 1))
+	while(!__sync_bool_compare_and_swap(&current, 0, id))
 	{
 		delay(1);
 	}
 
-	current = id;
 	counter = 1;
 
 #endif
@@ -59,9 +59,9 @@ pthread_t id = pthread_self();
 
 void CMonitor::Exit()
 {
-#if defined HAVE_THREAD_pthreads
+#if HAVE_THREAD_pthreads == 1
 	if(--counter == 0)
-		lockVal = 0;
+		current = 0;
 #endif
 }
 
@@ -78,18 +78,20 @@ CThread::CThread()
 	Id = 0;
 }
 
-#if defined HAVE_THREAD_pthreads
+#if HAVE_THREAD_pthreads == 1
 void * CThread::ThreadEntry_pthread(void * arg)
 {
 	CThread * t = (CThread*)arg;
+	t->Running = true;
 	t->ExecuteThread();
+	t->Running = false;
 	return NULL;
 }
 #endif
 
 bool CThread::Start()
 {
-#if defined HAVE_THREAD_pthreads
+#if HAVE_THREAD_pthreads == 1
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -104,25 +106,27 @@ bool CThread::Start()
 
 bool CThread::IsRunning()
 {
-#if defined HAVE_THREAD_pthreads
+#if HAVE_THREAD_pthreads == 1
 	/*
 	int policy;
 	struct sched_param param;
 	int ret = pthread_getschedparam(Id, &policy, &param);
 	return (ret == RET_OK); */
+
+	/*
 	StdOut.print("[pthread_kill]\n");
 	int ret = pthread_kill(Id, 0);
-	return (ret == RET_OK);
+	return (ret == RET_OK); */
 #endif
-	return false;
+
+	return Running;
 }
 
 
 void CThread::Join()
 {
-	delay(10000);
 	while(IsRunning()) {
-		delay(1000);
+		delay(1);
 	}
 }
 

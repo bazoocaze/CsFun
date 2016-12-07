@@ -53,7 +53,7 @@ int ret;
 	if(!(ipv4 || ipv6))
 		return retList;
 
-#if defined HAVE_DNS_getaddrinfo
+#if HAVE_DNS_getaddrinfo == 1
 
 	/* resolve o nome do servidor usando DNS */
 

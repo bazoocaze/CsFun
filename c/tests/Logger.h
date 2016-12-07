@@ -20,7 +20,7 @@ enum LogLevelEnum {
 	LEVEL_WARN      = 3,
 	LEVEL_ERROR     = 4,
 	LEVEL_FATAL     = 5,
-	LEVEL_DISABLED  = 6,
+	LEVEL_DISABLED  = 6
 };
 
 
@@ -34,9 +34,13 @@ const char * LogLevelDesc(LogLevelEnum level);
 // Message logging facilitie
 class CLogger
 {
-public:
+protected:
 	// Default logger writer
-	static CTextWriter*   Default;
+	static CTextWriter* Default;
+
+public:
+	static CTextWriter* Get();
+	static void Set(CTextWriter* logger);
 	
 	/* Minimum message severity for logging.
 	 * Message below this severity level are discarded. */

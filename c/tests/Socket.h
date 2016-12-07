@@ -113,6 +113,14 @@ public:
 	int Accept(CSockAddr& address);
 
 	int Connect(const CSockAddr& address);
+
+	int Write(const void * buffer, int size);
+	int Send(const void * buffer, int size, int flags);
+	int SendTo(const void * buffer, int size, int flags, const CSockAddr& address);
+
+	int Read(void * buffer, int size);
+	int Recv(void * buffer, int size, int flags);
+	int RecvFrom(void * buffer, int size, int flags, CSockAddr& address);
 	
 	/* Reads the error code from kernel socket state. */
 	int GetSockError() const;
@@ -156,4 +164,27 @@ public:
 
 	/* Reads the error code from kernel socket state. */
  	static int GetSockError(int sockdfd);
+};
+
+
+class NetworkStream : public CStream
+{
+protected:
+	CSocket m_socket;
+	bool m_Eof = false;
+	bool m_Error = false;
+
+public:
+	NetworkStream();
+	NetworkStream(const CSocket& socket);
+
+	int Write(uint8_t t) override;
+	int Write(const void * buffer, int size) override;
+	int ReadByte() override;
+	int Read(void * buffer, int size) override;
+
+	bool IsEof();
+	bool IsError();
+	int GetLastErr();
+	const char * GetLastErrMsg();
 };

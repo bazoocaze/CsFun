@@ -42,7 +42,6 @@ public:
 
 	T* Add(T * item)
 	{
-		printf("[add %p]\n", item);
 		int newSize = sizeof(void*) * m_count + 1;
 		void * ret = realloc(m_list, newSize);
 		if(ret == NULL) {
@@ -62,7 +61,6 @@ public:
 		{
 			for(int n = 0; n < m_count; n++)
 			{
-				printf("[delete %p]\n", m_list[n]);
 				delete (T*)m_list[n];
 			}
 			free(m_list);

@@ -135,10 +135,10 @@ int CString::printTo(CTextWriter& p) const
 }
 
 
-void CString::CDebug()
-{
-	printf("[String: c_str=[%p:%s] aloc=[%p]]\n", c_str, c_str, m_aloc.Get());
-}
+// void CString::CDebug()
+// {
+// 	printf("[String: c_str=[%p:%s] aloc=[%p]]\n", c_str, c_str, m_aloc.Get());
+// }
 
 
 CString CString::Format(const char* fmt, ...)
