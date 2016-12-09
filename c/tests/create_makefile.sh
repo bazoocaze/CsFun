@@ -4,6 +4,7 @@
 NEWFILE="Makefile.new"
 OLDFILE="Makefile"
 
+
 SRCC=$(find . -name "*.c" | sed 's|[.]/||g;')
 SRCCXX=$(find . -name "*.cpp" | sed 's|[.]/||g;')
 
@@ -65,6 +66,7 @@ OBJS_C=$(echo ${SRCC} | sed 's|\.c|.o|g;')
 OBJS_CXX=$(echo ${SRCCXX} | sed 's|\.c..|.o|g;') 
 OBJS="${OBJS_C} ${OBJS_CXX}"
 DEPS=$(echo ${OBJS} | sed 's|\.o|.dep|g;')
+DEPS=$(echo ${OBJS} | sed 's|\.o|.dep|g;')
 
 # modifiable
 MODVAR "LDLIBS"  ""
@@ -74,7 +76,7 @@ MODVAR "TARGETS" "${TARGETS}"
 # fixed
 OUT ""
 OUTVAR "OBJS" "${OBJS}"
-OUTVAR "DEPS" "${DEPS}"
+OUTVAR "DEPS" '$(OBJS:.o=.dep)'
 
 # if g++ project then link with g++
 [ -n "${SRCCXX}" ] && OUT 'LINK.o = $(LINK.cpp)'
@@ -97,10 +99,16 @@ OUT '%.dep: %.c'
 OUT '	$(CC) -MM $< -o $@'
 OUT ''
 OUT 'clean:'
-OUT '	rm -f $(TARGETS) *.o *.a *.dep'
+OUT '	rm -f $(TARGETS) $(OBJS) $(DEPS) *.o *.a *.dep'
 OUT ''
 OUT 'check:'
 OUT '	cppcheck -v --enable=all .'
+OUT ''
+OUT 'memcheck: $(PROJECT)'
+OUT '	valgrind --leak-check=full --show-leak-kinds=all ./$(PROJECT)'
+OUT ''
+OUT 'gdb: $(PROJECT)'
+OUT '	gdb -q ./$(PROJECT) -ex run -ex bt'
 OUT ''
 OUT '-include $(DEPS)'
 OUT ''
