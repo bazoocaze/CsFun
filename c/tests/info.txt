@@ -1,0 +1,100 @@
+Binary.h
+	class BinaryWriter    (write data to Stream)
+	class BinaryReader    (read data from Stream)
+
+ByteBuffer.h
+	class BytePtr         (MemPtr storage)
+	class ByteBuffer      (MemPtr storage)
+
+Config.h
+
+Debug.h
+	class Debug
+
+Dns.h
+	class Dns             (populates IPAddressList)
+
+Fd.h
+	class Fd              (FdPtr to manage fd)
+	class FdWriter        (TextWriter writing to fd)
+	class FdReader        (TextReader reading from fd)
+
+FdSelect.h
+	class FdSelect        (select() on a list of fds)
+
+IO.h
+	class FileStream      (FdStream using a FdPtr)
+	class CConsole        (FdReader on fd=0 and FdWriter on fd=1)
+	extern Console        (FdReader on fd=0 and FdWriter on fd=1)
+	extern StdIn          (FdReader on fd=0)
+	extern StdOut         (FdWriter on fd=1)
+	extern StdErr         (FdWriter on fd=2)
+
+IPAddress.h
+	class SockAddr        (struct sockaddr wrapper)
+	class IPAddress       (SockAddr as IPv4 or IPv6)
+	class IPEndPoint      (SockAddr as IPAddress and TCP port)
+	class IPAddressList   (MemPtr list of IPAddress)
+
+List.h
+	template class List   (dynamic list, delete[] items on dtor/clear)
+
+Logger.h
+	class Logger          (Log messages to TextWriter)
+
+MemoryStream.h
+	class MemoryStream    (Stream that reads/writes to a ByteBuffer)
+
+Protobuf.h
+	class ByteString          (Read data from a MemPtr or Stream)
+	class CodedOutputStream   (Write data to a Stream)
+	class CodedInputStream    (Read data from a ByteString)
+	class IMessage            (Serialize/deserialize to/from CodedOutputStream/CodedInputStream)
+
+Ptr.h
+	class MemPtr          (reference counting for dynamic memory)
+	class FdPtr           (reference counting for file descriptor)
+
+Socket.h
+	class Socket          (Fd with added functions for sockets)
+
+Stream.h
+	class Stream          (Reading/writing of bytes)
+	class NullStream      (Stream with eof reading and null storage writing)
+	class FdStream        (Stream that reads/writes to a file descriptor)
+
+StringBuilder.h
+	class StringBuilder   (TextWriter that writes to a ByteBuffer and returns a String)
+
+TcpClient.h
+	class TcpClient       (Manages Socket connection, provides FdStream)
+
+TcpListener.h
+	class TcpListener     (Manages Socket listener, construct TcpClient connections)
+
+Text.h
+	class Printable       (provides "print to TextWriter" framework)
+	class String          (manages MemPtr as string storage)
+	class TextWriter      (provides print* text calls)
+	class TextReader      (provides read* text calls)
+	class StreamWriter    (TextWriter that writes to a Stream)
+	class StreamReader    (TextReader that reads from a Stream)
+	class NullText        (Null TextReader/TextWriter)
+	class NullReader      (Allways eof TextReader)
+	class NullWriter      (Discard storage TextWriter)
+
+Threading.h
+	class Monitor         (per thread context locking)
+	class Thread          (create/manage threads)
+
+Util.h
+	func millis
+	func delay
+	func get_uptime
+	func do_events
+	func util_mem_*
+	func util_printf*
+	func OutOfMemoryHandler
+	func EndProgramHandler
+	type cstr
+	type vstr
