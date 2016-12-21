@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package Grpc.NET40.InternalProtos;
+
+message RpcExceptionProto {
+	int32 status_code = 1;
+	string detail = 2;
+	string message = 3;
+}
+
+message PayloadProto {
+	int32 size = 1;
+	bytes data = 2;
+}
+
+message PacketProto {
+	int32 msg_id = 1;
+	string FullMethodName = 2;
+	int32 options = 3;
+	oneof data_type {
+		PayloadProto payload = 4;
+		RpcExceptionProto exception = 5;
+	}
+}
